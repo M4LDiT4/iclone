@@ -1,19 +1,28 @@
 import ConversationData from "@/models/data/ConversationData";
 import Queue from "../data-structures/Queue";
+import ConversationSlidingWindowDBService from "@/services/localDB/ConversationSlidingWindowDBService";
+import { convertToRGBA } from "react-native-reanimated";
 
 interface ConversationSlidingWindowProps{
+  slidingWindowDBService: ConversationSlidingWindowDBService,
   chatId: string,
-  queueMaxSize: number
+  queueMaxSize: number,
 }
 
 class ConversationSlidingWindow {
+  slidingWindowDBService: ConversationSlidingWindowDBService
   queueMaxSize: number;
   queue = new Queue<ConversationData>();
   chatId: string;
-
+ 
   constructor(props: ConversationSlidingWindowProps){
     this.queueMaxSize = props.queueMaxSize;
     this.chatId = props.chatId;
+    this.slidingWindowDBService = props.slidingWindowDBService;
+  }
+
+  async initialize(){
+    const conversations = await this.slidingWindowDBService.getSlidingWindowConversations(this.chatId);
   }
 
   async insertRawConversation(systemMessage: string, userMessage: string){
@@ -36,13 +45,14 @@ class ConversationSlidingWindow {
     if(this.queue.size() === this.queueMaxSize){
       await this.dequeue();
     }
-    //save the conversation to the sliding window table
+    await this.slidingWindowDBService.insertConversation(newConversation);
   }
 
   async dequeue() {
     const oldestItem = this.queue.dequeue();
     if(oldestItem){
       // remove the oldest item from sliding window table
+      await this.slidingWindowDBService.popConversation(oldestItem);
     }
   }
 
@@ -54,6 +64,18 @@ class ConversationSlidingWindow {
 
   isFull(): boolean{
     return this.queueMaxSize === this.queue.size();
+  }
+
+  contentsToString(): string {
+    const contents = this.queue.toArray();
+    let contentString ="";
+    for(const content of contents){
+      contentString += `
+        ['system'] : ${content.systemMessage}
+        ['user] : ${content.userMessage}
+      `
+    }
+    return contentString;
   }
 
 }

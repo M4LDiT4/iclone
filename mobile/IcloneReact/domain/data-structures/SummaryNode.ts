@@ -1,6 +1,7 @@
 type NodeType = 'leaf' | 'node';
 
 interface SummaryNodeProps {
+  chatId: string,
   index: number;
   size: number;
   summary: string;
@@ -9,7 +10,9 @@ interface SummaryNodeProps {
   rightChild?: SummaryNode;
 }
 
+// SummaryNode unique identifier: Composit key(chatId + index + type)
 class SummaryNode {
+  chatId: string;
   index: number;
   size: number;
   summary: string;
@@ -17,7 +20,8 @@ class SummaryNode {
   rightChild?: SummaryNode;
   type: NodeType;
 
-  constructor({ index, size, summary, type, leftChild, rightChild }: SummaryNodeProps) {
+  constructor({ chatId, index, size, summary, type, leftChild, rightChild }: SummaryNodeProps) {
+    this.chatId = chatId;
     this.index = index;
     this.size = size;
     this.summary = summary;
