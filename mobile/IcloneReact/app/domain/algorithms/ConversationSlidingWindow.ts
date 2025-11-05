@@ -1,7 +1,6 @@
-import ConversationData from "@/models/data/ConversationData";
+import ConversationSlidingWindowDBService from "@/app/services/localDB/ConversationSlidingWindowDBService";
 import Queue from "../data-structures/Queue";
-import ConversationSlidingWindowDBService from "@/services/localDB/ConversationSlidingWindowDBService";
-import { convertToRGBA } from "react-native-reanimated";
+import ConversationData from "@/app/models/data/ConversationData";
 
 interface ConversationSlidingWindowProps{
   slidingWindowDBService: ConversationSlidingWindowDBService,

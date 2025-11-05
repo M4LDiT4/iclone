@@ -1,4 +1,4 @@
-import SummaryNode from "@/domain/data-structures/SummaryNode";
+import SummaryNode from "@/app/domain/data-structures/SummaryNode";
 
 class SummaryDBService {
 

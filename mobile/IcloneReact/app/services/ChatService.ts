@@ -1,8 +1,8 @@
-import ConversationSlidingWindow from "@/domain/algorithms/ConversationSlidingWindow";
 import SummaryService from "./SummaryService";
 import SummaryDBService from "./localDB/SummaryDBService";
-import SummaryStack from "@/domain/data-structures/SummaryStack";
 import ConversationSlidingWindowDBService from "./localDB/ConversationSlidingWindowDBService";
+import ConversationSlidingWindow from "../domain/algorithms/ConversationSlidingWindow";
+import SummaryStack from "../domain/data-structures/SummaryStack";
 
 interface ChatServiceProps {
   chatId: string,
