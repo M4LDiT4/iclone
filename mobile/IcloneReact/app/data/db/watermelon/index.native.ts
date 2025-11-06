@@ -31,4 +31,6 @@ const database = new Database({
     ChatModel,
     ConversationModel
   ],
-})
+});
+
+export default database;
