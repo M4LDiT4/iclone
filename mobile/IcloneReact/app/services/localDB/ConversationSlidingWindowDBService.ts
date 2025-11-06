@@ -1,4 +1,4 @@
-import ConversationData from "@/app/models/data/ConversationData";
+import ConversationData from "@/app/data/application/ConversationData";
 
 class ConversationSlidingWindowDBService{
   

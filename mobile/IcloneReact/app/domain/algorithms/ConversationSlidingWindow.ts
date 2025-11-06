@@ -1,6 +1,6 @@
 import ConversationSlidingWindowDBService from "@/app/services/localDB/ConversationSlidingWindowDBService";
 import Queue from "../data-structures/Queue";
-import ConversationData from "@/app/models/data/ConversationData";
+import ConversationData from "@/app/data/application/ConversationData";
 
 interface ConversationSlidingWindowProps{
   slidingWindowDBService: ConversationSlidingWindowDBService,

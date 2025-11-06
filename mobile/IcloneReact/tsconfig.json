@@ -6,7 +6,12 @@
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "ES6",
+    "module": "ESNext",
+    "strictPropertyInitialization": false
   },
   "include": [
     "**/*.ts",
