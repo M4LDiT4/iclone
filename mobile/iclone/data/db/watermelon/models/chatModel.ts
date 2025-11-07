@@ -9,8 +9,12 @@ export default class ChatModel extends Model {
     conversations: {type: 'has_many', foreignKey: 'chat_id'}
   }
 
-  @text('title') title: string;
-  @readonly @date('created_at') createdAt!: Date;
-  @readonly @date('updated_at') updatedAt!: Date;
+  @text('title') 
+  title!: string;
+
+  @readonly @date('created_at') 
+  createdAt!: Date;
+  @readonly @date('updated_at') 
+  updatedAt!: Date;
   
 }
