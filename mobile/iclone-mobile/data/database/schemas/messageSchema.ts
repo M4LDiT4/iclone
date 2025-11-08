@@ -5,6 +5,7 @@ export const messageSchema = tableSchema({
   columns: [
     {name: 'chat_id', type: 'string', isIndexed: true},
     {name: 'content', type: 'string'},
+    {name: 'sender', type: 'string'},
     {name: 'created_at', type: 'number'},
     {name: 'updated_at', type: 'number'},  
   ]

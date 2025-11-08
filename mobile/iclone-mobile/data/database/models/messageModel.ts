@@ -15,6 +15,9 @@ export default class MessageModel extends Model{
   @text('content')
   content!: string;
 
+  @text('sender')
+  sender!: 'user' | 'system';
+
   @readonly
   @date('created_at')
   createdAt!: Date;

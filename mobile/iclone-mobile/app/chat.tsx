@@ -1,81 +1,146 @@
-import React, { useState } from 'react';
-import { View, TextInput, Text, StyleSheet, Button, ActivityIndicator } from 'react-native';
+import MessageContainer from '@/components/chat/ChatBubble';
 import database from '@/data/database/index.native';
 import MessageModel from '@/data/database/models/messageModel';
+import React, { useState } from 'react';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ChatScreen() {
-  const [message, setMessage] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [messageList, setMessageList] = useState<string[]>([]);
+  const [message, setMessage] = useState<string|null>(null);
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    setSaved(false);
+  function addMessage(newMessage:string){
+    setMessageList(prev => [...prev, newMessage])
+  }
 
-    try {
-      await database.write(async () => {
-        const messagesCollection = database.get<MessageModel>('messages');
-        await messagesCollection.create(msg => {
-          msg.content = message;
-        });
-      });
-      setSaved(true);
-    } catch (error) {
-      console.error('Failed to save message:', error);
-      setSaved(false);
-    } finally {
-      setIsSaving(false);
+  function handleTextinputChange(newText:string){
+    setMessage(newText);
+  }
+
+  function resetMessage(){
+    setMessage(null);
+  }
+
+  function handleSendButtonPress(){
+    if(message === null || message.length === 0){
+      return;
     }
-  };
+    addMessage(message);
+    resetMessage();
+  }
 
+  async function saveMessage(message: string){
+    await database.write(
+      async () => {
+        await database.get<MessageModel>('messages').create(
+          msg => {
+            msg.content = message,
+            msg.sender = 'user'
+          }
+        );
+      }
+    );
+  } 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Type your message:</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Start chatting..."
-        value={message}
-        onChangeText={setMessage}
-      />
-      <Button title="Check" onPress={handleSave} disabled={isSaving || !message.trim()} />
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={80}
+      >
+        <FlatList
+          data={messageList} // placeholder for messages
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) =>(
+              <MessageContainer
+                message={item}
+                saveMessage={saveMessage}
+              />
+            )
+          }
+          contentContainerStyle={styles.messageList}
+          inverted
+        />
 
-      <View style={styles.feedback}>
-        {isSaving ? (
-          <ActivityIndicator size="small" color="#007AFF" />
-        ) : saved ? (
-          <Text style={styles.output}>✅ Message saved!</Text>
-        ) : (
-          <Text style={styles.output}>You said: {message}</Text>
-        )}
-      </View>
-    </View>
+        <View style={styles.inputBar}>
+          <TextInput
+            style={styles.input}
+            placeholder="Type a message..."
+            placeholderTextColor="#999"
+            onChangeText={handleTextinputChange}
+            value={message??""}
+          />
+          <TouchableOpacity 
+            style={styles.sendButton}
+            onPress={handleSendButtonPress}
+          >
+            <Text style={styles.sendText}>Send</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F9F9F9',
+  },
   container: {
     flex: 1,
-    padding: 24,
-    justifyContent: 'center',
-    backgroundColor: '#fff',
   },
-  label: {
-    fontSize: 18,
-    marginBottom: 8,
+  messageList: {
+    padding: 16,
+    paddingBottom: 100,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#aaa',
+  messageBubble: {
+    backgroundColor: '#E1F5FE',
     padding: 12,
-    borderRadius: 6,
-    marginBottom: 16,
+    borderRadius: 16,
+    marginBottom: 10,
+    alignSelf: 'flex-start',
+    maxWidth: '80%',
   },
-  feedback: {
-    marginTop: 16,
-    alignItems: 'center',
-  },
-  output: {
+  messageText: {
     fontSize: 16,
     color: '#333',
+  },
+  inputBar: {
+    flexDirection: 'row',
+    padding: 12,
+    borderTopWidth: 1,
+    borderColor: '#DDD',
+    backgroundColor: '#FFF',
+    alignItems: 'center',
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 24,
+    fontSize: 16,
+  },
+  sendButton: {
+    marginLeft: 12,
+    backgroundColor: '#007AFF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+  },
+  sendText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
