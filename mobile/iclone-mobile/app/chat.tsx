@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, Text, StyleSheet, Button, ActivityIndicator } from 'react-native';
-import { Q } from '@nozbe/watermelondb';
-import database from '@/data/db/watermelon/index.native';
-import MessageModel from '@/data/db/watermelon/models/messageModel';
+import database from '@/data/database/index.native';
+import MessageModel from '@/data/database/models/messageModel';
 
 export default function ChatScreen() {
   const [message, setMessage] = useState('');
@@ -18,7 +17,6 @@ export default function ChatScreen() {
         const messagesCollection = database.get<MessageModel>('messages');
         await messagesCollection.create(msg => {
           msg.content = message;
-          msg.createdAt = new Date();
         });
       });
       setSaved(true);

@@ -1,12 +1,13 @@
 import { Platform } from 'react-native'
 import { Database } from '@nozbe/watermelondb'
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
-import migrations from './migrations'
-import schema from './schema'
-import ChatModel from './models/chatModel'
-import ConversationModel from './models/conversationModel'
 
-// import Post from './model/Post' // ⬅️ You'll import your Models here
+import schema from './schema'
+import migrations from './migrations'
+
+import ChatModel from './models/chatModel'
+import MessageModel from './models/messageModel'
+
 
 // First, create the adapter to the underlying database:
 const adapter = new SQLiteAdapter({
@@ -29,9 +30,8 @@ const database = new Database({
   adapter,
   modelClasses: [
     ChatModel,
-    ConversationModel,
-    ChatModel
+    MessageModel
   ],
-});
+})
 
 export default database;
