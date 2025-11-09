@@ -7,6 +7,8 @@ import migrations from './migrations'
 
 import ChatModel from './models/chatModel'
 import MessageModel from './models/messageModel'
+import SummaryModel from './models/summaryModel'
+import SummarStackItemModel from './models/summaryStackModel'
 
 
 // First, create the adapter to the underlying database:
@@ -30,7 +32,9 @@ const database = new Database({
   adapter,
   modelClasses: [
     ChatModel,
-    MessageModel
+    MessageModel,
+    SummaryModel,
+    SummarStackItemModel
   ],
 })
 

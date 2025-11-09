@@ -1,10 +1,9 @@
-import SenderType from "@/domain/types/senderTypes";
 import { Model } from "@nozbe/watermelondb";
 import { date, readonly, text } from "@nozbe/watermelondb/decorators";
 import { Associations } from "@nozbe/watermelondb/Model";
 
-export default class MessageModel extends Model{
-  static table = 'messages';
+export default class SummarStackItemModel extends Model{
+  static table: 'summary_stack_items';
 
   static associations: Associations = {
     chats: {type: 'belongs_to', key: 'chat_id'}
@@ -13,11 +12,8 @@ export default class MessageModel extends Model{
   @text('chat_id')
   chatId!: string;
 
-  @text('content')
-  content!: string;
-
-  @text('sender')
-  sender!: SenderType;
+  @text('summary_id')
+  summaryId!: string;
 
   @readonly
   @date('created_at')

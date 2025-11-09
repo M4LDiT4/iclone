@@ -6,7 +6,7 @@ export default class ChatModel extends Model {
   static table ='chats';
 
   static associations: Associations = {
-    conversations: {type: 'has_many', foreignKey: 'chat_id'}
+    messages: {type: 'has_many', foreignKey: 'chat_id'}
   }
 
   @text('title') 
