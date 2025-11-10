@@ -1,6 +1,7 @@
 import { Text, View, StyleSheet } from 'react-native';
 import AppColors from '@/core/styling/AppColors';
 import Logo from '../assets/svg/llm_logo.svg';
+import GenericContainer from '@/components/containers/genericContainer';
 
 export default function Index() {
   return (
@@ -23,6 +24,9 @@ export default function Index() {
         >
           Do you have stories for me?
         </Text>
+        <View style ={styles.storiesContainer}>
+          <GenericContainer/>
+        </View>
       </View>
     </View>
   );
@@ -69,5 +73,8 @@ const styles = StyleSheet.create({
   },
   lowerContainer:{
     flex: 2
+  },
+  storiesContainer : {
+    paddingTop: 16,
   }
 });
