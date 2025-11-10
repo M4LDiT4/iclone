@@ -1,15 +1,16 @@
 import SummaryService from "./SummaryService";
 import SummaryDBService from "./localDB/SummaryDBService";
-import ConversationSlidingWindowDBService from "./localDB/LocalMessageSlidingWindowDBService";
 import ConversationSlidingWindow from "../domain/algorithms/ConversationSlidingWindow";
-import SummaryStack from "../domain/data-structures/SummaryStack";
+import SummaryStack from "@/domain/dataStructures/SummaryStack";
+import LocalMessageDBService from "./localDB/LocalMessageDBService";
+import SenderType from "@/domain/types/senderTypes";
 
 interface ChatServiceProps {
   chatId: string,
   maxConversationCount: number,
   summaryService: SummaryService;
   summaryDBService: SummaryDBService;
-  slidingWindowDBService: ConversationSlidingWindowDBService;
+  slidingWindowDBService: LocalMessageDBService;
 }
 
 class ChatService {
@@ -21,18 +22,18 @@ class ChatService {
   summaryService: SummaryService;
   summaryDBService: SummaryDBService;
 
-  slidingWindowDBService: ConversationSlidingWindowDBService;
+  localMessageDBService: LocalMessageDBService;
 
   constructor(props: ChatServiceProps){
     this.chatId = props.chatId;
     this.summaryService = props.summaryService;
     this.summaryDBService = props.summaryDBService;
-    this.slidingWindowDBService = props.slidingWindowDBService;
+    this.localMessageDBService = props.slidingWindowDBService;
 
     this.slidingWindow = new ConversationSlidingWindow({
       queueMaxSize: props.maxConversationCount,
       chatId: this.chatId,
-      slidingWindowDBService: this.slidingWindowDBService
+      localMessageDBService: this.localMessageDBService
     });
 
     this.summaryStack = new SummaryStack({
@@ -49,8 +50,8 @@ class ChatService {
     await this.summaryStack.intialize();
   }
   // insert latest conversation of the user and system to the sliding window
-  async insertNewConversation(systemMessage: string, userMessage: string) {
-    await this.slidingWindow.insertRawConversation(systemMessage, userMessage);
+  async insertNewConversation(message: string, sender: SenderType) {
+    await this.slidingWindow.insertRawConversation(message, sender);
     if(this.slidingWindow.isFull()){
       const summarizedContent = await this.summaryService.summarize(this.slidingWindow.contentsToString());
       await this.summaryStack.pushLeaf(summarizedContent)

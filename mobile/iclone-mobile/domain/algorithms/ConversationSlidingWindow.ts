@@ -1,16 +1,16 @@
 import MessageData from "@/data/application/MessageData";
 import Queue from "../dataStructures/Queue";
 import SenderType from "../types/senderTypes";
-import LocalMessageSlidingWindowDBService from "@/services/localDB/LocalMessageSlidingWindowDBService";
+import LocalMessageDBService from "@/services/localDB/LocalMessageDBService";
 
 interface ConversationSlidingWindowProps{
-  slidingWindowDBService: LocalMessageSlidingWindowDBService,
+  localMessageDBService: LocalMessageDBService,
   chatId: string,
   queueMaxSize: number,
 }
 
 class ConversationSlidingWindow {
-  slidingWindowDBService: LocalMessageSlidingWindowDBService
+  localMessageDBService: LocalMessageDBService;
   queueMaxSize: number;
   queue = new Queue<MessageData>();
   chatId: string;
@@ -18,11 +18,11 @@ class ConversationSlidingWindow {
   constructor(props: ConversationSlidingWindowProps){
     this.queueMaxSize = props.queueMaxSize;
     this.chatId = props.chatId;
-    this.slidingWindowDBService = props.slidingWindowDBService;
+    this.localMessageDBService = props.localMessageDBService;
   }
 
   async initialize(){
-    const messages = await this.slidingWindowDBService.getSlidingWindowConversations(this.chatId, this.queueMaxSize);
+    const messages = await this.localMessageDBService.getMessages(this.chatId, this.queueMaxSize);
     for(var message of messages){
       this.queue.enqueue(message);
     }
@@ -44,7 +44,7 @@ class ConversationSlidingWindow {
     if(this.queue.size() === this.queueMaxSize){
       await this.dequeue();
     }
-    await this.slidingWindowDBService.insertConversation(messageData);
+    await this.localMessageDBService.createMessage(messageData, this.chatId);
   }
 
   async dequeue() {

@@ -2,8 +2,8 @@ import { Model } from "@nozbe/watermelondb";
 import { date, readonly, text } from "@nozbe/watermelondb/decorators";
 import { Associations } from "@nozbe/watermelondb/Model";
 
-export default class SummarStackItemModel extends Model{
-  static table: 'summary_stack_items';
+export default class SummaryStackItemModel extends Model{
+  static table = 'summary_stack_items';
 
   static associations: Associations = {
     chats: {type: 'belongs_to', key: 'chat_id'}

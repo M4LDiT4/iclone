@@ -1,4 +1,4 @@
-import DeepSeekClient from "../domain/llm/deepSeek/model";
+import DeepSeekClient from "@/domain/llm/deepSeek/model";
 
 class SummaryService {
   llmClient: DeepSeekClient;
