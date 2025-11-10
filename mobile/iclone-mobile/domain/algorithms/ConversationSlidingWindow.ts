@@ -1,16 +1,14 @@
 import MessageData from "@/data/application/MessageData";
 import Queue from "../dataStructures/Queue";
-import SenderType from "../types/senderTypes";
-import LocalMessageDBService from "@/services/localDB/LocalMessageDBService";
 
 interface ConversationSlidingWindowProps{
-  localMessageDBService: LocalMessageDBService,
   chatId: string,
   queueMaxSize: number,
 }
 
 class ConversationSlidingWindow {
-  localMessageDBService: LocalMessageDBService;
+  isUser = false;
+  conversationCount = 0;
   queueMaxSize: number;
   queue = new Queue<MessageData>();
   chatId: string;
@@ -18,34 +16,32 @@ class ConversationSlidingWindow {
   constructor(props: ConversationSlidingWindowProps){
     this.queueMaxSize = props.queueMaxSize;
     this.chatId = props.chatId;
-    this.localMessageDBService = props.localMessageDBService;
   }
 
-  async initialize(){
-    const messages = await this.localMessageDBService.getMessages(this.chatId, this.queueMaxSize);
+  async initialize(messages: MessageData[]){
     for(var message of messages){
       this.queue.enqueue(message);
+      this.countMessage(message);
     }
   }
 
-  async insertRawConversation(message: string, sender: SenderType){
-    const messageData = new MessageData({
-      id: "id of the conversation in the local db",
-      content: message,
-      chatId: this.chatId,
-      sender: sender
-    });
-    // save the messsage first before enqueing to the queu
-    await this.handlePostEnqueu(messageData);
-    this.queue.enqueue(messageData);
+  countMessage(message: MessageData){
+    // count only conversations 
+    // conversation is defined as follows:
+    // one system message followed by any number of user messages
+    if(!this.isUser && message.sender == 'user'){
+      this.isUser = true;
+    }else if(this.isUser && message.sender == 'system'){
+      this.isUser = false;
+      this.conversationCount += 1;
+    }
   }
 
-  private async handlePostEnqueu(messageData: MessageData) {
-    if(this.queue.size() === this.queueMaxSize){
-      await this.dequeue();
-    }
-    await this.localMessageDBService.createMessage(messageData, this.chatId);
+  async enqueueMessage(message: MessageData){
+    this.queue.enqueue(message);
+    this.countMessage(message);
   }
+
 
   async dequeue() {
     this.queue.dequeue();
@@ -58,9 +54,10 @@ class ConversationSlidingWindow {
   }
 
   isFull(): boolean{
-    return this.queueMaxSize === this.queue.size();
+    return this.queueMaxSize === this.conversationCount;
   }
 
+  // convert the sliding window to a llm prompt
   contentsToString(): string {
     const contents = this.queue.toArray();
     let contentString ="";

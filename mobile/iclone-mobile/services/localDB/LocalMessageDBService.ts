@@ -1,4 +1,5 @@
 import MessageData from "@/data/application/MessageData";
+import RawMessageData from "@/data/application/RawMessage";
 import MessageModel from "@/data/database/models/messageModel";
 import { Database, Q } from "@nozbe/watermelondb";
 
@@ -9,12 +10,12 @@ class LocalMessageDBService {
     this.database = database;
   }
 
-  async createMessage(message: MessageData, chatId: string): Promise<MessageModel> {
+  async createMessage(message: RawMessageData): Promise<MessageModel> {
     const savedMessage = await this.database.write(async () => {
       return await this.database.get<MessageModel>('messages').create(msg => {
         msg.content = message.content
         msg.sender = message.sender
-        msg.chatId = chatId
+        msg.chatId = message.chatId
       })
     });
     return savedMessage
