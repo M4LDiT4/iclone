@@ -8,6 +8,7 @@ import {
   View,
   Text,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import AppColors from "@/core/styling/AppColors";
 import ChatTextinput from "@/components/textinputs/chatTextinput";
@@ -19,34 +20,62 @@ import ChatBubble from "@/components/chat/ChatBubble";
 export default function ChatScreen() {
   return (
     <SafeAreaView edges={["left", "right"]} style={styles.screenContainer}>
+      {/* HEADER */}
+      <View style={styles.headerWrapper}>
+        {/* Gradient background */}
+        <LinearGradient
+          colors={[
+            "transparent", // bottom = fully transparent
+            Color(AppColors.backgroundColor).alpha(0.85).rgb().string(), // mid fade
+            AppColors.backgroundColor, // top = opaque
+          ]}
+          start={{ x: 0.5, y: 1 }}
+          end={{ x: 0.5, y: 0 }}
+          style={StyleSheet.absoluteFill}
+        />
+
+        {/* Optional frosted blur effect */}
+        <BlurView
+          tint="light"
+          intensity={40}
+          style={StyleSheet.absoluteFill}
+        />
+
+        <View style={styles.logoContainer}>
+          <Logo width={116} height={116} />
+          <View style={styles.listeningTextContainer}>
+            <Text style={styles.listeningText}>Listening...</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* CHAT BODY */}
       <KeyboardAvoidingView
         style={styles.wrapper}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={80}
       >
-        {/* 🧩 Fixed Header Section */}
-        <View style={styles.headerContainer}>
-          <Logo width={116} height={116} />
-          <BlurView
-            tint="light"
-            intensity={60}
-            style={styles.listeningTextContainer}
-          >
-            <Text style={styles.listeningText}>Listening...</Text>
-          </BlurView>
-        </View>
-
-        {/* 🗨️ Scrollable Chat Messages */}
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
         >
           <ChatBubble
             content="Hey! Are we still on for tonight?"
             sentByUser={true}
             isLastByUser={false}
           />
+
+          <ChatBubble
+            content="Just finished the mockups. Want to take a look?"
+            sentByUser={true}
+            isLastByUser={false}
+          />
+
+          <ChatBubble
+            content="Yes, I’ll be there by 7. Let’s meet at the usual spot."
+            sentByUser={false}
+          />
+
 
           <ChatBubble
             content="Just finished the mockups. Want to take a look?"
@@ -71,6 +100,7 @@ export default function ChatScreen() {
           />
         </ScrollView>
 
+        {/* INPUT */}
         <ChatInputWrapper />
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -117,20 +147,38 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
   },
-  // 🧩 Fixed header styles
-  headerContainer: {
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingTop: 180, // add top padding so chat starts below header
+  },
+  textinputContainer: {
+    paddingTop: 8,
+    paddingHorizontal: 20,
     alignItems: "center",
     justifyContent: "center",
-    paddingTop: 20,
-    paddingBottom: 12,
-    backgroundColor: "transparent",
+    flexDirection: "row",
+  },
+  headerWrapper: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 160,
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+    zIndex: 2,
+  },
+  logoContainer: {
+    alignItems: "center",
   },
   listeningTextContainer: {
-    backgroundColor: Color(AppColors.secondaryColor).alpha(0.4).rgb().string(),
+    backgroundColor: Color(AppColors.secondaryColor).alpha(0.5).rgb().string(),
     borderRadius: 10,
     paddingVertical: 8,
     paddingHorizontal: 20,
-    marginTop: 6,
+    marginTop: 8,
     overflow: "hidden",
   },
   listeningText: {
@@ -139,18 +187,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 14,
     color: AppColors.primaryColor,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 16,
-  },
-  textinputContainer: {
-    paddingTop: 8,
-    paddingHorizontal: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "row",
   },
 });
