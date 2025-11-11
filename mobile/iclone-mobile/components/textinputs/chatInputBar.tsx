@@ -39,7 +39,7 @@ export default function ChatInputBar({
   }, []);
 
   return (
-    <View style={{... styles.container, paddingBottom: keyboardVisible ? 24 : 0}}>
+    <View style={{... styles.container, paddingBottom: keyboardVisible ? 36 : 0}}>
       <TouchableOpacity onPress={onLeftButton1} style={styles.leftButton}>
         <Ionicons name="camera-outline" size={24} color={AppColors.primaryColor} />
       </TouchableOpacity>
