@@ -8,10 +8,13 @@ import {
   View,
   Text,
 } from "react-native";
+import { BlurView } from "expo-blur";
 import AppColors from "@/core/styling/AppColors";
 import ChatTextinput from "@/components/textinputs/chatTextinput";
 import { memo, useEffect, useState } from "react";
 import Logo from "../assets/svg/llm_logo.svg";
+import Color from "color";
+import ChatBubble from "@/components/chat/ChatBubble";
 
 export default function ChatScreen() {
   return (
@@ -21,20 +24,53 @@ export default function ChatScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={80}
       >
+        {/* 🧩 Fixed Header Section */}
+        <View style={styles.headerContainer}>
+          <Logo width={116} height={116} />
+          <BlurView
+            tint="light"
+            intensity={60}
+            style={styles.listeningTextContainer}
+          >
+            <Text style={styles.listeningText}>Listening...</Text>
+          </BlurView>
+        </View>
+
+        {/* 🗨️ Scrollable Chat Messages */}
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <View style ={styles.logoContainer}>
-            <Logo
-              width={116}
-              height={116}
-            />
-            <View style = {styles.listeningTextContainer}>
-              <Text>Listening...</Text>
-            </View>
-          </View>
+          <ChatBubble
+            content="Hey! Are we still on for tonight?"
+            sentByUser={true}
+            isLastByUser={false}
+          />
+
+          <ChatBubble
+            content="Just finished the mockups. Want to take a look?"
+            sentByUser={true}
+            isLastByUser={false}
+          />
+
+          <ChatBubble
+            content="Yes, I’ll be there by 7. Let’s meet at the usual spot."
+            sentByUser={false}
+          />
+
+          <ChatBubble
+            content="Here’s the full breakdown of the architecture: we’ll use modular services, persistent memory, and index-based repair logic for the agent system."
+            sentByUser={true}
+            isLastByUser={true}
+          />
+
+          <ChatBubble
+            content="Sounds solid. I’ll review the schema tonight and push the updated endpoints by morning."
+            sentByUser={false}
+          />
         </ScrollView>
+
         <ChatInputWrapper />
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -81,9 +117,34 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
   },
+  // 🧩 Fixed header styles
+  headerContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 20,
+    paddingBottom: 12,
+    backgroundColor: "transparent",
+  },
+  listeningTextContainer: {
+    backgroundColor: Color(AppColors.secondaryColor).alpha(0.4).rgb().string(),
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    marginTop: 6,
+    overflow: "hidden",
+  },
+  listeningText: {
+    fontFamily: "SFProText",
+    fontWeight: "bold",
+    fontSize: 12,
+    lineHeight: 14,
+    color: AppColors.primaryColor,
+  },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 16,
   },
   textinputContainer: {
     paddingTop: 8,
@@ -92,16 +153,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexDirection: "row",
   },
-  logoContainer: {
-    width: '100%',
-    alignItems: 'center',
-    position: 'relative'
-  },
-  listeningTextContainer: {
-    position: 'absolute',
-    borderRadius: 10,
-    padding: 16,
-    bottom: 0,
-  }
-
 });

@@ -1,82 +1,81 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // or use react-native-vector-icons
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import Color from 'color';
+import AppColors from '@/core/styling/AppColors';
+import AvatarContainer from '../images/avatarContainer';
 
-type Status = 'saved' | 'error' | 'loading';
+type ChatBubbleProps = {
+  content: string;
+  sentByUser: boolean;
+  isLastByUser?: boolean; // indicates if it's the last message in a sequence
+};
 
-interface MessageContainerProps {
-  message: string;
-  saveMessage: (id:string) => Promise<void>;
-}
-
-export default function MessageContainer({message, saveMessage }: MessageContainerProps) {
-
-  const [status, setStatus] = useState<Status>('loading');
-
-  useEffect(() => {
-    handleOnMount()
-  }, []);
-
-  async function handleOnMount() {
-    await saveMessage(message)
-    .then(()=> setStatus('saved'))
-    .catch((err)=>{
-      console.log(`Failed to saved message:  ${err}`);
-      setStatus('error');
-    })
-  }
+export default function ChatBubble({ content, sentByUser, isLastByUser = false }: ChatBubbleProps) {
+  const alignment = sentByUser ? 'flex-end' : 'flex-start';
+  const bubbleColor = sentByUser
+    ? Color(AppColors.secondaryColor).alpha(0.2).rgb().string()
+    : Color(AppColors.primaryColor).alpha(0.1).rgb().string();
 
   return (
-    <View style={[styles.bubble, statusStyles[status]]}>
-      <View style={styles.row}>
-        {status === 'loading' && <ActivityIndicator size="small" color="#555" />}
-        {status === 'saved' && <Ionicons name="checkmark-circle" size={20} color="#2ecc71" />}
-        {status === 'error' && <Ionicons name="close-circle" size={20} color="#e74c3c" />}
-        <Text style={styles.text}>
-          {status === 'loading'
-            ? 'Saving...'
-            : status === 'saved'
-            ? message || 'Message saved!'
-            : 'Failed to save'}
-        </Text>
+    <View style={[styles.container, { alignItems: alignment }]}>
+      {/* Show avatar only if NOT sent by user and is the last in the group */}
+      {!sentByUser && isLastByUser && (
+        <View style={[styles.avatarContainer, { left: -1 }]}>
+          <AvatarContainer
+            size={42}
+            source={require('../../assets/images/react-logo.png')}
+          />
+        </View>
+      )}
+
+      <View
+        style={[
+          styles.contentContainer,
+          {
+            backgroundColor: bubbleColor,
+            alignSelf: alignment,
+            marginLeft: sentByUser ? 40 : 0,
+            marginRight: sentByUser ? 20 : 0,
+            borderRadius: 10,
+          },
+        ]}
+      >
+        <Text style={styles.contentText}>{content}</Text>
       </View>
+
+      {/* ✅ Only show avatar if it's sent by the user AND it's the last by the user */}
+      {sentByUser && isLastByUser && (
+        <View style={[styles.avatarContainer, { right: -1 }]}>
+          <AvatarContainer
+            size={42}
+            source={require('../../assets/images/react-logo.png')}
+          />
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  bubble: {
+  container: {
+    width: '100%',
+    marginBottom: 21,
+    position: 'relative',
+  },
+  contentContainer: {
+    maxWidth: '85%',
+    borderRadius: 10,
     padding: 12,
-    borderRadius: 16,
-    maxWidth: '80%',
-    alignSelf: 'flex-start',
-    marginVertical: 8,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  contentText: {
+    fontFamily: 'SFProText',
+    fontWeight: '400',
+    fontSize: 15,
+    color: AppColors.primaryColor,
+    flexWrap: 'wrap',
   },
-  text: {
-    fontSize: 16,
-    color: '#333',
-  },
-});
-
-const statusStyles = StyleSheet.create({
-  saved: {
-    backgroundColor: '#eafaf1',
-    borderColor: '#2ecc71',
-    borderWidth: 1,
-  },
-  error: {
-    backgroundColor: '#fdecea',
-    borderColor: '#e74c3c',
-    borderWidth: 1,
-  },
-  loading: {
-    backgroundColor: '#f0f0f0',
-    borderColor: '#aaa',
-    borderWidth: 1,
+  avatarContainer: {
+    position: 'absolute',
+    bottom: -21,
   },
 });
