@@ -36,19 +36,33 @@ class SummaryStack {
       summary,
       type: 'leaf',
     });
+    
+    await this.summaryDBService.pushSummaryNode(leaf, 'leaf');
 
     this.stack.push(leaf);
     this.mergeIfNeeded();
   }
 
-  // check for sync problems
+  /**
+   * Keeps the summary stack short and concise
+   * 
+   * If the 2 topmost item on the stack has the same size,
+   * pop the two topmost item, combine their summary and summarize it.
+   * Inserts the summary as a new node at the top of the stack
+   * 
+   * repeat the process until stack has length of 1 or the two topmost items
+   * do not have the same size
+   */
   private async mergeIfNeeded(): Promise<void> {
     while (
       this.stack.size() >= 2 &&
       this.stack.peek()!.size === this.stackItems()[this.stack.size() - 2].size
     ) {
+
+      // pops the two topmost items
       const right = this.stack.pop()!;
       const left = this.stack.pop()!;
+      // summarize their summaries
       const mergedSummary = await this.summaryService.summarizePair(left.summary, right.summary);
 
       const parent = new SummaryNode({
@@ -56,10 +70,15 @@ class SummaryStack {
         index: await this.summaryDBService.getNewNodeIndex(this.chatId),
         size: left.size + right.size,
         summary: mergedSummary,
-        type: 'node',
-        leftChild: left,
+        type: 'node', // this means that it is not a summary of messages but summary of summaries
+        // keeps track of the nodes that composes the current node's summaries
+        // can be used to rebuild the stack on memory
+        // remove this if this module is heavy, serves no real purpose as of the moment
+        leftChild: left, 
         rightChild: right,
       });
+
+      await this.summaryDBService.pushSummaryNode(parent, "node");
 
       this.stack.push(parent);
     }

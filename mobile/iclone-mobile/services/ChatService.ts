@@ -61,7 +61,7 @@ class ChatService {
 
     this.slidingWindow.enqueueMessage(newMessageData);
   }
-
+  // do this when user stops writing
   async summarizeNConversationSlidingWindow(){
     if(this.slidingWindow.isFull()){
       const slidingWindowPrompt = messageDataListToPromptConverter(this.slidingWindow.queue.toArray());
@@ -69,6 +69,7 @@ class ChatService {
       await this.summaryStack.pushLeaf(summary);
     }
   }
+
 }
 
 export default ChatService;

@@ -26,12 +26,12 @@ class ConversationSlidingWindow {
   }
 
   countMessage(message: MessageData){
-    // count only conversations 
-    // conversation is defined as follows:
-    // one system message followed by any number of user messages
     if(!this.isUser && message.sender == 'user'){
+      // denote start of user input
       this.isUser = true;
     }else if(this.isUser && message.sender == 'system'){
+      // makes sure that the first message is not counted (isUser starts false)
+      // the system has replied, conversation count + 1
       this.isUser = false;
       this.conversationCount += 1;
     }

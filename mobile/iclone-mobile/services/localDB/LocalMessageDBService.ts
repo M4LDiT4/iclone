@@ -1,4 +1,3 @@
-import MessageData from "@/data/application/MessageData";
 import RawMessageData from "@/data/application/RawMessage";
 import MessageModel from "@/data/database/models/messageModel";
 import { Database, Q } from "@nozbe/watermelondb";
@@ -21,13 +20,13 @@ class LocalMessageDBService {
     return savedMessage
   }
 
-  async getMessages(chatId: string, limit: number): Promise<MessageModel[]>{
+  async getMessages(chatId: string, limit: number, skip = 0): Promise<MessageModel[]>{
     const messages = await this.database.get<MessageModel>('messages')    
                     .query(
                       Q.where("chat_id", chatId),
-                      Q.sortBy('updated_by', Q.desc)
+                      Q.sortBy('created_by ', Q.desc)
                     ).fetch();
-    return messages.slice(0, limit);
+    return messages.slice(skip, limit);
   }
 }
 
