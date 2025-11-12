@@ -61,7 +61,10 @@ class ConversationSlidingWindow {
   contentsToString(): string {
     const contents = this.queue.toArray();
     let contentString ="";
-    for(const content of contents){
+    // do not include the last message
+    // remember we count conversations by system message.
+    for(var i = 0; i < contents.length - 1; i++){
+      const content = contents[i];
       contentString += `
         [message]: ${content.content}
         [sender]: ${content.sender}
