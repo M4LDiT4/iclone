@@ -68,7 +68,7 @@ export default function ChatScreen() {
       setUserActivity("typing");
 
       // Replace this with your actual DeepSeek API call
-      const response = await waitFiveSeconds();
+      const response = await llmModel.call(latestUserMessage);
 
       const assistantMessage: ChatBubbleProps = {
         content: response,
