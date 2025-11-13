@@ -18,7 +18,7 @@ class ConversationSlidingWindow {
     this.chatId = props.chatId;
   }
 
-  async initialize(messages: MessageData[]){
+  initialize(messages: MessageData[]){
     for(var message of messages){
       this.queue.enqueue(message);
       this.countMessage(message);
@@ -37,19 +37,19 @@ class ConversationSlidingWindow {
     }
   }
 
-  async enqueueMessage(message: MessageData){
+  enqueueMessage(message: MessageData){
     this.queue.enqueue(message);
     this.countMessage(message);
   }
 
 
-  async dequeue() {
+  dequeue() {
     this.queue.dequeue();
   }
 
-  async clear(){
+  clear(){
     while (!this.queue.isEmpty()){
-      await this.dequeue();
+      this.dequeue();
     }
   }
 
