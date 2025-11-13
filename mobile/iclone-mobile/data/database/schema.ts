@@ -3,6 +3,7 @@ import chatSchema from './schemas/chatSchema'
 import messageSchema from './schemas/messageSchema'
 import summarySchema from './schemas/summarySchema'
 import summaryStackItemSchema from './schemas/summaryStackItemSchema'
+import { summaryMessagesSchema } from './schemas/summaryMessageSchema'
 
 export default appSchema({
   version: 1,
@@ -10,6 +11,7 @@ export default appSchema({
     chatSchema,
     messageSchema,
     summarySchema,
-    summaryStackItemSchema
+    summaryStackItemSchema,
+    summaryMessagesSchema,
   ]
 })

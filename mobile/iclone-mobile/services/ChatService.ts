@@ -1,5 +1,5 @@
 import SummaryService from "./SummaryService";
-import SummaryDBService from "./localDB/SummaryDBService";
+import summaryStackDBService from "./localDB/summaryStackDBService";
 import ConversationSlidingWindow from "../domain/algorithms/ConversationSlidingWindow";
 import SummaryStack from "@/domain/dataStructures/SummaryStack";
 import LocalMessageDBService from "./localDB/LocalMessageDBService";
@@ -11,7 +11,7 @@ interface ChatServiceProps {
   chatId: string,
   slidingWindowSize: number
   summaryService: SummaryService;
-  summaryDBService: SummaryDBService;
+  summaryStackDBService: summaryStackDBService;
   slidingWindowDBService: LocalMessageDBService;
   localMessageDBService: LocalMessageDBService;
 }
@@ -25,7 +25,7 @@ class ChatService {
   summaryStack: SummaryStack;
 
   summaryService: SummaryService;
-  summaryDBService: SummaryDBService;
+  summaryStackDBService: summaryStackDBService;
 
   localMessageDBService: LocalMessageDBService;
 
@@ -33,7 +33,7 @@ class ChatService {
     this.chatId = props.chatId;
     this.slidingWindowSize = props.slidingWindowSize;
     this.summaryService = props.summaryService;
-    this.summaryDBService = props.summaryDBService;
+    this.summaryStackDBService = props.summaryStackDBService;
     this.localMessageDBService = props.slidingWindowDBService;
 
     this.slidingWindow = new ConversationSlidingWindow({
@@ -42,7 +42,7 @@ class ChatService {
     });
 
     this.summaryStack = new SummaryStack({
-      summaryDBService: this.summaryDBService,
+      summaryStackDBService: this.summaryStackDBService,
       summaryService: this.summaryService,
       chatId: this.chatId
     });
@@ -51,7 +51,7 @@ class ChatService {
 
   async initializeChat(){
     const lastNMessages = await this.localMessageDBService.getMessages(this.chatId, this.slidingWindowSize);
-    await this.slidingWindow.initialize(lastNMessages);
+    this.slidingWindow.initialize(lastNMessages);
     await this.summaryStack.intialize();
   }
 
@@ -66,7 +66,7 @@ class ChatService {
     if(this.slidingWindow.isFull()){
       const slidingWindowPrompt = messageDataListToPromptConverter(this.slidingWindow.queue.toArray());
       const summary = await this.summaryService.summarize(slidingWindowPrompt);
-      await this.summaryStack.pushLeaf(summary);
+      await this.summaryStack.pushLeaf(summary, this.slidingWindow.getMessageIdList());
     }
   }
 

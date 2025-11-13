@@ -73,6 +73,16 @@ class ConversationSlidingWindow {
     return contentString;
   }
 
+  getMessageIdList(): string[] {
+    const idList = [];
+    const messageList = this.queue.toArray();
+    for(var message of messageList){
+      idList.push(message.id);
+    }
+
+    return idList;
+  }
+
 }
 
 export default ConversationSlidingWindow;
