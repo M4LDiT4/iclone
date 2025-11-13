@@ -4,7 +4,7 @@ import Color from 'color';
 import AppColors from '@/core/styling/AppColors';
 import AvatarContainer from '../images/avatarContainer';
 
-type ChatBubbleProps = {
+export type ChatBubbleProps = {
   content: string;
   sentByUser: boolean;
   isLastByUser?: boolean; // indicates if it's the last message in a sequence
