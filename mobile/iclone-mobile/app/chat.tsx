@@ -51,23 +51,13 @@ export default function ChatScreen() {
     setUserActivity("listening");
   };
 
-  function waitFiveSeconds(): Promise<string> {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve("Done waiting 5 seconds!");
-      }, 5000); // 5000 milliseconds = 5 seconds
-    });
-  }
-
-
   // Trigger the LLM after user has sent message and stopped typing / closed keyboard
   const triggerLLMResponse = async (latestUserMessage: string) => {
+    // prevent erroneous requests to the llm
     if (!llmModel) return;
     try {
-
       setUserActivity("typing");
 
-      // Replace this with your actual DeepSeek API call
       const response = await llmModel.call(latestUserMessage);
 
       const assistantMessage: ChatBubbleProps = {

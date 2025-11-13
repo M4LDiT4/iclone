@@ -21,15 +21,13 @@ class DeepSeekClient {
     ];
   }
 
-  public async call(userInput: string): Promise<string> {
-    const messages = this.constructPrompt(userInput);
-
+  public async call(prompt: string): Promise<string> {
     try {
       const response = await axios.post(
         this.baseUrl,
         {
           model: this.model,
-          messages,
+          prompt,
           stream: false,
         },
         {
