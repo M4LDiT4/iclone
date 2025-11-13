@@ -16,6 +16,8 @@ import { memo, useEffect, useMemo, useRef, useState } from "react";
 import Logo from "../assets/svg/llm_logo.svg";
 import Color from "color";
 import ChatBubble, { ChatBubbleProps } from "@/components/chat/ChatBubble";
+import TypingIndicator from "@/components/texts/typingIndicator";
+
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
 
 export default function ChatScreen() {
@@ -71,7 +73,7 @@ export default function ChatScreen() {
       const assistantMessage: ChatBubbleProps = {
         content: response,
         sentByUser: false,
-        isLastByUser: true,
+        isLastByUser: false,
       };
 
       setMessageList(prev => [...prev, assistantMessage]);
@@ -139,11 +141,7 @@ export default function ChatScreen() {
           ))}
 
           {userActivity === "typing" && (
-            <ChatBubble
-              content="Typing..."
-              sentByUser={false}
-              isLastByUser={true}
-            />
+            <TypingIndicator/>
           )}
         </ScrollView>
 
@@ -219,7 +217,7 @@ const ChatInputWrapper = memo(
           triggerLLMResponse(lastSentMessageRef.current);
           lastSentMessageRef.current = null;
         }
-      }, 2000);
+      }, 1000);
     };
 
     return (
