@@ -1,146 +1,191 @@
-import MessageContainer from '@/components/chat/ChatBubble';
-import database from '@/data/database/index.native';
-import MessageModel from '@/data/database/models/messageModel';
-import React, { useState } from 'react';
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
-  View,
-  TextInput,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Text,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  ScrollView,
+  StyleSheet,
+  View,
+  Text,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
+import AppColors from "@/core/styling/AppColors";
+import ChatTextinput from "@/components/textinputs/chatTextinput";
+import { memo, useEffect, useState } from "react";
+import Logo from "../assets/svg/llm_logo.svg";
+import Color from "color";
+import ChatBubble from "@/components/chat/ChatBubble";
 
 export default function ChatScreen() {
-  const [messageList, setMessageList] = useState<string[]>([]);
-  const [message, setMessage] = useState<string|null>(null);
-
-  function addMessage(newMessage:string){
-    setMessageList(prev => [...prev, newMessage])
-  }
-
-  function handleTextinputChange(newText:string){
-    setMessage(newText);
-  }
-
-  function resetMessage(){
-    setMessage(null);
-  }
-
-  function handleSendButtonPress(){
-    if(message === null || message.length === 0){
-      return;
-    }
-    addMessage(message);
-    resetMessage();
-  }
-
-  async function saveMessage(message: string){
-    await database.write(
-      async () => {
-        await database.get<MessageModel>('messages').create(
-          msg => {
-            msg.content = message,
-            msg.sender = 'user'
-          }
-        );
-      }
-    );
-  } 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={80}
-      >
-        <FlatList
-          data={messageList} // placeholder for messages
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) =>(
-              <MessageContainer
-                message={item}
-                saveMessage={saveMessage}
-              />
-            )
-          }
-          contentContainerStyle={styles.messageList}
-          inverted
+    <SafeAreaView edges={["left", "right"]} style={styles.screenContainer}>
+      {/* HEADER */}
+      <View style={styles.headerWrapper}>
+        {/* Gradient background */}
+        <LinearGradient
+          colors={[
+            "transparent", // bottom = fully transparent
+            Color(AppColors.backgroundColor).alpha(0.85).rgb().string(), // mid fade
+            AppColors.backgroundColor, // top = opaque
+          ]}
+          start={{ x: 0.5, y: 1 }}
+          end={{ x: 0.5, y: 0 }}
+          style={StyleSheet.absoluteFill}
         />
 
-        <View style={styles.inputBar}>
-          <TextInput
-            style={styles.input}
-            placeholder="Type a message..."
-            placeholderTextColor="#999"
-            onChangeText={handleTextinputChange}
-            value={message??""}
-          />
-          <TouchableOpacity 
-            style={styles.sendButton}
-            onPress={handleSendButtonPress}
-          >
-            <Text style={styles.sendText}>Send</Text>
-          </TouchableOpacity>
+        {/* Optional frosted blur effect */}
+        <BlurView
+          tint="light"
+          intensity={40}
+          style={StyleSheet.absoluteFill}
+        />
+
+        <View style={styles.logoContainer}>
+          <Logo width={116} height={116} />
+          <View style={styles.listeningTextContainer}>
+            <Text style={styles.listeningText}>Listening...</Text>
+          </View>
         </View>
+      </View>
+
+      {/* CHAT BODY */}
+      <KeyboardAvoidingView
+        style={styles.wrapper}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={80}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <ChatBubble
+            content="Hey! Are we still on for tonight?"
+            sentByUser={true}
+            isLastByUser={false}
+          />
+
+          <ChatBubble
+            content="Just finished the mockups. Want to take a look?"
+            sentByUser={true}
+            isLastByUser={false}
+          />
+
+          <ChatBubble
+            content="Yes, I’ll be there by 7. Let’s meet at the usual spot."
+            sentByUser={false}
+          />
+
+
+          <ChatBubble
+            content="Just finished the mockups. Want to take a look?"
+            sentByUser={true}
+            isLastByUser={false}
+          />
+
+          <ChatBubble
+            content="Yes, I’ll be there by 7. Let’s meet at the usual spot."
+            sentByUser={false}
+          />
+
+          <ChatBubble
+            content="Here’s the full breakdown of the architecture: we’ll use modular services, persistent memory, and index-based repair logic for the agent system."
+            sentByUser={true}
+            isLastByUser={true}
+          />
+
+          <ChatBubble
+            content="Sounds solid. I’ll review the schema tonight and push the updated endpoints by morning."
+            sentByUser={false}
+          />
+        </ScrollView>
+
+        {/* INPUT */}
+        <ChatInputWrapper />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
+const ChatInputWrapper = memo(() => {
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", () =>
+      setKeyboardVisible(true)
+    );
+    const hideSub = Keyboard.addListener("keyboardDidHide", () =>
+      setKeyboardVisible(false)
+    );
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  return (
+    <View
+      style={{
+        ...styles.textinputContainer,
+        paddingBottom: keyboardVisible ? 36 : 0,
+      }}
+    >
+      <ChatTextinput value="" onChangeText={() => {}} onSend={() => {}} />
+    </View>
+  );
+});
+
+ChatInputWrapper.displayName = "ChatInputWrapper";
+
 const styles = StyleSheet.create({
-  safeArea: {
+  screenContainer: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: AppColors.backgroundColor,
+    paddingBottom: 16,
   },
-  container: {
+  wrapper: {
     flex: 1,
   },
-  messageList: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  messageBubble: {
-    backgroundColor: '#E1F5FE',
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 10,
-    alignSelf: 'flex-start',
-    maxWidth: '80%',
-  },
-  messageText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  inputBar: {
-    flexDirection: 'row',
-    padding: 12,
-    borderTopWidth: 1,
-    borderColor: '#DDD',
-    backgroundColor: '#FFF',
-    alignItems: 'center',
-  },
-  input: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 24,
-    fontSize: 16,
-  },
-  sendButton: {
-    marginLeft: 12,
-    backgroundColor: '#007AFF',
-    paddingVertical: 10,
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 20,
-    borderRadius: 24,
+    paddingTop: 180, // add top padding so chat starts below header
   },
-  sendText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
+  textinputContainer: {
+    paddingTop: 8,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+  },
+  headerWrapper: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 160,
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+    zIndex: 2,
+  },
+  logoContainer: {
+    alignItems: "center",
+  },
+  listeningTextContainer: {
+    backgroundColor: Color(AppColors.secondaryColor).alpha(0.5).rgb().string(),
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    marginTop: 8,
+    overflow: "hidden",
+  },
+  listeningText: {
+    fontFamily: "SFProText",
+    fontWeight: "bold",
+    fontSize: 12,
+    lineHeight: 14,
+    color: AppColors.primaryColor,
   },
 });

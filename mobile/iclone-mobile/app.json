@@ -42,8 +42,58 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-font",
+        {
+          "android": {
+            "fonts": [
+              {
+                "fontFamily": "SFProText",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/sfPro/SF-Pro-Text-Regular.otf",
+                    "weight": 400
+                  },
+                  {
+                    "path": "./assets/fonts/sfPro/SF-Pro-Text-Bold.otf",
+                    "weight": 700
+                  },
+                  {
+                    "path": "./assets/fonts/sfPro/SF-Pro-Text-RegularItalic.otf",
+                    "weight": 400,
+                    "style": "italic"
+                  }
+                ]
+              },
+              {
+                "fontFamily": "SFProDisplay",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/sfPro/SF-Pro-Display-Bold.otf",
+                    "weight": 700
+                  },
+                  {
+                    "path": "./assets/fonts/sfPro/SF-Pro-Display-Semibold.otf",
+                    "weight": 600
+                  }
+                ]
+              }
+            ]
+          },
+          "ios": {
+            "fonts": [
+              "./assets/fonts/sfPro/SF-Pro-Text-Regular.otf",
+              "./assets/fonts/sfPro/SF-Pro-Text-Bold.otf",
+              "./assets/fonts/sfPro/SF-Pro-Text-RegularItalic.otf",
+              "./assets/fonts/sfPro/SF-Pro-Display-Bold.otf",
+              "./assets/fonts/sfPro/SF-Pro-Display-Semibold.otf"
+            ]
+          }
+        }
       ]
     ],
+    "assetBundlePatterns": ["**/*"],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
