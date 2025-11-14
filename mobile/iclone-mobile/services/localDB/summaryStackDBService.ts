@@ -6,6 +6,7 @@ import SummaryType from "@/domain/types/summaryTypes";
 import { Database, Q } from "@nozbe/watermelondb";
 import RawSummaryData from "@/data/application/RawSummaryData";
 import NodeType from "@/domain/types/nodeTypes";
+import {toSummaryNodeShallow } from "@/data/mappers/summaryNode";
 
 class SummaryStackDBService {
     database: Database;
@@ -20,7 +21,7 @@ class SummaryStackDBService {
         Q.where('chat_id', chatId), 
         Q.where("summary_type", "leaf"),
         Q.sortBy('created_at', Q.desc) // use created_at instead of created_by
-      );
+      ).fetch();
 
     if (leaves.length === 0) return 0;
     return leaves[0].index + 1;
@@ -32,7 +33,7 @@ class SummaryStackDBService {
         Q.where('chat_id', chatId), 
         Q.where("summary_type", "node"),
         Q.sortBy('created_at', Q.desc)
-      );
+      ).fetch();
 
     if (nodes.length === 0) return 0;
     return nodes[0].index + 1;
@@ -76,7 +77,7 @@ class SummaryStackDBService {
       throw Error(`Failed to save summary node to local database`)
     }
 
-    const summaryNode = await this.toSummaryNode(summaryModel);
+    const summaryNode = await toSummaryNodeShallow(summaryModel);
     return summaryNode;
   }
 
@@ -127,47 +128,8 @@ class SummaryStackDBService {
       throw new Error("Failed to save leaf summary to DB");
     }
 
-    const summaryNode = await this.toSummaryNode(summaryModel);
+    const summaryNode = toSummaryNodeShallow(summaryModel);
     return summaryNode;
-  }
-  /**
-   * Converts a SummaryModel to a fully hydrated SummaryNode.
-   * If left/right children exist, they are fetched from the DB recursively.
-   */
-  private async toSummaryNode(model: SummaryModel): Promise<SummaryNode> {
-    let leftChild: SummaryNode | undefined;
-    let rightChild: SummaryNode | undefined;
-
-    if (model.leftSummaryId) {
-      const leftModel = await this.database
-        .get<SummaryModel>("summaries")
-        .find(model.leftSummaryId)
-        .catch(() => null);
-      if (leftModel) {
-        leftChild = await this.toSummaryNode(leftModel); // recursive load
-      }
-    }
-
-    if (model.rightSummaryId) {
-      const rightModel = await this.database
-        .get<SummaryModel>("summaries")
-        .find(model.rightSummaryId)
-        .catch(() => null);
-      if (rightModel) {
-        rightChild = await this.toSummaryNode(rightModel); // recursive load
-      }
-    }
-
-    return new SummaryNode({
-      id: model.id,
-      chatId: model.chatId,
-      index: model.index,
-      size: model.size,
-      summary: model.summary,
-      type: model.summaryType as NodeType,
-      leftChild,
-      rightChild,
-    });
   }
 
   /**
@@ -197,7 +159,7 @@ class SummaryStackDBService {
     // Map to SummaryNode with children loaded
     const nodes: SummaryNode[] = [];
     for (const s of summaries) {
-      const node = await this.toSummaryNode(s);
+      const node = toSummaryNodeShallow(s);
       nodes.push(node);
     }
 

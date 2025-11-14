@@ -24,7 +24,7 @@ class SummaryStack {
   }
 
 
-  async intialize(){
+  async initialize(){
     const stackItems = await this.summaryStackDBService.getStackItems(this.chatId);
     for(var item of stackItems){
       this.stack.push(item);

@@ -52,7 +52,7 @@ class ChatService {
   async initializeChat(){
     const lastNMessages = await this.localMessageDBService.getMessages(this.chatId, this.slidingWindowSize);
     this.slidingWindow.initialize(lastNMessages);
-    await this.summaryStack.intialize();
+    await this.summaryStack.initialize();
   }
 
   async insertNewMessage(message: RawMessageData){
@@ -65,10 +65,12 @@ class ChatService {
   async summarizeNConversationSlidingWindow(){
     if(this.slidingWindow.isFull()){
       const slidingWindowPrompt = messageDataListToPromptConverter(this.slidingWindow.queue.toArray());
-      const summary = await this.summaryService.summarize(slidingWindowPrompt);
+      const summary = await this.summaryService.summarizeConversation(slidingWindowPrompt);
       await this.summaryStack.pushLeaf(summary, this.slidingWindow.getMessageIdList());
+      this.slidingWindow.resetCount();
     }
   }
+
 
 }
 

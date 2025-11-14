@@ -26,7 +26,7 @@ class LocalMessageDBService {
                       Q.where("chat_id", chatId),
                       Q.sortBy('created_by ', Q.desc)
                     ).fetch();
-    return messages.slice(skip, limit);
+    return messages.slice(skip, skip + limit);
   }
 }
 

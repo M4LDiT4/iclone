@@ -83,6 +83,13 @@ class ConversationSlidingWindow {
     return idList;
   }
 
+  // make sure to call this everytime you get the n summarization (the sliding window is full)
+  // to prevent from summarizing everytime you insert a conversation once the sliding window
+  // is full
+  resetCount(){
+    this.conversationCount = 0;
+  }
+
 }
 
 export default ConversationSlidingWindow;

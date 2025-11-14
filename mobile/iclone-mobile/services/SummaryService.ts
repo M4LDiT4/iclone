@@ -47,10 +47,6 @@ class SummaryService {
     return response;
   }
 
-  async summarize(content: string): Promise<string> {
-    return "summary of content";
-  }
-
   async summarizeConversation(conversation: string): Promise<string> {
     const prompt =  `
     Task: Summarize this conversation for long-term memory.
