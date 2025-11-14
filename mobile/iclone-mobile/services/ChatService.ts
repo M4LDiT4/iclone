@@ -14,7 +14,6 @@ interface ChatServiceProps {
   slidingWindowSize: number
   summaryService: SummaryService;
   summaryStackDBService: summaryStackDBService;
-  slidingWindowDBService: LocalMessageDBService;
   localMessageDBService: LocalMessageDBService;
 }
 
@@ -38,7 +37,7 @@ class ChatService {
     this.slidingWindowSize = props.slidingWindowSize;
     this.summaryService = props.summaryService;
     this.summaryStackDBService = props.summaryStackDBService;
-    this.localMessageDBService = props.slidingWindowDBService;
+    this.localMessageDBService = props.localMessageDBService;
     
     this.username = props.username;
     this.assistantName = props.assistantName;

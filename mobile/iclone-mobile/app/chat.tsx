@@ -7,38 +7,81 @@ import {
   StyleSheet,
   View,
   Text,
+  ActivityIndicator,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import AppColors from "@/core/styling/AppColors";
 import ChatTextinput from "@/components/textinputs/chatTextinput";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import Logo from "../assets/svg/llm_logo.svg";
 import Color from "color";
 import ChatBubble, { ChatBubbleProps } from "@/components/chat/ChatBubble";
 import TypingIndicator from "@/components/texts/typingIndicator";
-
+import ChatService from "@/services/ChatService";
+import ComponentStatus from "@/core/types/ComponentStatusType";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
+import SummaryService from "@/services/SummaryService";
+import SummaryStackDBService from "@/services/localDB/SummaryStackDBService";
+import database from "@/data/database/index.native";
+import LocalMessageDBService from "@/services/localDB/LocalMessageDBService";
 
 export default function ChatScreen() {
+  const [componentStatus, setComponentStatus] = useState<ComponentStatus>("loading")
   const [error, setError] = useState<string | null>(null);
   const [userActivity, setUserActivity] = useState<"listening" | "typing">("listening");
   const scrollViewRef = useRef<ScrollView>(null);
   const [messageList, setMessageList] = useState<ChatBubbleProps[]>([]);
+  const [chatService, setChatService] = useState<ChatService>();
 
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messageList, userActivity]);
 
-  // Initialize the LLM
-  const llmModel = useMemo(() => {
-    const deepSeekApiKey = process.env.EXPO_PUBLIC_DEEP_SEEK_API_KEY;
-    if (!deepSeekApiKey) {
-      setError("Missing DeepSeek API key. Please check your environment configuration.");
-      return null;
-    }
-    return new DeepSeekClient(deepSeekApiKey);
+  useEffect(() => {
+    initializeChatService();
   }, []);
+
+  const updateComponentStatus = (newStatus: ComponentStatus) => {
+    if(newStatus !== componentStatus){
+      setComponentStatus(newStatus);
+    }
+  }
+
+  const initializeChatService = async () => {
+    try{
+      updateComponentStatus("loading");
+      const apiKey = process.env.EXPO_PUBLIC_DEEP_SEEK_API_KEY;
+      if(!apiKey){
+        setError("Problem connecting to DeepSeek");
+        updateComponentStatus("error");
+        return;
+      }
+      const model = new DeepSeekClient(apiKey);
+      const summaryService = new SummaryService(model);
+      const summaryStackDBService = new SummaryStackDBService(database);
+      const localMessageDBService = new LocalMessageDBService(database);
+      const newChatService = new ChatService({
+        chatId: '10001',
+        username: 'Helene',
+        assistantName: 'Eterne',
+        slidingWindowSize: 10,
+        summaryService: summaryService,
+        summaryStackDBService: summaryStackDBService,
+        localMessageDBService: localMessageDBService
+      });
+
+      await newChatService.initializeChat();
+      
+      setChatService(newChatService);
+      updateComponentStatus("idle");
+      setError(null);
+    }catch(err){
+      console.error(`Failed to initialize chat service, cannot procceed: ${err}`);
+      setError("Unexpected error occurred");
+      updateComponentStatus("error");
+    }
+  }
 
   // Push a user message to the list
   const handlePushUserMessage = (content: string) => {
@@ -54,19 +97,7 @@ export default function ChatScreen() {
   // Trigger the LLM after user has sent message and stopped typing / closed keyboard
   const triggerLLMResponse = async (latestUserMessage: string) => {
     // prevent erroneous requests to the llm
-    if (!llmModel) return;
     try {
-      setUserActivity("typing");
-
-      const response = await llmModel.call(latestUserMessage);
-
-      const assistantMessage: ChatBubbleProps = {
-        content: response,
-        sentByUser: false,
-        isLastByUser: false,
-      };
-
-      setMessageList(prev => [...prev, assistantMessage]);
     } catch (err) {
       console.error("LLM Error:", err);
       setError("Failed to get response from DeepSeek.");
@@ -75,11 +106,44 @@ export default function ChatScreen() {
     }
   };
 
-  if (error) {
+  if (error && componentStatus === 'error') {
     return (
       <SafeAreaView edges={["left", "right"]} style={styles.screenContainer}>
         <View style={styles.headerWrapper}>
           <Text style={{ color: "red", fontWeight: "bold", fontSize: 16 }}>{error}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (componentStatus === "loading") {
+    return (
+      <SafeAreaView edges={["left", "right"]} style={styles.screenContainer}>
+        <View style={styles.headerWrapper}>
+          <LinearGradient
+            colors={[
+              "transparent",
+              Color(AppColors.backgroundColor).alpha(0.85).rgb().string(),
+              AppColors.backgroundColor,
+            ]}
+            start={{ x: 0.5, y: 1 }}
+            end={{ x: 0.5, y: 0 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <BlurView tint="light" intensity={40} style={StyleSheet.absoluteFill} />
+          <View style={styles.logoContainer}>
+            <Logo width={116} height={116} />
+            <Text style={styles.listeningText}>Initializing chat service...</Text>
+          </View>
+        </View>
+
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={AppColors.primaryColor} />
+          {error && (
+            <Text style={styles.errorText}>
+              {error}
+            </Text>
+          )}
         </View>
       </SafeAreaView>
     );
@@ -134,8 +198,6 @@ export default function ChatScreen() {
             <TypingIndicator/>
           )}
         </ScrollView>
-
-
         {/* INPUT */}
         <ChatInputWrapper
           handleSend={handlePushUserMessage}
@@ -276,5 +338,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 14,
     color: AppColors.primaryColor,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  errorText: {
+    marginTop: 16,
+    color: "red",
+    fontSize: 16,
+    textAlign: "center",
+    fontWeight: "bold",
   },
 });

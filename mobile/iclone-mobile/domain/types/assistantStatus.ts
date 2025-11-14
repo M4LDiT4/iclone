@@ -1,0 +1,1 @@
+type AssistantStatus = "listening" | "typing";
