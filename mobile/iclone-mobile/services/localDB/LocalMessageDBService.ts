@@ -24,7 +24,7 @@ class LocalMessageDBService {
     const messages = await this.database.get<MessageModel>('messages')    
                     .query(
                       Q.where("chat_id", chatId),
-                      Q.sortBy('created_by ', Q.desc)
+                      Q.sortBy('created_at', Q.desc)
                     ).fetch();
     return messages.slice(skip, skip + limit);
   }

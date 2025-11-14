@@ -1,3 +1,4 @@
+import { SummaryServiceError } from "@/core/errors/SummaryServiceError";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
 
 class SummaryService {
@@ -7,6 +8,9 @@ class SummaryService {
   }
 
   async summarizePair(left: string, right: string): Promise<string> {
+    if(left.length === 0 || right.length === 0){
+      throw new SummaryServiceError("[Merge Summarization Failed]", "`left` or `right` string is empty");
+    }
     const prompt = `
       Task: Merge the following two summaries into a single, concise long-term memory summary.
 
@@ -48,6 +52,9 @@ class SummaryService {
   }
 
   async summarizeConversation(conversation: string): Promise<string> {
+    if(conversation.length === 0){
+      throw new SummaryServiceError("[Conversation Summarization Failed]", "Conversation is empty");
+    }
     const prompt =  `
     Task: Summarize this conversation for long-term memory.
     Goal: Capture essential context to help future interactions feel continuous, relevant, and personalized.

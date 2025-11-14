@@ -4,6 +4,8 @@ import Queue from "../dataStructures/Queue";
 interface ConversationSlidingWindowProps{
   chatId: string,
   queueMaxSize: number,
+  username: string,
+  asssistantName: string
 }
 
 class ConversationSlidingWindow {
@@ -12,10 +14,15 @@ class ConversationSlidingWindow {
   queueMaxSize: number;
   queue = new Queue<MessageData>();
   chatId: string;
+
+  username: string;
+  asssistantName: string;
  
   constructor(props: ConversationSlidingWindowProps){
     this.queueMaxSize = props.queueMaxSize;
     this.chatId = props.chatId;
+    this.username = props.username;
+    this,this.asssistantName = props.asssistantName;
   }
 
   initialize(messages: MessageData[]){
@@ -66,8 +73,7 @@ class ConversationSlidingWindow {
     for(var i = 0; i < contents.length - 1; i++){
       const content = contents[i];
       contentString += `
-        [message]: ${content.content}
-        [sender]: ${content.sender}
+        [${content.sender === 'system'? this.asssistantName : this.username}] : ${content.content}
       `
     }
     return contentString;

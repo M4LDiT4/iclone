@@ -1,9 +1,5 @@
+import { LLMError } from '@/core/errors/LLMError';
 import axios from 'axios';
-
-type ChatMessage = {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-};
 
 class DeepSeekClient {
   private readonly apiKey: string;
@@ -12,13 +8,6 @@ class DeepSeekClient {
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
-  }
-
-  private constructPrompt(userInput: string): ChatMessage[] {
-    return [
-      { role: 'system', content: 'You are a helpful assistant.' },
-      { role: 'user', content: userInput },
-    ];
   }
 
   public async call(prompt: string): Promise<string> {
@@ -41,7 +30,7 @@ class DeepSeekClient {
       return response.data?.choices?.[0]?.message?.content ?? 'No response content';
     } catch (error: any) {
       console.error('DeepSeek API error:', error?.response?.data || error.message);
-      return 'Error calling DeepSeek API';
+      throw new LLMError('Failed to call DeepSeek API', error);
     }
   }
 }

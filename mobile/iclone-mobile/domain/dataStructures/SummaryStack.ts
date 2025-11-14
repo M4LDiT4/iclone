@@ -1,8 +1,8 @@
 import Stack from "./Stack";
 import SummaryNode from "../../data/application/SummaryNode";
 import SummaryService from "@/services/SummaryService";
-import SummaryStackDBService from "@/services/localDB/summaryStackDBService";
 import RawSummaryData from "@/data/application/RawSummaryData";
+import SummaryStackDBService from "@/services/localDB/SummaryStackDBService";
 
 interface SummaryStackProps {
   summaryStackDBService: SummaryStackDBService;

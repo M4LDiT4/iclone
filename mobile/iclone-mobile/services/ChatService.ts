@@ -1,14 +1,16 @@
 import SummaryService from "./SummaryService";
-import summaryStackDBService from "./localDB/summaryStackDBService";
 import ConversationSlidingWindow from "../domain/algorithms/ConversationSlidingWindow";
 import SummaryStack from "@/domain/dataStructures/SummaryStack";
 import LocalMessageDBService from "./localDB/LocalMessageDBService";
 import RawMessageData from "@/data/application/RawMessage";
 import { toMessageData } from "@/data/mappers/messageMapper";
 import messageDataListToPromptConverter from "@/domain/utils/messageDataListToPromptConverter";
+import summaryStackDBService from "./localDB/SummaryStackDBService";
 
 interface ChatServiceProps {
   chatId: string,
+  username: string;
+  assistantName: string;
   slidingWindowSize: number
   summaryService: SummaryService;
   summaryStackDBService: summaryStackDBService;
@@ -18,6 +20,8 @@ interface ChatServiceProps {
 
 class ChatService {
   chatId: string;
+  username: string;
+  assistantName: string;
 
   slidingWindowSize: number;
 
@@ -35,10 +39,15 @@ class ChatService {
     this.summaryService = props.summaryService;
     this.summaryStackDBService = props.summaryStackDBService;
     this.localMessageDBService = props.slidingWindowDBService;
+    
+    this.username = props.username;
+    this.assistantName = props.assistantName;
 
     this.slidingWindow = new ConversationSlidingWindow({
       queueMaxSize: props.slidingWindowSize,
       chatId: this.chatId,
+      asssistantName: this.assistantName,
+      username: this.username
     });
 
     this.summaryStack = new SummaryStack({

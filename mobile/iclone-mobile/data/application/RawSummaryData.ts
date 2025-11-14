@@ -1,9 +1,9 @@
 import SummaryNode from "@/data/application/SummaryNode";
 import NodeType from "@/domain/types/nodeTypes";
 
-interface RawSummaryDataProps {
-  chatId: string,
-  index: number; 
+export interface RawSummaryDataProps {
+  chatId: string;
+  index: number;
   size: number;
   summary: string;
   type: NodeType;
@@ -11,18 +11,25 @@ interface RawSummaryDataProps {
   rightChild?: SummaryNode;
 }
 
-// SummaryNode unique identifier: Composit key(chatId + index + type)
+// SummaryNode unique identifier: Composite key (chatId + index + type)
 class RawSummaryData {
   chatId: string;
   index: number;
   size: number;
   summary: string;
-  // left and right children are SummaryNodes as they are already saved in the db
+  type: NodeType;
   leftChild?: SummaryNode;
   rightChild?: SummaryNode;
-  type: NodeType;
 
-  constructor({ chatId, index, size, summary, type, leftChild, rightChild }: RawSummaryDataProps) {
+  constructor({
+    chatId,
+    index,
+    size,
+    summary,
+    type,
+    leftChild,
+    rightChild,
+  }: RawSummaryDataProps) {
     this.chatId = chatId;
     this.index = index;
     this.size = size;

@@ -8,23 +8,20 @@ export default class SummaryModel extends Model {
 
   static associations: Associations = {
     chats: { type: "belongs_to", key: "chat_id" },
-    // self-reference not needed here, relations are declared via @relation decorators
   };
 
   /** ───── Fields ───── */
   @text("chat_id") chatId!: string;
   @text("summary") summary!: string;
-
   @field("size") size!: number;
   @field("index") index!: number;
-
   @text("summary_type") summaryType!: SummaryType;
 
   /** ───── Self-Referencing Relations ───── */
   @relation("summaries", "left_summary") leftSummaryRel!: SummaryModel;
   @relation("summaries", "right_summary") rightSummaryRel!: SummaryModel;
 
-  /** ───── Raw IDs (optional) ───── */
+  /** ───── Raw IDs ───── */
   @text("left_summary") leftSummaryId!: string | null;
   @text("right_summary") rightSummaryId!: string | null;
 

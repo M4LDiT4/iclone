@@ -5,7 +5,6 @@ import SummaryNode from "@/data/application/SummaryNode";
 import SummaryType from "@/domain/types/summaryTypes";
 import { Database, Q } from "@nozbe/watermelondb";
 import RawSummaryData from "@/data/application/RawSummaryData";
-import NodeType from "@/domain/types/nodeTypes";
 import {toSummaryNodeShallow } from "@/data/mappers/summaryNode";
 
 class SummaryStackDBService {
