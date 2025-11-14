@@ -2,7 +2,6 @@ import Stack from "./Stack";
 import SummaryNode from "../../data/application/SummaryNode";
 import SummaryService from "@/services/SummaryService";
 import SummaryStackDBService from "@/services/localDB/summaryStackDBService";
-import RawMessageData from "@/data/application/RawMessage";
 import RawSummaryData from "@/data/application/RawSummaryData";
 
 interface SummaryStackProps {
@@ -44,7 +43,12 @@ class SummaryStack {
     const summaryNode = await this.summaryStackDBService.pushLeafSummary(leaf, messageIdList);
 
     this.stack.push(summaryNode);
-    this.mergeIfNeeded();
+    const merged = await this.mergeIfNeeded();
+
+    if(merged){
+      const summary = await this.summarizeStack();
+      await this.summaryStackDBService.upsertSummaryStack(this.chatId, summary);
+    }
   }
 
   /**
@@ -57,12 +61,12 @@ class SummaryStack {
    * repeat the process until stack has length of 1 or the two topmost items
    * do not have the same size
    */
-  private async mergeIfNeeded(): Promise<void> {
+  private async mergeIfNeeded(): Promise<boolean> {
+    var merged = false;
     while (
       this.stack.size() >= 2 &&
       this.stack.peek()!.size === this.stackItems()[this.stack.size() - 2].size
     ) {
-
       // pops the two topmost items
       const right = this.stack.pop()!;
       const left = this.stack.pop()!;
@@ -85,8 +89,33 @@ class SummaryStack {
       const summaryNode = await this.summaryStackDBService.pushSummaryNode(parent, "node");
 
       this.stack.push(summaryNode);
+
+      if(!merged){
+        merged = true;
+      }
     }
+    return merged;
   }
+
+  async summarizeStack(): Promise<string> {
+    const items = [...this.getStack()];
+    const temp: SummaryNode[] = [...items];
+
+    while (temp.length > 1) {
+      const right = temp.pop()!;
+      const left = temp.pop()!;
+      const merged = await this.summaryService.summarizePair(left.summary, right.summary);
+
+      temp.push({
+        ...left,
+        size: left.size + right.size,
+        summary: merged
+      });
+    }
+
+    return temp[0].summary;
+  }
+
 
   getStack(): SummaryNode[] {
     return this.stackItems();

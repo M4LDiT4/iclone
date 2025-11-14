@@ -206,9 +206,52 @@ class SummaryStackDBService {
 
   async popSummaryNode(node: SummaryNode) {
     await this.database.write( async () => {
-      const summaryItem = await this.database.get<SummaryStackItemModel>("summary_stack_items").find(node.id);
+      const summaryItem = await this.database.get<SummaryStackItemModel>(SummaryStackItemModel.table).find(node.id);
       await summaryItem.destroyPermanently();
     });
+  }
+
+  async upsertSummaryStack(chatId: string, summary: string){
+    return await this.database.write(
+      async () => {
+        let existing: SummaryModel | null;
+        try{
+          const chatIdSummaries  = await this.database.get<SummaryModel>(SummaryModel.table).query(
+            Q.where("chat_id", chatId),
+            Q.where("summary_type", "stack")
+          )
+
+          if(chatIdSummaries.length != 1){
+            existing = null;
+          } else{
+            existing = chatIdSummaries[0];
+          }
+        }catch(err){
+          console.log(`Failed to find the summary for chatId ${chatId}: ${err}`);
+          existing = null;
+        }
+
+        if(existing){
+          await existing.update(record => {
+            record['summary'] = summary
+          });
+
+          return existing;
+        }else{
+          const stackSummary = await this.database.get<SummaryModel>(SummaryModel.table)
+            .create( sum => {
+              sum.chatId = chatId,
+              sum.summary = summary,
+              sum.summaryType = 'stack',
+              sum.size = 0,
+              sum.index = 0
+            }
+          )
+
+          return stackSummary;
+        }
+      }
+    )
   }
 }
 
