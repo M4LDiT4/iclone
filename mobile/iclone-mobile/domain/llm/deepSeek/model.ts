@@ -1,6 +1,7 @@
+import { LLMError } from '@/core/errors/LLMError';
 import axios from 'axios';
 
-type ChatMessage = {
+type Message = {
   role: 'system' | 'user' | 'assistant';
   content: string;
 };
@@ -14,16 +15,7 @@ class DeepSeekClient {
     this.apiKey = apiKey;
   }
 
-  private constructPrompt(userInput: string): ChatMessage[] {
-    return [
-      { role: 'system', content: 'You are a helpful assistant.' },
-      { role: 'user', content: userInput },
-    ];
-  }
-
-  public async call(userInput: string): Promise<string> {
-    const messages = this.constructPrompt(userInput);
-
+  public async call(messages: Message[]): Promise<string> {
     try {
       const response = await axios.post(
         this.baseUrl,
@@ -43,9 +35,10 @@ class DeepSeekClient {
       return response.data?.choices?.[0]?.message?.content ?? 'No response content';
     } catch (error: any) {
       console.error('DeepSeek API error:', error?.response?.data || error.message);
-      return 'Error calling DeepSeek API';
+      throw new LLMError('Failed to call DeepSeek API', error);
     }
   }
+
 }
 
 export default DeepSeekClient;

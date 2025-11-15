@@ -1,7 +1,8 @@
-type NodeType = 'leaf' | 'node';
+import NodeType from "../../domain/types/nodeTypes";
 
 interface SummaryNodeProps {
-  chatId: string,
+  id: string; // required
+  chatId: string;
   index: number; 
   size: number;
   summary: string;
@@ -10,8 +11,9 @@ interface SummaryNodeProps {
   rightChild?: SummaryNode;
 }
 
-// SummaryNode unique identifier: Composit key(chatId + index + type)
+// SummaryNode unique identifier: Composite key(chatId + index + type)
 class SummaryNode {
+  id: string;
   chatId: string;
   index: number;
   size: number;
@@ -20,7 +22,8 @@ class SummaryNode {
   rightChild?: SummaryNode;
   type: NodeType;
 
-  constructor({ chatId, index, size, summary, type, leftChild, rightChild }: SummaryNodeProps) {
+  constructor({ id, chatId, index, size, summary, type, leftChild, rightChild }: SummaryNodeProps) {
+    this.id = id; // always set
     this.chatId = chatId;
     this.index = index;
     this.size = size;

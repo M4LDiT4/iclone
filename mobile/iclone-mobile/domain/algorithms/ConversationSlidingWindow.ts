@@ -4,6 +4,8 @@ import Queue from "../dataStructures/Queue";
 interface ConversationSlidingWindowProps{
   chatId: string,
   queueMaxSize: number,
+  username: string,
+  asssistantName: string
 }
 
 class ConversationSlidingWindow {
@@ -12,13 +14,18 @@ class ConversationSlidingWindow {
   queueMaxSize: number;
   queue = new Queue<MessageData>();
   chatId: string;
+
+  username: string;
+  asssistantName: string;
  
   constructor(props: ConversationSlidingWindowProps){
     this.queueMaxSize = props.queueMaxSize;
     this.chatId = props.chatId;
+    this.username = props.username;
+    this,this.asssistantName = props.asssistantName;
   }
 
-  async initialize(messages: MessageData[]){
+  initialize(messages: MessageData[]){
     for(var message of messages){
       this.queue.enqueue(message);
       this.countMessage(message);
@@ -37,19 +44,19 @@ class ConversationSlidingWindow {
     }
   }
 
-  async enqueueMessage(message: MessageData){
+  enqueueMessage(message: MessageData){
     this.queue.enqueue(message);
     this.countMessage(message);
   }
 
 
-  async dequeue() {
+  dequeue() {
     this.queue.dequeue();
   }
 
-  async clear(){
+  clear(){
     while (!this.queue.isEmpty()){
-      await this.dequeue();
+      this.dequeue();
     }
   }
 
@@ -57,20 +64,35 @@ class ConversationSlidingWindow {
     return this.queueMaxSize === this.conversationCount;
   }
 
-  // convert the sliding window to a llm prompt
-  contentsToString(): string {
+  // convert the sliding window to DeepSeek-compatible messages
+  toMessageArray(): { role: 'user' | 'assistant'; content: string }[] {
     const contents = this.queue.toArray();
-    let contentString ="";
-    // do not include the last message
-    // remember we count conversations by system message.
-    for(var i = 0; i < contents.length - 1; i++){
+    const messages: { role: 'user' | 'assistant'; content: string }[] = [];
+
+    for (let i = 0; i < contents.length; i++) {
       const content = contents[i];
-      contentString += `
-        [message]: ${content.content}
-        [sender]: ${content.sender}
-      `
+      const role = content.sender === 'system' ? 'assistant' : 'user';
+      messages.push({ role, content: content.content });
     }
-    return contentString;
+
+    return messages;
+  }
+
+  getMessageIdList(): string[] {
+    const idList = [];
+    const messageList = this.queue.toArray();
+    for(var message of messageList){
+      idList.push(message.id);
+    }
+
+    return idList;
+  }
+
+  // make sure to call this everytime you get the n summarization (the sliding window is full)
+  // to prevent from summarizing everytime you insert a conversation once the sliding window
+  // is full
+  resetCount(){
+    this.conversationCount = 0;
   }
 
 }

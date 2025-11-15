@@ -1,10 +1,11 @@
-import SummaryDBService from "@/services/localDB/SummaryDBService";
 import Stack from "./Stack";
-import SummaryNode from "./SummaryNode";
+import SummaryNode from "../../data/application/SummaryNode";
 import SummaryService from "@/services/SummaryService";
+import RawSummaryData from "@/data/application/RawSummaryData";
+import SummaryStackDBService from "@/services/localDB/SummaryStackDBService";
 
 interface SummaryStackProps {
-  summaryDBService: SummaryDBService;
+  summaryStackDBService: SummaryStackDBService;
   summaryService: SummaryService;
   chatId: string;
 }
@@ -13,34 +14,41 @@ class SummaryStack {
   private stack = new Stack<SummaryNode>();
 
   chatId: string;
-  summaryDBService: SummaryDBService;
+  summaryStackDBService: SummaryStackDBService;
   summaryService: SummaryService;
 
   constructor(props: SummaryStackProps) {
-    this.summaryDBService = props.summaryDBService;
+    this.summaryStackDBService = props.summaryStackDBService;
     this.summaryService = props.summaryService;
     this.chatId = props.chatId;
   }
 
 
-  async intialize(){
-    // check the summary stack table for nodes/leaves associated with the chat id
-    // create a summary stack out of it (sort by size)
+  async initialize(){
+    const stackItems = await this.summaryStackDBService.getStackItems(this.chatId);
+    for(var item of stackItems){
+      this.stack.push(item);
+    }
   }
 
-  async pushLeaf(summary: string): Promise<void> {
-    const leaf = new SummaryNode({
+  async pushLeaf(summary: string, messageIdList: string []): Promise<void> {
+    const leaf = new RawSummaryData({
       chatId: this.chatId,
-      index: await this.summaryDBService.getNewLeafIndex(this.chatId),
+      index: await this.summaryStackDBService.getNewLeafIndex(this.chatId),
       size: 1,
       summary,
       type: 'leaf',
     });
     
-    await this.summaryDBService.pushSummaryNode(leaf, 'leaf');
+    const summaryNode = await this.summaryStackDBService.pushLeafSummary(leaf, messageIdList);
 
-    this.stack.push(leaf);
-    this.mergeIfNeeded();
+    this.stack.push(summaryNode);
+    const merged = await this.mergeIfNeeded();
+
+    if(merged){
+      const summary = await this.summarizeStack();
+      await this.summaryStackDBService.upsertSummaryStack(this.chatId, summary);
+    }
   }
 
   /**
@@ -53,21 +61,21 @@ class SummaryStack {
    * repeat the process until stack has length of 1 or the two topmost items
    * do not have the same size
    */
-  private async mergeIfNeeded(): Promise<void> {
+  private async mergeIfNeeded(): Promise<boolean> {
+    var merged = false;
     while (
       this.stack.size() >= 2 &&
       this.stack.peek()!.size === this.stackItems()[this.stack.size() - 2].size
     ) {
-
       // pops the two topmost items
       const right = this.stack.pop()!;
       const left = this.stack.pop()!;
       // summarize their summaries
       const mergedSummary = await this.summaryService.summarizePair(left.summary, right.summary);
 
-      const parent = new SummaryNode({
+      const parent = new RawSummaryData({
         chatId: this.chatId,
-        index: await this.summaryDBService.getNewNodeIndex(this.chatId),
+        index: await this.summaryStackDBService.getNewNodeIndex(this.chatId),
         size: left.size + right.size,
         summary: mergedSummary,
         type: 'node', // this means that it is not a summary of messages but summary of summaries
@@ -78,65 +86,36 @@ class SummaryStack {
         rightChild: right,
       });
 
-      await this.summaryDBService.pushSummaryNode(parent, "node");
+      const summaryNode = await this.summaryStackDBService.pushSummaryNode(parent, "node");
 
-      this.stack.push(parent);
+      this.stack.push(summaryNode);
+
+      if(!merged){
+        merged = true;
+      }
     }
+    return merged;
   }
-  // NOTE: this results to a stack with one item
-  // converges the nodes to a single tree
-  // use this with caution
-  // if you want to get the summary of the stack without changing
-  // the structure of the stack, use `getStackSummary`
+
   async summarizeStack(): Promise<string> {
-    if (this.stack.isEmpty()) return '';
-    if (this.stack.size() === 1) return this.stack.peek()!.summary;
+    const items = [...this.getStack()];
+    const temp: SummaryNode[] = [...items];
 
-    while (this.stack.size() > 1) {
-      const right = this.stack.pop()!;
-      const left = this.stack.pop()!;
-      const mergedSummary = await this.summaryService.summarizePair(left.summary, right.summary);
+    while (temp.length > 1) {
+      const right = temp.pop()!;
+      const left = temp.pop()!;
+      const merged = await this.summaryService.summarizePair(left.summary, right.summary);
 
-      const parent = new SummaryNode({
-        chatId: this.chatId,
-        index: await this.summaryDBService.getNewNodeIndex(this.chatId),
+      temp.push({
+        ...left,
         size: left.size + right.size,
-        summary: mergedSummary,
-        type: 'node',
-        leftChild: left,
-        rightChild: right,
+        summary: merged
       });
-
-      this.stack.push(parent);
     }
 
-    return this.stack.peek()!.summary;
+    return temp[0].summary;
   }
 
-  async getStackSummary(): Promise<string> {
-    if (this.stack.isEmpty()) return '';
-    if (this.stack.size() === 1) return this.stack.peek()!.summary;
-
-    while (this.stack.size() > 1) {
-      const right = this.stack.pop()!;
-      const left = this.stack.pop()!;
-      const mergedSummary = await  this.summaryService.summarizePair(left.summary, right.summary);
-
-      const parent = new SummaryNode({
-        chatId: this.chatId,
-        index: await this.summaryDBService.getNewNodeIndex(this.chatId),
-        size: left.size + right.size,
-        summary: mergedSummary,
-        type: 'node',
-        leftChild: left,
-        rightChild: right,
-      });
-
-      this.stack.push(parent);
-    }
-
-    return this.stack.peek()!.summary;
-  }
 
   getStack(): SummaryNode[] {
     return this.stackItems();

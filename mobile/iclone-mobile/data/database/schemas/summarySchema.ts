@@ -13,11 +13,11 @@ const summarySchema = tableSchema({
     {name: 'index', type: 'number'},
     
     // this is for `nodes` only
-    {name: 'left_summary', type: 'string'},
+    {name: 'left_summary', type: 'string', isOptional: true},
     {name: 'right_summary', type: 'string', isOptional: true},
 
     // tells the difference between the types of summaries (e.g leaf, node, stack)
-    {name: 'summary_type', type: 'string', isOptional: true},
+    {name: 'summary_type', type: 'string'},
 
     // add list of message references here if the summary is a leaf
     

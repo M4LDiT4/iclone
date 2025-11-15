@@ -15,15 +15,9 @@ import ChatBasicDetailsCard from '@/components/containers/chatBasicDetailsCard';
 import Spacer from '@/components/spacers/spacer';
 import ChatInputBar from '@/components/textinputs/chatInputBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 
 
 export default function Index() {
-  const router = useRouter();
-
-  function navigateToChatScreen () {
-    router.push('/chat');
-  }
   return (
     <SafeAreaView edges={['left', 'right']} style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -80,13 +74,7 @@ export default function Index() {
             </ScrollView>
           </View>
         </ScrollView>
-        <ChatInputBar
-            value={""}
-            onChangeText={() => {}}
-            onSend={navigateToChatScreen}
-            onLeftButton1={() => {}}
-            onLeftButton2={() => {}}
-          />
+        <ChatInputBar/>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

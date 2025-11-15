@@ -8,25 +8,25 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import AppColors from '@/core/styling/AppColors';
 import ChatTextinput from './chatTextinput';
+import ComponentStatus from '@/core/types/componentStatusType';
+import ChatDBService from '@/services/localDB/ChatDBService';
+import database from '@/data/database/index.native';
+import { useRouter } from 'expo-router';
 
-type ChatInputBarProps = {
-  onSend: () => void;
-  onLeftButton1: () => void;
-  onLeftButton2: () => void;
-  value: string;
-  onChangeText: (text: string) => void;
-};
 
-export default function ChatInputBar({
-  onSend,
-  onLeftButton1,
-  onLeftButton2,
-  value,
-  onChangeText,
-}: ChatInputBarProps) {
+
+export default function ChatInputBar() {
+  const [componentStatus, setComponentStatus] = useState<ComponentStatus>("idle");
+  const [chatDBService, setChatDBService] = useState<ChatDBService>();
+  const [message, setMessage] = useState<string | null>("");
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
+  const router = useRouter();
+
   useEffect(() => {
+    const chatDBService = new ChatDBService({database: database, userId: 'userId'});
+    setChatDBService(chatDBService);
+
     const showSub = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
     const hideSub = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
 
@@ -36,19 +36,75 @@ export default function ChatInputBar({
     };
   }, []);
 
+  const handleMessageChange = (newMessage: string) => {
+    setMessage(newMessage);
+  }
+
+  const updateComponentStatus = (newStatus: ComponentStatus) => {
+    setComponentStatus(newStatus);
+  }
+  
+  function navigateToChatScreen (chatId: string) {
+      router.push({
+        pathname: '/chat',
+        params: {
+          userMessage: message,
+          chatId: chatId,
+        }
+      });
+    }
+
+  const resetMessage = () => {
+    setMessage(null);
+  }
+
+  const handleSend = async () => {
+    if(!chatDBService){
+      updateComponentStatus('error');
+      return;
+    }
+    // prevent execution of write operation when
+    // - currently loading
+    // - message is undefined or empty string
+    if(!message || message.length === 0 || componentStatus === 'loading'){
+      return;
+    }
+    updateComponentStatus('loading');
+    await chatDBService?.createNewChat()
+    .then((chat) => {
+      updateComponentStatus('idle');
+      setTimeout(() => {
+        navigateToChatScreen(chat.id);
+      }, 0);
+    }).catch((err) => {
+      console.error(`Failed to create new chat:  ${err}`);
+      updateComponentStatus('error');
+    });
+    resetMessage();
+  }
+
+  const handleRecordAudio = () => {
+    // TODO implement recording audio logic
+  }
+
+  const handlePickImage = () => {
+    // TODO implement picking image logic
+  }
+
   return (
     <View style={{ ...styles.container, paddingBottom: keyboardVisible ? 36 : 0 }}>
-      <TouchableOpacity onPress={onLeftButton1} style={styles.leftButton}>
+      <TouchableOpacity onPress={handlePickImage} style={styles.leftButton}>
         <Ionicons name="camera-outline" size={24} color={AppColors.primaryColor} />
       </TouchableOpacity>
-      <TouchableOpacity onPress={onLeftButton2} style={styles.leftButton}>
+      <TouchableOpacity onPress={handleRecordAudio} style={styles.leftButton}>
         <Ionicons name="mic-outline" size={24} color={AppColors.primaryColor} />
       </TouchableOpacity>
 
       <ChatTextinput
-        value={value}
-        onChangeText={onChangeText}
-        onSend={onSend}
+        value={message ?? ""}
+        onChangeText={handleMessageChange}
+        onSend={handleSend}
+        componentStatus={componentStatus}
       />
     </View>
   );
