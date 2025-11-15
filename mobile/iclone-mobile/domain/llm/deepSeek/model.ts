@@ -1,6 +1,11 @@
 import { LLMError } from '@/core/errors/LLMError';
 import axios from 'axios';
 
+type Message = {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+};
+
 class DeepSeekClient {
   private readonly apiKey: string;
   private readonly baseUrl: string = 'https://api.deepseek.com/chat/completions';
@@ -10,13 +15,13 @@ class DeepSeekClient {
     this.apiKey = apiKey;
   }
 
-  public async call(prompt: string): Promise<string> {
+  public async call(messages: Message[]): Promise<string> {
     try {
       const response = await axios.post(
         this.baseUrl,
         {
           model: this.model,
-          prompt,
+          messages,
           stream: false,
         },
         {
@@ -33,6 +38,7 @@ class DeepSeekClient {
       throw new LLMError('Failed to call DeepSeek API', error);
     }
   }
+
 }
 
 export default DeepSeekClient;

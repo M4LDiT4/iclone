@@ -64,19 +64,18 @@ class ConversationSlidingWindow {
     return this.queueMaxSize === this.conversationCount;
   }
 
-  // convert the sliding window to a llm prompt
-  contentsToString(): string {
+  // convert the sliding window to DeepSeek-compatible messages
+  toMessageArray(): { role: 'user' | 'assistant'; content: string }[] {
     const contents = this.queue.toArray();
-    let contentString ="";
-    // do not include the last message
-    // remember we count conversations by system message.
-    for(var i = 0; i < contents.length - 1; i++){
+    const messages: { role: 'user' | 'assistant'; content: string }[] = [];
+
+    for (let i = 0; i < contents.length; i++) {
       const content = contents[i];
-      contentString += `
-        [${content.sender === 'system'? this.asssistantName : this.username}] : ${content.content}
-      `
+      const role = content.sender === 'system' ? 'assistant' : 'user';
+      messages.push({ role, content: content.content });
     }
-    return contentString;
+
+    return messages;
   }
 
   getMessageIdList(): string[] {

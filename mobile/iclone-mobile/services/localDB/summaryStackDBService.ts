@@ -214,6 +214,18 @@ class SummaryStackDBService {
       }
     )
   }
+
+  async getSummary(chatId: string): Promise<SummaryModel | null> {
+    const summary = await this.database.get<SummaryModel>(SummaryModel.table)
+                    .query(
+                      Q.where('chat_id', chatId),
+                      Q.where("summary_type", 'stack')
+                    );
+    if(summary.length != 1){
+      return null;
+    }
+    return summary[0];
+  }
 }
 
 export default SummaryStackDBService;
