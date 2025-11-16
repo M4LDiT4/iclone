@@ -5,9 +5,10 @@
     "paths": {
       "@/*": [
         "./*"
-      ]
+      ],
     },
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "**/*.ts",

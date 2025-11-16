@@ -4,6 +4,7 @@ import SummaryService from "@/services/SummaryService";
 import RawSummaryData from "@/data/application/RawSummaryData";
 import SummaryStackDBService from "@/services/localDB/SummaryStackDBService";
 
+
 interface SummaryStackProps {
   summaryStackDBService: SummaryStackDBService;
   summaryService: SummaryService;
@@ -43,12 +44,10 @@ class SummaryStack {
     const summaryNode = await this.summaryStackDBService.pushLeafSummary(leaf, messageIdList);
 
     this.stack.push(summaryNode);
-    const merged = await this.mergeIfNeeded();
+    await this.mergeIfNeeded();
 
-    if(merged){
-      const summary = await this.summarizeStack();
-      await this.summaryStackDBService.upsertSummaryStack(this.chatId, summary);
-    }
+    const stackSummary = await this.summarizeStack();
+    await this.summaryStackDBService.upsertSummaryStack(this.chatId, stackSummary);
   }
 
   /**

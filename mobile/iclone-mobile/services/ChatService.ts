@@ -90,10 +90,13 @@ class ChatService {
    * - get the summary of the summary stack and store it in a field to prevent re query
    */
   async summarizeNConversationSlidingWindow() : Promise<void>{
-    
+    console.log(`Current count is ${this.slidingWindow.conversationCount}`)
     if(this.slidingWindow.isFull()){
+      console.log('\n\nIsFull\n\n');
+      // fix this summarization problem
       const slidingWindowPrompt = messageDataListToPromptConverter(this.slidingWindow.queue.toArray());
       const summary = await this.summaryService.summarizeConversation(slidingWindowPrompt);
+      console.log(`[SUMMARY]: ${summary}`)
       await this.summaryStack.pushLeaf(summary, this.slidingWindow.getMessageIdList());
       this.slidingWindow.resetCount();
       const stackSummary = await this.summaryStackDBService.getSummary(this.chatId);
@@ -181,11 +184,15 @@ class ChatService {
 
   async chat(){
     const slidingWindowData = this.slidingWindow.toMessageArray();
-    console.log(slidingWindowData)
+    await this.summarizeNConversationSlidingWindow();
+    const ltmModel = await this.summaryStackDBService.getSummary(this.chatId);
+    const ltmMemory = ltmModel?.summary;
     const context = this.buildChatPrompt({
       username: this.username,
-      longTermMemory: this.chatSummary ?? "No long term memory",
+      longTermMemory: ltmMemory ?? "No long term memory",
     });
+    console.log(context);
+    console.log(slidingWindowData)
     return this.llModel.call([context, ...slidingWindowData]);
   }
 }

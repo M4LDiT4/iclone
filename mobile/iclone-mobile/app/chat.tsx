@@ -3,11 +3,11 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   StyleSheet,
   View,
   Text,
   ActivityIndicator,
+  FlatList,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
@@ -21,10 +21,10 @@ import TypingIndicator from "@/components/texts/typingIndicator";
 import ChatService from "@/services/ChatService";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
 import SummaryService from "@/services/SummaryService";
-import SummaryStackDBService from "@/services/localDB/SummaryStackDBService";
 import database from "@/data/database/index.native";
 import LocalMessageDBService from "@/services/localDB/LocalMessageDBService";
 import { useLocalSearchParams } from "expo-router";
+import SummaryStackDBService from "@/services/localDB/SummaryStackDBService";
 
 export default function ChatScreen() {
   const { userMessage , chatId } = useLocalSearchParams();
@@ -35,7 +35,7 @@ export default function ChatScreen() {
   const [isUserTyping, setIsUserTyping] = useState(false);
   const [isAssistantTyping, setIsAssistantTyping] = useState(false);
 
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<FlatList>(null);
   const [messageList, setMessageList] = useState<ChatBubbleProps[]>([]);
   const [chatService, setChatService] = useState<ChatService>();
 
@@ -107,7 +107,7 @@ export default function ChatScreen() {
         chatId,
         username: "Helene",
         assistantName: "Eterne",
-        slidingWindowSize: 10,
+        slidingWindowSize: 3,
         summaryService,
         summaryStackDBService,
         localMessageDBService,
@@ -261,22 +261,22 @@ export default function ChatScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={80}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
+        <FlatList
           ref={scrollViewRef}
-        >
-          {messageList.map((props, index) => (
+          data={[...messageList]}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item, index }) => (
             <ChatBubble
               key={index}
-              content={props.content}
-              sentByUser={props.sentByUser}
-              isLastByUser={props.isLastByUser}
+              content={item.content}
+              sentByUser={item.sentByUser}
+              isLastByUser={item.isLastByUser}
             />
-          ))}
-
-          {isAssistantTyping && <TypingIndicator />}
-        </ScrollView>
+          )}
+          ListFooterComponent={isAssistantTyping ? <TypingIndicator /> : null}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        />
 
         {/* INPUT */}
         <ChatInputWrapper
