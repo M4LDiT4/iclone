@@ -12,6 +12,7 @@ import ComponentStatus from '@/core/types/componentStatusType';
 import ChatDBService from '@/services/localDB/ChatDBService';
 import database from '@/data/database/index.native';
 import { useRouter } from 'expo-router';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 
@@ -20,6 +21,7 @@ export default function ChatInputBar() {
   const [chatDBService, setChatDBService] = useState<ChatDBService>();
   const [message, setMessage] = useState<string | null>("");
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const router = useRouter();
 
@@ -92,7 +94,7 @@ export default function ChatInputBar() {
   }
 
   return (
-    <View style={{ ...styles.container, paddingBottom: keyboardVisible ? 36 : 0 }}>
+    <SafeAreaView edges={['left', 'right']} style={{ ...styles.container, paddingBottom: keyboardVisible ? 36 + insets.bottom : 0 }}>
       <TouchableOpacity onPress={handlePickImage} style={styles.leftButton}>
         <Ionicons name="camera-outline" size={24} color={AppColors.primaryColor} />
       </TouchableOpacity>
@@ -106,7 +108,7 @@ export default function ChatInputBar() {
         onSend={handleSend}
         componentStatus={componentStatus}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
