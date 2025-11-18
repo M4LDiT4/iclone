@@ -1,8 +1,7 @@
-import ChatHeader from "@/components/headers/chatHeader";
 import HomeHeader from "@/components/headers/homeHeader";
+import ScreenHeader from "@/components/headers/screenHeader";
 import AppColors from "@/core/styling/AppColors";
 import { Stack } from "expo-router";
-import { View, Text } from "react-native";
 
 export default function RootLayout() {
   return <Stack 
@@ -24,8 +23,15 @@ export default function RootLayout() {
     <Stack.Screen
       name="chat"
       options={{
-        header: () => <ChatHeader/>,
+        header: () => <ScreenHeader title="Converse"/>,
       }}
     />
+    <Stack.Screen
+      name='memory'
+      options={{
+        header: () => <ScreenHeader title="Memories"/>
+      }}
+    >
+    </Stack.Screen>
   </Stack>
 }

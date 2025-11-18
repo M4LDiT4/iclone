@@ -22,9 +22,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ChipIcon from '@/components/chips/chipIcon';
 import FrostedCard from '@/components/cards/frostedCard';
 import { hexToRgba } from '@/core/utils/colorHelpers';
+import { useRouter } from 'expo-router';
 
 
 export default function Index() {
+  const router = useRouter();
+
+  const gotoMemories = () => {
+    router.push('/memory')
+  }
   return (
     <SafeAreaView edges={['left', 'right']} style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -39,7 +45,9 @@ export default function Index() {
           <View style={styles.upperContainer}>
             <Text style={styles.primaryText}>Hello, Elena</Text>
             <Text style={styles.welcomeText}>Welcome back!</Text>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={gotoMemories}
+            >
               <View style={styles.svgContainer}>
                 <Logo />
                 <View

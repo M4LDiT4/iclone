@@ -14,7 +14,7 @@ type chipIconProps = {
 export default function ChipIcon(props: chipIconProps){
   return (
     <FrostedCard
-      tintColor={hexToRgba(AppColors.secondaryColor, 0.1)}
+      tintColor={hexToRgba(AppColors.secondaryColor, 0.2)}
     >
       <View style = {styles.mainContainer}>
         {props.icon}
