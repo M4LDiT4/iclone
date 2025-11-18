@@ -93,10 +93,7 @@ class ChatService {
     console.log(`Current count is ${this.slidingWindow.conversationCount}`)
     if(this.slidingWindow.isFull()){
       console.log('\n\nIsFull\n\n');
-      // fix this summarization problem
-      const slidingWindowPrompt = messageDataListToPromptConverter(this.slidingWindow.queue.toArray());
-      const summary = await this.summaryService.summarizeConversation(slidingWindowPrompt);
-      console.log(`[SUMMARY]: ${summary}`)
+      const summary = await this.summaryService.summarizeConversation(this.slidingWindow.toMessageArray());
       await this.summaryStack.pushLeaf(summary, this.slidingWindow.getMessageIdList());
       this.slidingWindow.resetCount();
       const stackSummary = await this.summaryStackDBService.getSummary(this.chatId);

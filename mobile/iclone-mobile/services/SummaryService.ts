@@ -1,4 +1,5 @@
 import { SummaryServiceError } from "@/core/errors/SummaryServiceError";
+import MessageData from "@/data/application/MessageData";
 import DeepSeekClient, { DeepSeekMessageStructure } from "@/domain/llm/deepSeek/model";
 
 class SummaryService {
@@ -45,7 +46,7 @@ class SummaryService {
     return response;
   }
 
-  async summarizeConversation(conversation: string): Promise<string> {
+  async summarizeConversation(conversation: { role: 'user' | 'assistant'; content: string }[]): Promise<string> {
     if (conversation.length === 0) {
       throw new SummaryServiceError("[Conversation Summarization Failed]", "Conversation is empty");
     }
@@ -67,11 +68,11 @@ class SummaryService {
       Write concisely in bullet or structured paragraph form. Focus on meaning, not verbatim detail.
 
       Conversation:
-      ${conversation}
   `.trim();
 
     const messages: DeepSeekMessageStructure[] = [
-      { role: 'system', content: systemPrompt }
+      { role: 'system', content: systemPrompt },
+      ...conversation
     ];
 
     const response = await this.llmClient.call(messages);
