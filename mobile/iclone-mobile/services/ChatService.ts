@@ -4,7 +4,6 @@ import SummaryStack from "@/domain/dataStructures/SummaryStack";
 import LocalMessageDBService from "./localDB/LocalMessageDBService";
 import RawMessageData from "@/data/application/RawMessage";
 import { toMessageData } from "@/data/mappers/messageMapper";
-import messageDataListToPromptConverter from "@/domain/utils/messageDataListToPromptConverter";
 import summaryStackDBService from "./localDB/SummaryStackDBService";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
 import SenderType from "@/domain/types/senderTypes";
