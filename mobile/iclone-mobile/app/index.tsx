@@ -10,11 +10,18 @@ import {
 } from 'react-native';
 import AppColors from '@/core/styling/AppColors';
 import Logo from '../assets/svg/llm_logo.svg';
+import Bolt from '../assets/svg/bolt.svg';
+import Bulb from '../assets/svg/lightbulb-alt.svg';
+import Heart from '../assets/svg/heart.svg';
+import SampleImage from '../assets/svg/sample_image.svg';
 
 import ChatBasicDetailsCard from '@/components/containers/chatBasicDetailsCard';
 import Spacer from '@/components/spacers/spacer';
 import ChatInputBar from '@/components/textinputs/chatInputBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ChipIcon from '@/components/chips/chipIcon';
+import FrostedCard from '@/components/cards/frostedCard';
+import { hexToRgba } from '@/core/utils/colorHelpers';
 
 
 export default function Index() {
@@ -32,11 +39,45 @@ export default function Index() {
           <View style={styles.upperContainer}>
             <Text style={styles.primaryText}>Hello, Elena</Text>
             <Text style={styles.welcomeText}>Welcome back!</Text>
-            <View style={styles.svgContainer}>
-              <Logo />
-            </View>
+            <TouchableOpacity>
+              <View style={styles.svgContainer}>
+                <Logo />
+                <View
+                  style={styles.quickThoughtsContainer}
+                >
+                  <ChipIcon
+                    icon={<Bolt/>}
+                    label='Quick Thoughts'
+                  />
+                </View>
+                <View
+                  style={styles.lifeLessonContainer}
+                >
+                  <ChipIcon
+                    icon={<Bulb/>}
+                    label='Life Lesson'
+                  />
+                </View>
+                <View
+                  style={styles.familyContainer}
+                >
+                  <ChipIcon
+                    icon={<Heart/>}
+                    label='Family'
+                  />
+                </View>
+                <View
+                  style={styles.sampleImageContainer}
+                >
+                  <FrostedCard
+                    tintColor={hexToRgba(AppColors.secondaryColor, 0.1)}
+                  >
+                    <SampleImage/>
+                  </FrostedCard>
+                </View>
+              </View>
+            </TouchableOpacity>
           </View>
-
           <View style={styles.lowerContainer}>
             <Text style={styles.primaryText}>Do you have stories for me?</Text>
             <ScrollView
@@ -114,6 +155,7 @@ const styles = StyleSheet.create({
   },
   svgContainer: {
     paddingVertical: 32,
+    position: 'relative',
   },
   upperContainer: {
     flex: 3,
@@ -138,5 +180,24 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: 'SFProText',
   },
-
+  quickThoughtsContainer: {
+    position: 'absolute',
+    left: -30,
+    bottom: 160,
+  },
+  lifeLessonContainer : {
+    position: 'absolute',
+    right: -50,
+    bottom: 130,
+  },
+  familyContainer : {
+    position: 'absolute',
+    left: 10,
+    bottom: 80,
+  },
+  sampleImageContainer :  {
+    position: 'absolute',
+    right: -20,
+    bottom: -1,
+  },
 });
