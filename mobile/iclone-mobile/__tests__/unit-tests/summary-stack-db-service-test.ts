@@ -1,4 +1,4 @@
-import SummaryStackDBService from '@/services/localDB/summaryStackDBService';
+import SummaryStackDBService from '@/services/localDB/SummaryStackDBService';
 import SummaryModel from '@/data/database/models/summaryModel';
 import RawSummaryData from '@/data/application/RawSummaryData';
 import { toSummaryNodeShallow } from '@/data/mappers/summaryNode';
