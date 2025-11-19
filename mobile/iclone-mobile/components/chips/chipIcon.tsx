@@ -4,8 +4,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { JSX } from "react/jsx-runtime";
 import FrostedCard from "../cards/frostedCard";
 import { hexToRgba } from "@/core/utils/colorHelpers";
-import Spacer from "../spacers/spacer";
-
+import { Spacer } from "../layout/layout";
 type chipIconProps = {
   icon: JSX.Element,
   label: string
