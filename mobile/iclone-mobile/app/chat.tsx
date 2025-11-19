@@ -25,7 +25,6 @@ import SummaryStackDBService from "@/services/localDB/SummaryStackDBService";
 import database from "@/data/database/index.native";
 import LocalMessageDBService from "@/services/localDB/LocalMessageDBService";
 import { useLocalSearchParams } from "expo-router";
-import SummaryStackDBService from "@/services/localDB/SummaryStackDBService";
 
 export default function ChatScreen() {
   const { userMessage , chatId } = useLocalSearchParams();

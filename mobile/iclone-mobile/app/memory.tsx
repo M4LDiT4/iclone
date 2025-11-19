@@ -1,3 +1,4 @@
+import ContentCard from "@/components/cards/contentCard";
 import AppColors from "@/core/styling/AppColors";
 import { StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -6,7 +7,7 @@ export default function MemoryScreen() {
   return (
     <SafeAreaView style = {styles.safeArea}>
       <ScrollView>
-
+        <ContentCard/>
       </ScrollView>
     </SafeAreaView>
   )

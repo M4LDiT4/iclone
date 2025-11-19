@@ -16,13 +16,13 @@ import Heart from '../assets/svg/heart.svg';
 import SampleImage from '../assets/svg/sample_image.svg';
 
 import ChatBasicDetailsCard from '@/components/containers/chatBasicDetailsCard';
-import Spacer from '@/components/spacers/spacer';
 import ChatInputBar from '@/components/textinputs/chatInputBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ChipIcon from '@/components/chips/chipIcon';
 import FrostedCard from '@/components/cards/frostedCard';
 import { hexToRgba } from '@/core/utils/colorHelpers';
 import { useRouter } from 'expo-router';
+import { Spacer } from '@/components/layout/layout';
 
 
 export default function Index() {
