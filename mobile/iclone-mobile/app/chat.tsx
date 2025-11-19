@@ -21,6 +21,7 @@ import TypingIndicator from "@/components/texts/typingIndicator";
 import ChatService from "@/services/ChatService";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
 import SummaryService from "@/services/SummaryService";
+import SummaryStackDBService from "@/services/localDB/summaryStackDBService";
 import database from "@/data/database/index.native";
 import LocalMessageDBService from "@/services/localDB/LocalMessageDBService";
 import { useLocalSearchParams } from "expo-router";
