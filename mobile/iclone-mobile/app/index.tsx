@@ -1,15 +1,23 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Text } from "react-native";
 
 export default function Index() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(false);
 
-  if(isAuthenticated){
-    router.replace(
-      "/home"
-    );
-  }else if(isAuthenticated != null && isAuthenticated == false){
-    router.replace('/signUp')
-  }
+  useEffect(() => {
+    if (isAuthenticated !== null) {
+      requestAnimationFrame(() => {
+        router.replace(isAuthenticated ? "/home" : "/signUp");
+      });
+    }
+  }, [isAuthenticated]);
+
+  return (
+    <SafeAreaView>
+      <Text>Index</Text>
+    </SafeAreaView>
+  )
 }
