@@ -12,9 +12,9 @@ import AppColors from '@/core/styling/AppColors';
 import Logo from '../assets/svg/llm_logo.svg';
 
 import ChatBasicDetailsCard from '@/components/containers/chatBasicDetailsCard';
-import Spacer from '@/components/spacers/spacer';
 import ChatInputBar from '@/components/textinputs/chatInputBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Spacer } from '@/components/layout/layout';
 
 
 export default function HomeScreen() {
