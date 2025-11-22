@@ -12,8 +12,15 @@ import Divider from "@/components/spacer/divider";
 import { FontAwesome } from "@expo/vector-icons";
 import OutlineButton from "@/components/buttons/outlinedButton";
 import { LinearGradient } from "expo-linear-gradient";
+import GradientContainer from "@/components/containers/gradientContainer";
+import { useRouter } from "expo-router";
 
 export default function SignUpScreen() {
+  const router = useRouter();
+  const gotoSignIn = () => {
+    router.replace('/signIn');
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* Top circular gradient */}
@@ -35,14 +42,14 @@ export default function SignUpScreen() {
                     bottom={30}
                     style={{ borderRadius: 10, overflow: "hidden" }}
                   >
-                    <BlurView intensity={50} tint="light">
-                      <GenericContainer opacity={0.2}>
+                    <BlurView intensity={20} tint="light">
+                      <GradientContainer opacity={0.6}>
                         <Padding all={8}>
                           <Text style={styles.supportingText}>
                             Signup to create an account
                           </Text>
                         </Padding>
-                      </GenericContainer>
+                      </GradientContainer>
                     </BlurView>
                   </Stack.Item>
                 </Stack>
@@ -61,7 +68,7 @@ export default function SignUpScreen() {
             <Spacer height={4} />
 
             <Row justify="flex-end" style={{ width: "100%" }}>
-              <TouchableHighlight>
+              <TouchableHighlight onPress={gotoSignIn}>
                 <Text style={styles.alreadyHaveAnAccountText}>
                   Already have an account? Login
                 </Text>

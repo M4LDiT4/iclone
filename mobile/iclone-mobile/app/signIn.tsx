@@ -4,7 +4,6 @@ import { Center, Column, Expanded, Padding, Row, Spacer, Stack } from "@/compone
 import { SafeAreaView } from "react-native-safe-area-context";
 import Logo from "../assets/svg/llm_logo.svg";
 import AppColors from "@/core/styling/AppColors";
-import GenericContainer from "@/components/containers/genericContainer";
 import { BlurView } from "expo-blur";
 import { hexToRgba } from "@/core/utils/colorHelpers";
 import GenericTextInput from "@/components/textinputs/genericTextInput";
@@ -14,8 +13,14 @@ import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
 import OutlineButton from "@/components/buttons/outlinedButton";
 import { LinearGradient } from "expo-linear-gradient";
 import GradientContainer from "@/components/containers/gradientContainer";
+import { useRouter } from "expo-router";
 
 export default function SignInScreen() {
+  const router = useRouter();
+
+  const gotoSignUp = () => {
+    router.replace('/signUp');
+  }
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* Top circular gradient */}
@@ -27,9 +32,13 @@ export default function SignInScreen() {
       <ScrollView
         style= {styles.scrollViewContentContainer}
       >
+        {/* CONTENT PADDING */}
         <Padding horizontal={16} vertical={32}>
+          {/* CONTENT COLUMN */}
           <Column>
+            {/* TITLE TEXT */}
             <Text style={styles.titleText}>Login with Eterne</Text>
+            {/* HERO */}
             <Column align="center" style={{ width: "100%" }}>
               <Padding vertical={32}>
                 <Stack>
@@ -57,7 +66,7 @@ export default function SignInScreen() {
                     <BlurView intensity={20} tint="light">
                       <GradientContainer opacity={0.6}>
                         <Padding all={8}>
-                          <FontAwesome5 size={68} name = "fingerprint" color = {AppColors.primaryColor}/>
+                          <FontAwesome5 size={68} name = "fingerprint" color = {hexToRgba("#023E65", 0.8)}/>
                         </Padding>
                       </GradientContainer>
                     </BlurView>
@@ -66,11 +75,13 @@ export default function SignInScreen() {
               </Padding>
             </Column>
 
+            {/* TEXT INPUTS */}
             <GenericTextInput placeholder="Email" />
             <Spacer height={12} />
             <GenericTextInput placeholder="Password" />
             <Spacer height={12} />
 
+            {/* CHECKBOX + FORGET PASSWORD */}
             <Row justify="space-between" style={{width: '100%'}}>
               <Row>
                 <Checkbox/>
@@ -82,14 +93,17 @@ export default function SignInScreen() {
               </TouchableHighlight>
             </Row>
 
+            {/* LOGIN BUTTON */}
             <Spacer height={12} />
             <PrimaryButton label="Login" />
             <Spacer height={12} />
+            {/* CREATE ACCOUNT TEXT BUTTON */}
             <Center>
-              <TouchableHighlight>
+              <TouchableHighlight onPress={gotoSignUp}>
                 <Text style={styles.forgotPassword}>Create account</Text>
               </TouchableHighlight>
             </Center>
+            {/* OR DIVIDER */}
             <Row>
               <Expanded>
                 <Divider color={hexToRgba("#023E65", 0.5)} />
@@ -103,51 +117,44 @@ export default function SignInScreen() {
             </Row>
 
             <Spacer height={12} />
-            <Expanded>
-              <Column
-                justify="flex-end"
-                style = {{
-                  flex: 1
-                }}
-              >
-                <PrimaryButton style={{ backgroundColor: "#000000" }}>
-                <Row>
-                  <FontAwesome name="apple" size={24} color="white" />
-                    <Spacer width={8} />
-                    <Text
-                      style={{
-                        color: "white",
-                        fontWeight: "500",
-                        fontFamily: "SFProText",
-                      }}
-                    >
-                      Login with Apple
-                    </Text>
-                  </Row>
-                </PrimaryButton>
+            {/* LOG IN WITH APPLE */}
+            <PrimaryButton style={{ backgroundColor: "#000000" }}>
+              <Row>
+                <FontAwesome name="apple" size={24} color="white" />
+                  <Spacer width={8} />
+                  <Text
+                    style={{
+                      color: "white",
+                      fontWeight: "500",
+                      fontFamily: "SFProText",
+                    }}
+                  >
+                    Login with Apple
+                  </Text>
+                </Row>
+              </PrimaryButton>
 
-                <Spacer height={12} />
-                <OutlineButton style={{ borderColor: hexToRgba("#000000", 0.75) }}>
-                  <Row>
-                    <FontAwesome
-                      name="google"
-                      size={24}
-                      color={hexToRgba("#023E65", 0.5)}
-                    />
-                    <Spacer width={8} />
-                    <Text
-                      style={{
-                        color: "black",
-                        fontWeight: "500",
-                        fontFamily: "SFProText",
-                      }}
-                    >
-                      Login with Google
-                    </Text>
-                  </Row>
-                </OutlineButton>
-              </Column>
-            </Expanded>
+              <Spacer height={12} />
+              {/* LOGIN WITH GOOGLE */}
+              <OutlineButton style={{ borderColor: hexToRgba("#000000", 0.75) }}>
+                <Row>
+                  <FontAwesome
+                    name="google"
+                    size={24}
+                    color={hexToRgba("#023E65", 0.5)}
+                  />
+                  <Spacer width={8} />
+                  <Text
+                    style={{
+                      color: "black",
+                      fontWeight: "500",
+                      fontFamily: "SFProText",
+                    }}
+                  >
+                    Login with Google
+                  </Text>
+                </Row>
+              </OutlineButton>
           </Column>
         </Padding>
       </ScrollView>
