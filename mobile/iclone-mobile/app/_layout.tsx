@@ -1,8 +1,8 @@
 import ChatHeader from "@/components/headers/chatHeader";
+import GenericHeader from "@/components/headers/genericHeader";
 import HomeHeader from "@/components/headers/homeHeader";
 import AppColors from "@/core/styling/AppColors";
 import { Stack } from "expo-router";
-import { View, Text } from "react-native";
 
 export default function RootLayout() {
   return <Stack 
@@ -19,13 +19,26 @@ export default function RootLayout() {
       options={{
         header: () => <HomeHeader/>
       }}
-    >
-    </Stack.Screen>
+    />
+    <Stack.Screen
+      name = 'home'
+      options={{
+        header: () => <HomeHeader/>
+      }}
+    />
     <Stack.Screen
       name="chat"
       options={{
-        header: () => <ChatHeader/>,
+        header: () => <GenericHeader label="Converse"/>,
       }}
+    />
+    <Stack.Screen
+      name="signUp"
+      options ={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="signIn"
+      options={{headerShown: false}}
     />
   </Stack>
 }

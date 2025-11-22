@@ -12,8 +12,8 @@ type TintedContainerProps = {
 };
 
 export default function GenericContainer({
-  height = 100,
-  width = 100,
+  height,
+  width,
   tintColor = '#3498db',
   opacity = 0.1,
   borderRadius = 0.8,
