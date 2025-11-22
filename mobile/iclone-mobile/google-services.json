@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "960913578128",
+    "project_id": "eterne-fcd6e",
+    "storage_bucket": "eterne-fcd6e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:960913578128:android:10c2c9c55c7c5b230c6015",
+        "android_client_info": {
+          "package_name": "com.anonymous.iclonemobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqKBXgRqXP8NxH9Ufc6y7OQOEL64gsAJs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
