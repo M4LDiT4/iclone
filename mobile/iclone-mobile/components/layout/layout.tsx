@@ -77,6 +77,8 @@ export const Center = ({
   <View
     style={[
       {
+        width: '100%',
+        display: 'flex',
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",

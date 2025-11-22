@@ -1,5 +1,6 @@
 import { Text, StyleSheet, ScrollView, TouchableHighlight } from "react-native";
-import { Column, Expanded, Padding, Row, Spacer, Stack } from "@/components/layout/layout";
+import {Checkbox} from 'expo-checkbox';
+import { Center, Column, Expanded, Padding, Row, Spacer, Stack } from "@/components/layout/layout";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Logo from "../assets/svg/llm_logo.svg";
 import AppColors from "@/core/styling/AppColors";
@@ -9,9 +10,10 @@ import { hexToRgba } from "@/core/utils/colorHelpers";
 import GenericTextInput from "@/components/textinputs/genericTextInput";
 import PrimaryButton from "@/components/buttons/primaryButton";
 import Divider from "@/components/spacer/divider";
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
 import OutlineButton from "@/components/buttons/outlinedButton";
 import { LinearGradient } from "expo-linear-gradient";
+import GradientContainer from "@/components/containers/gradientContainer";
 
 export default function SignInScreen() {
   return (
@@ -33,18 +35,31 @@ export default function SignInScreen() {
                 <Stack>
                   <Logo width={154} height={154} />
                   <Stack.Item
-                    left={-50}
-                    bottom={30}
+                    right={-50}
+                    top={20}
                     style={{ borderRadius: 10, overflow: "hidden" }}
                   >
-                    <BlurView intensity={50} tint="light">
-                      <GenericContainer opacity={0.2}>
+                    <BlurView intensity={20} tint="light">
+                      <GradientContainer width={124} opacity={0.6}>
                         <Padding all={8}>
                           <Text style={styles.supportingText}>
-                            Signup to create an account
+                            You can login using your biometrics
                           </Text>
                         </Padding>
-                      </GenericContainer>
+                      </GradientContainer>
+                    </BlurView>
+                  </Stack.Item>
+                  <Stack.Item
+                    left={-50}
+                    bottom={40}
+                    style={{ borderRadius: 10, overflow: "hidden" }}
+                  >
+                    <BlurView intensity={20} tint="light">
+                      <GradientContainer opacity={0.6}>
+                        <Padding all={8}>
+                          <FontAwesome5 size={68} name = "fingerprint" color = {AppColors.primaryColor}/>
+                        </Padding>
+                      </GradientContainer>
                     </BlurView>
                   </Stack.Item>
                 </Stack>
@@ -56,10 +71,25 @@ export default function SignInScreen() {
             <GenericTextInput placeholder="Password" />
             <Spacer height={12} />
 
-            <Spacer height={12} />
-            <PrimaryButton label="Signup" />
-            <Spacer height={12} />
+            <Row justify="space-between" style={{width: '100%'}}>
+              <Row>
+                <Checkbox/>
+                <Spacer width={8}/>
+                <Text style = {styles.rememberMe}>Remember me</Text>
+              </Row>
+              <TouchableHighlight>
+                <Text style = {styles.forgotPassword}>Forgot Password?</Text>
+              </TouchableHighlight>
+            </Row>
 
+            <Spacer height={12} />
+            <PrimaryButton label="Login" />
+            <Spacer height={12} />
+            <Center>
+              <TouchableHighlight>
+                <Text style={styles.forgotPassword}>Create account</Text>
+              </TouchableHighlight>
+            </Center>
             <Row>
               <Expanded>
                 <Divider color={hexToRgba("#023E65", 0.5)} />
@@ -91,7 +121,7 @@ export default function SignInScreen() {
                         fontFamily: "SFProText",
                       }}
                     >
-                      Signup with Apple
+                      Login with Apple
                     </Text>
                   </Row>
                 </PrimaryButton>
@@ -112,7 +142,7 @@ export default function SignInScreen() {
                         fontFamily: "SFProText",
                       }}
                     >
-                      Signup with Google
+                      Login with Google
                     </Text>
                   </Row>
                 </OutlineButton>
@@ -171,7 +201,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: hexToRgba("#023E65", 0.6),
   },
-  alreadyHaveAnAccountText: {
+  forgotPassword: {
     fontFamily: "SFProText",
     fontSize: 14,
     fontWeight: "500",
@@ -183,4 +213,10 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: hexToRgba("#023E65", 0.6),
   },
+  rememberMe : {
+    fontFamily: "SFProText",
+    fontWeight: "medium",
+    fontSize: 14,
+    color: hexToRgba("#023E65", 0.6)
+  }
 });
