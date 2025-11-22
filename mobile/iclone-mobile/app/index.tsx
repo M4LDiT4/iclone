@@ -10,7 +10,7 @@ export default function Index() {
   useEffect(() => {
     if (isAuthenticated !== null) {
       requestAnimationFrame(() => {
-        router.replace(isAuthenticated ? "/home" : "/signUp");
+        router.replace(isAuthenticated ? "/home" : "/signIn");
       });
     }
   }, [isAuthenticated]);

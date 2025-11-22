@@ -62,7 +62,7 @@ export const Expanded = ({
   flex?: number;
   style?: RNStyle;
 }) => (
-  <View style={[{ flex }, style]}>
+  <View style={[{ flex, flexDirection: 'row' }, style]}>
     {children}
   </View>
 );

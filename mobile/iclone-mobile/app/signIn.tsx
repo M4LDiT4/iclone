@@ -13,7 +13,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import OutlineButton from "@/components/buttons/outlinedButton";
 import { LinearGradient } from "expo-linear-gradient";
 
-export default function SignUpScreen() {
+export default function SignInScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* Top circular gradient */}
@@ -22,10 +22,12 @@ export default function SignUpScreen() {
         style={styles.topGradient}
       />
 
-      <ScrollView>
+      <ScrollView
+        style= {styles.scrollViewContentContainer}
+      >
         <Padding horizontal={16} vertical={32}>
           <Column>
-            <Text style={styles.titleText}>SignUp with Eterne</Text>
+            <Text style={styles.titleText}>Login with Eterne</Text>
             <Column align="center" style={{ width: "100%" }}>
               <Padding vertical={32}>
                 <Stack>
@@ -51,22 +53,8 @@ export default function SignUpScreen() {
 
             <GenericTextInput placeholder="Email" />
             <Spacer height={12} />
-            <GenericTextInput placeholder="Username" />
-            <Spacer height={12} />
-            <GenericTextInput placeholder="Contact Number" />
-            <Spacer height={12} />
             <GenericTextInput placeholder="Password" />
             <Spacer height={12} />
-            <GenericTextInput placeholder="Confirm Password" />
-            <Spacer height={4} />
-
-            <Row justify="flex-end" style={{ width: "100%" }}>
-              <TouchableHighlight>
-                <Text style={styles.alreadyHaveAnAccountText}>
-                  Already have an account? Login
-                </Text>
-              </TouchableHighlight>
-            </Row>
 
             <Spacer height={12} />
             <PrimaryButton label="Signup" />
@@ -85,42 +73,51 @@ export default function SignUpScreen() {
             </Row>
 
             <Spacer height={12} />
-            <PrimaryButton style={{ backgroundColor: "#000000" }}>
-              <Row>
-                <FontAwesome name="apple" size={24} color="white" />
-                <Spacer width={8} />
-                <Text
-                  style={{
-                    color: "white",
-                    fontWeight: "500",
-                    fontFamily: "SFProText",
-                  }}
-                >
-                  Signup with Apple
-                </Text>
-              </Row>
-            </PrimaryButton>
+            <Expanded>
+              <Column
+                justify="flex-end"
+                style = {{
+                  flex: 1
+                }}
+              >
+                <PrimaryButton style={{ backgroundColor: "#000000" }}>
+                <Row>
+                  <FontAwesome name="apple" size={24} color="white" />
+                    <Spacer width={8} />
+                    <Text
+                      style={{
+                        color: "white",
+                        fontWeight: "500",
+                        fontFamily: "SFProText",
+                      }}
+                    >
+                      Signup with Apple
+                    </Text>
+                  </Row>
+                </PrimaryButton>
 
-            <Spacer height={12} />
-            <OutlineButton style={{ borderColor: hexToRgba("#000000", 0.75) }}>
-              <Row>
-                <FontAwesome
-                  name="google"
-                  size={24}
-                  color={hexToRgba("#023E65", 0.5)}
-                />
-                <Spacer width={8} />
-                <Text
-                  style={{
-                    color: "black",
-                    fontWeight: "500",
-                    fontFamily: "SFProText",
-                  }}
-                >
-                  Signup with Google
-                </Text>
-              </Row>
-            </OutlineButton>
+                <Spacer height={12} />
+                <OutlineButton style={{ borderColor: hexToRgba("#000000", 0.75) }}>
+                  <Row>
+                    <FontAwesome
+                      name="google"
+                      size={24}
+                      color={hexToRgba("#023E65", 0.5)}
+                    />
+                    <Spacer width={8} />
+                    <Text
+                      style={{
+                        color: "black",
+                        fontWeight: "500",
+                        fontFamily: "SFProText",
+                      }}
+                    >
+                      Signup with Google
+                    </Text>
+                  </Row>
+                </OutlineButton>
+              </Column>
+            </Expanded>
           </Column>
         </Padding>
       </ScrollView>
@@ -138,6 +135,10 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: AppColors.backgroundColor,
+  },
+  scrollViewContentContainer: {
+    flexGrow: 1,
+    flex: 1,
   },
   topGradient: {
     position: "absolute",
