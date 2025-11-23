@@ -1,12 +1,11 @@
-import { Text, StyleSheet, ScrollView, TouchableHighlight } from "react-native";
+import { Text, StyleSheet, ScrollView, TouchableHighlight, KeyboardAvoidingView, Platform } from "react-native";
 import { Column, Expanded, Padding, Row, Spacer, Stack } from "@/components/layout/layout";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Logo from "../assets/svg/llm_logo.svg";
 import AppColors from "@/core/styling/AppColors";
-import GenericContainer from "@/components/containers/genericContainer";
 import { BlurView } from "expo-blur";
 import { hexToRgba } from "@/core/utils/colorHelpers";
-import GenericTextInput from "@/components/textinputs/genericTextInput";
+import GenericTextInput, { GenericTextInputHandle } from "@/components/textinputs/genericTextInput";
 import PrimaryButton from "@/components/buttons/primaryButton";
 import Divider from "@/components/spacer/divider";
 import { FontAwesome } from "@expo/vector-icons";
@@ -14,12 +13,37 @@ import OutlineButton from "@/components/buttons/outlinedButton";
 import { LinearGradient } from "expo-linear-gradient";
 import GradientContainer from "@/components/containers/gradientContainer";
 import { useRouter } from "expo-router";
+import { AppValidators } from "@/core/utils/appValidators";
+import { useRef } from "react";
 
 export default function SignUpScreen() {
   const router = useRouter();
+  
+  // textinput references
+  const usernameRef = useRef<GenericTextInputHandle>(null);
+  const emailRef = useRef<GenericTextInputHandle>(null);
+  const contactNumRef = useRef<GenericTextInputHandle>(null);
+  const passwordRef = useRef<GenericTextInputHandle>(null);
+  const confirmPassRef = useRef<GenericTextInputHandle>(null);
+
+
   const gotoSignIn = () => {
     router.replace('/signIn');
   }
+
+  const confirmPasswordValidator = (value: string) => {
+    const pass = passwordRef.current?.getValue() ?? "";
+
+    if (!value || value.trim().length === 0) {
+      return "Confirm password is required.";
+    }
+
+    if (pass !== value) {
+      return "Passwords do not match.";
+    }
+
+    return null;
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -29,108 +53,139 @@ export default function SignUpScreen() {
         style={styles.topGradient}
       />
 
-      <ScrollView>
-        <Padding horizontal={16} vertical={32}>
-          <Column>
-            <Text style={styles.titleText}>SignUp with Eterne</Text>
-            <Column align="center" style={{ width: "100%" }}>
-              <Padding vertical={32}>
-                <Stack>
-                  <Logo width={154} height={154} />
-                  <Stack.Item
-                    left={-50}
-                    bottom={30}
-                    style={{ borderRadius: 10, overflow: "hidden" }}
+      <KeyboardAvoidingView
+          style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+      >
+        <ScrollView>
+          <Padding horizontal={16} vertical={32}>
+            <Column>
+              <Text style={styles.titleText}>SignUp with Eterne</Text>
+              <Column align="center" style={{ width: "100%" }}>
+                <Padding vertical={32}>
+                  <Stack>
+                    <Logo width={154} height={154} />
+                    <Stack.Item
+                      left={-50}
+                      bottom={30}
+                      style={{ borderRadius: 10, overflow: "hidden" }}
+                    >
+                      <BlurView intensity={20} tint="light">
+                        <GradientContainer opacity={0.6}>
+                          <Padding all={8}>
+                            <Text style={styles.supportingText}>
+                              Signup to create an account
+                            </Text>
+                          </Padding>
+                        </GradientContainer>
+                      </BlurView>
+                    </Stack.Item>
+                  </Stack>
+                </Padding>
+              </Column>
+
+              <GenericTextInput 
+                ref={emailRef}
+                placeholder="Email"
+                validator={AppValidators.email}
+                isRequired={true}
+              />
+              <Spacer height={12} />
+              <GenericTextInput 
+                ref={usernameRef}
+                placeholder="Username" 
+                validator={AppValidators.username}
+                isRequired={true}
+              />
+              <Spacer height={12} />
+              {/* create a specialized textinput for this */}
+              <GenericTextInput 
+                ref={contactNumRef}
+                placeholder="Contact Number" 
+                isRequired={true}
+              />
+              <Spacer height={12} />
+              <GenericTextInput 
+                ref={passwordRef}
+                placeholder="Password" 
+                validator={AppValidators.password}
+                isRequired={true}
+              />
+              <Spacer height={12} />
+              <GenericTextInput 
+                ref={confirmPassRef}
+                placeholder="Confirm Password"
+                validator={confirmPasswordValidator}
+                isRequired={true}
+              />
+              <Spacer height={4} />
+
+              <Row justify="flex-end" style={{ width: "100%" }}>
+                <TouchableHighlight onPress={gotoSignIn}>
+                  <Text style={styles.alreadyHaveAnAccountText}>
+                    Already have an account? Login
+                  </Text>
+                </TouchableHighlight>
+              </Row>
+
+              <Spacer height={12} />
+              <PrimaryButton label="Signup" />
+              <Spacer height={12} />
+
+              <Row>
+                <Expanded>
+                  <Divider color={hexToRgba("#023E65", 0.5)} />
+                </Expanded>
+                <Padding horizontal={16}>
+                  <Text style={styles.orText}>OR</Text>
+                </Padding>
+                <Expanded>
+                  <Divider color={hexToRgba("#023E65", 0.5)} />
+                </Expanded>
+              </Row>
+
+              <Spacer height={12} />
+              <PrimaryButton style={{ backgroundColor: "#000000" }}>
+                <Row>
+                  <FontAwesome name="apple" size={24} color="white" />
+                  <Spacer width={8} />
+                  <Text
+                    style={{
+                      color: "white",
+                      fontWeight: "500",
+                      fontFamily: "SFProText",
+                    }}
                   >
-                    <BlurView intensity={20} tint="light">
-                      <GradientContainer opacity={0.6}>
-                        <Padding all={8}>
-                          <Text style={styles.supportingText}>
-                            Signup to create an account
-                          </Text>
-                        </Padding>
-                      </GradientContainer>
-                    </BlurView>
-                  </Stack.Item>
-                </Stack>
-              </Padding>
+                    Signup with Apple
+                  </Text>
+                </Row>
+              </PrimaryButton>
+
+              <Spacer height={12} />
+              <OutlineButton style={{ borderColor: hexToRgba("#000000", 0.75) }}>
+                <Row>
+                  <FontAwesome
+                    name="google"
+                    size={24}
+                    color={hexToRgba("#023E65", 0.5)}
+                  />
+                  <Spacer width={8} />
+                  <Text
+                    style={{
+                      color: "black",
+                      fontWeight: "500",
+                      fontFamily: "SFProText",
+                    }}
+                  >
+                    Signup with Google
+                  </Text>
+                </Row>
+              </OutlineButton>
             </Column>
-
-            <GenericTextInput placeholder="Email" />
-            <Spacer height={12} />
-            <GenericTextInput placeholder="Username" />
-            <Spacer height={12} />
-            <GenericTextInput placeholder="Contact Number" />
-            <Spacer height={12} />
-            <GenericTextInput placeholder="Password" />
-            <Spacer height={12} />
-            <GenericTextInput placeholder="Confirm Password" />
-            <Spacer height={4} />
-
-            <Row justify="flex-end" style={{ width: "100%" }}>
-              <TouchableHighlight onPress={gotoSignIn}>
-                <Text style={styles.alreadyHaveAnAccountText}>
-                  Already have an account? Login
-                </Text>
-              </TouchableHighlight>
-            </Row>
-
-            <Spacer height={12} />
-            <PrimaryButton label="Signup" />
-            <Spacer height={12} />
-
-            <Row>
-              <Expanded>
-                <Divider color={hexToRgba("#023E65", 0.5)} />
-              </Expanded>
-              <Padding horizontal={16}>
-                <Text style={styles.orText}>OR</Text>
-              </Padding>
-              <Expanded>
-                <Divider color={hexToRgba("#023E65", 0.5)} />
-              </Expanded>
-            </Row>
-
-            <Spacer height={12} />
-            <PrimaryButton style={{ backgroundColor: "#000000" }}>
-              <Row>
-                <FontAwesome name="apple" size={24} color="white" />
-                <Spacer width={8} />
-                <Text
-                  style={{
-                    color: "white",
-                    fontWeight: "500",
-                    fontFamily: "SFProText",
-                  }}
-                >
-                  Signup with Apple
-                </Text>
-              </Row>
-            </PrimaryButton>
-
-            <Spacer height={12} />
-            <OutlineButton style={{ borderColor: hexToRgba("#000000", 0.75) }}>
-              <Row>
-                <FontAwesome
-                  name="google"
-                  size={24}
-                  color={hexToRgba("#023E65", 0.5)}
-                />
-                <Spacer width={8} />
-                <Text
-                  style={{
-                    color: "black",
-                    fontWeight: "500",
-                    fontFamily: "SFProText",
-                  }}
-                >
-                  Signup with Google
-                </Text>
-              </Row>
-            </OutlineButton>
-          </Column>
-        </Padding>
-      </ScrollView>
+          </Padding>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Bottom circular gradient */}
       <LinearGradient
