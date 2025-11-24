@@ -15,6 +15,7 @@ export type InputState = "idle" | "error" | "success";
 export type GenericTextInputHandle = {
   validate: () => boolean;
   getValue: () => string;
+  setValue: (val: string) => void;
 };
 
 type GenericTextInputProps = {
@@ -79,6 +80,10 @@ const GenericTextInputInner = (
     getValue() {
       return value;
     },
+    setValue(newVal: string) {
+      setValue(newVal);
+    },
+
   }));
 
   return (

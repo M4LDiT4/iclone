@@ -14,10 +14,12 @@ import OutlineButton from "@/components/buttons/outlinedButton";
 import { LinearGradient } from "expo-linear-gradient";
 import GradientContainer from "@/components/containers/gradientContainer";
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import GenericModal from "@/components/modals/genericModal";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import AuthService from "@/services/AuthService";
+import { AppValidators } from "@/core/utils/appValidators";
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -31,9 +33,19 @@ export default function SignInScreen() {
 
   const handleSignInButtonPress = async () => {
     setIsLoading(true);
-    await AuthService.signInWithEmail(emailRef.current?.getValue()!, passwordRef.current?.getValue()!)
-      .then(() => {console.log("logged in")})
+    const email = emailRef.current?.getValue();
+    const password = passwordRef.current?.getValue();
+
+    if(!email || !password) return;
+    await AuthService.signInWithEmail(email, password)
+      .then( async() => {
+        if(rememberMe){
+          await AsyncStorage.setItem("rememberMe", "true");
+          await AsyncStorage.setItem("rememberedEmail", email);
+        }
+      })
       .catch((err) => console.log(err))
+
     setIsLoading(false);
   }
 
@@ -44,6 +56,24 @@ export default function SignInScreen() {
   const gotoSignUp = () => {
     router.replace('/signUp');
   }
+
+  useEffect(() => {
+    const loadRememberMe = async () => {
+      try{
+        const value = await AsyncStorage.getItem("rememberMe");
+        if(value === 'true'){
+          setRememberMe(true); 
+          const emailValue = await AsyncStorage.getItem("rememberedEmail");
+          if(emailValue){
+            emailRef.current?.setValue(emailValue);
+          }
+        }
+      }catch(err){
+        console.log("Failed to load remember me flag")
+      }
+    }
+    loadRememberMe();
+  }, []);
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* Top circular gradient */}
@@ -100,9 +130,9 @@ export default function SignInScreen() {
             </Column>
 
             {/* TEXT INPUTS */}
-            <GenericTextInput placeholder="Email" ref={emailRef}/>
+            <GenericTextInput placeholder="Email" ref={emailRef} validator={AppValidators.nonEmpty}/>
             <Spacer height={12} />
-            <GenericTextInput placeholder="Password" isSensitive = {true} ref = {passwordRef}/>
+            <GenericTextInput placeholder="Password" validator={AppValidators.nonEmpty} isSensitive = {true} ref = {passwordRef}/>
             <Spacer height={12} />
 
             {/* CHECKBOX + FORGET PASSWORD */}
