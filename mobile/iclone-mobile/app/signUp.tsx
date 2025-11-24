@@ -16,6 +16,7 @@ import { useRouter } from "expo-router";
 import { AppValidators } from "@/core/utils/appValidators";
 import { useRef, useState } from "react";
 import GenericModal from "@/components/modals/genericModal";
+import PhoneInput from "@/components/textinputs/phoneInput";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -119,11 +120,7 @@ export default function SignUpScreen() {
               />
               <Spacer height={12} />
               {/* create a specialized textinput for this */}
-              <GenericTextInput 
-                ref={contactNumRef}
-                placeholder="Contact Number" 
-                isRequired={true}
-              />
+              <PhoneInput/>
               <Spacer height={12} />
               <GenericTextInput 
                 ref={passwordRef}
