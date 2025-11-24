@@ -88,7 +88,7 @@ export default function SignInScreen() {
                 <Spacer width={8}/>
                 <Text style = {styles.rememberMe}>Remember me</Text>
               </Row>
-              <TouchableHighlight>
+              <TouchableHighlight style ={styles.touchableHighlight} underlayColor={hexToRgba(AppColors.primaryColor, 0.2)}>
                 <Text style = {styles.forgotPassword}>Forgot Password?</Text>
               </TouchableHighlight>
             </Row>
@@ -99,7 +99,7 @@ export default function SignInScreen() {
             <Spacer height={12} />
             {/* CREATE ACCOUNT TEXT BUTTON */}
             <Center>
-              <TouchableHighlight onPress={gotoSignUp}>
+              <TouchableHighlight style ={styles.touchableHighlight} underlayColor={hexToRgba(AppColors.primaryColor, 0.2)} onPress={gotoSignUp}>
                 <Text style={styles.forgotPassword}>Create account</Text>
               </TouchableHighlight>
             </Center>
@@ -225,5 +225,9 @@ const styles = StyleSheet.create({
     fontWeight: "medium",
     fontSize: 14,
     color: hexToRgba("#023E65", 0.6)
+  },
+  touchableHighlight: {
+    paddingHorizontal: 8,
+    borderRadius: 8
   }
 });
