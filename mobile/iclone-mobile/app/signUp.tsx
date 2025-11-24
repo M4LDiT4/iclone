@@ -16,14 +16,14 @@ import { useRouter } from "expo-router";
 import { AppValidators } from "@/core/utils/appValidators";
 import { useRef, useState } from "react";
 import GenericModal from "@/components/modals/genericModal";
-import PhoneInput from "@/components/textinputs/phoneInput";
+import PhoneInput, { PhoneInputHandle } from "@/components/textinputs/phoneInput";
 
 export default function SignUpScreen() {
   const router = useRouter();
   // textinput references
   const usernameRef = useRef<GenericTextInputHandle>(null);
   const emailRef = useRef<GenericTextInputHandle>(null);
-  const contactNumRef = useRef<GenericTextInputHandle>(null);
+  const contactNumRef = useRef<PhoneInputHandle>(null);
   const passwordRef = useRef<GenericTextInputHandle>(null);
   const confirmPassRef = useRef<GenericTextInputHandle>(null);
   
@@ -56,7 +56,7 @@ export default function SignUpScreen() {
     const isPasswordValid = passwordRef.current?.validate();
     const isConfirmPassValid = confirmPassRef.current?.validate();
 
-    return isUsernameValid && isEmailValid && isContactNumValid && isPasswordValid && isConfirmPassValid;
+    return isUsernameValid && isEmailValid && isContactNumValid && isPasswordValid && isConfirmPassValid && isContactNumValid;
   }
 
 
@@ -110,6 +110,7 @@ export default function SignUpScreen() {
                 placeholder="Email"
                 validator={AppValidators.email}
                 isRequired={true}
+                successMessage="Valid email"
               />
               <Spacer height={12} />
               <GenericTextInput 
@@ -117,16 +118,20 @@ export default function SignUpScreen() {
                 placeholder="Username" 
                 validator={AppValidators.username}
                 isRequired={true}
+                successMessage="Valid username"
               />
               <Spacer height={12} />
               {/* create a specialized textinput for this */}
-              <PhoneInput/>
+              <PhoneInput
+                ref={contactNumRef}
+              />
               <Spacer height={12} />
               <GenericTextInput 
                 ref={passwordRef}
                 placeholder="Password" 
                 validator={AppValidators.password}
                 isRequired={true}
+                successMessage="Strong password"
               />
               <Spacer height={12} />
               <GenericTextInput 
@@ -134,6 +139,7 @@ export default function SignUpScreen() {
                 placeholder="Confirm Password"
                 validator={confirmPasswordValidator}
                 isRequired={true}
+                successMessage="Password matches"
               />
               <Spacer height={4} />
 
