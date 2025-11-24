@@ -17,6 +17,8 @@ import { AppValidators } from "@/core/utils/appValidators";
 import { useRef, useState } from "react";
 import GenericModal from "@/components/modals/genericModal";
 import PhoneInput, { PhoneInputHandle } from "@/components/textinputs/phoneInput";
+import AuthService from "@/services/AuthService";
+import UserData from "@/data/application/UserData";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -42,7 +44,7 @@ export default function SignUpScreen() {
       return "Confirm password is required.";
     }
 
-    if (pass !== value) {
+    if (pass !== value || !passwordRef.current?.validate()) {
       return "Passwords do not match.";
     }
 
@@ -60,9 +62,23 @@ export default function SignUpScreen() {
   }
 
 
-  const handleSignInButtonPress = () => {
+  const handleSignInButtonPress = async () => {
     if(!isInputsValid()) return;
     setIsLoading(true);
+    const userData = new UserData({
+      username: usernameRef.current?.getValue()!,
+      password: passwordRef.current?.getValue()!,
+      contactNumber: contactNumRef.current?.getFullNumber()!,
+      email: emailRef.current?.getValue()!
+    })
+    await AuthService.signUpWithEmail(userData)
+      .then(() => {
+        console.log('created')
+      })
+      .catch(err => {
+        console.log(err)
+      })
+      setIsLoading(false);
   }
 
   return (
