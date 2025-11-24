@@ -90,11 +90,13 @@ export default function SignUpScreen() {
       />
 
       <KeyboardAvoidingView
-          style={{ flex: 1 }}
+        style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
       >
-        <ScrollView>
+        <ScrollView
+          keyboardShouldPersistTaps="always"
+        >
           <Padding horizontal={16} vertical={32}>
             <Column>
               <Text style={styles.titleText}>SignUp with Eterne</Text>
@@ -148,6 +150,7 @@ export default function SignUpScreen() {
                 validator={AppValidators.password}
                 isRequired={true}
                 successMessage="Strong password"
+                isSensitive = {true}
               />
               <Spacer height={12} />
               <GenericTextInput 
@@ -156,6 +159,7 @@ export default function SignUpScreen() {
                 validator={confirmPasswordValidator}
                 isRequired={true}
                 successMessage="Password matches"
+                isSensitive = {true}
               />
               <Spacer height={4} />
 
