@@ -19,6 +19,7 @@ import GenericModal from "@/components/modals/genericModal";
 import PhoneInput, { PhoneInputHandle } from "@/components/textinputs/phoneInput";
 import AuthService from "@/services/AuthService";
 import UserData from "@/data/application/UserData";
+import { AuthServiceError } from "@/core/errors/AuthServiceError";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -31,6 +32,7 @@ export default function SignUpScreen() {
   
   // states
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string|null>(null);
 
 
   const gotoSignIn = () => {
@@ -79,6 +81,26 @@ export default function SignUpScreen() {
         console.log(err)
       })
       setIsLoading(false);
+  }
+
+  const handleCloseErrorMessage = () => {
+    setErrorMessage(null);
+  }
+
+  const handleSignUpWithGoogleButtonPress = async () => {
+    try{
+      setIsLoading(true);
+      await AuthService.authWithGoogle();
+      setIsLoading(false);
+    }catch(err){
+      if(err instanceof AuthServiceError){
+        setErrorMessage(err.message);
+      }else{
+        setErrorMessage("Unknown errorr occurred while authenticating with your Google account");
+      }
+    }finally{
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -205,7 +227,7 @@ export default function SignUpScreen() {
               </PrimaryButton>
 
               <Spacer height={12} />
-              <OutlineButton style={{ borderColor: hexToRgba("#000000", 0.75) }}>
+              <OutlineButton style={{ borderColor: hexToRgba("#000000", 0.75) }} onPress={handleSignUpWithGoogleButtonPress}>
                 <Row>
                   <FontAwesome
                     name="google"
@@ -240,6 +262,15 @@ export default function SignUpScreen() {
           <Padding style = {styles.signUpModalContainer}>
             <Text style = {styles.signUpModalTitleText}>Creating account...</Text>
             <ActivityIndicator size={'large'} color={AppColors.primaryColor}/>
+          </Padding>
+        </Column>
+      </GenericModal>
+      <GenericModal visible = {!isLoading && errorMessage != null} onClose={() => {}}>
+        <Column>
+          <Padding style = {styles.signUpModalContainer}>
+            <Text style = {styles.signUpModalTitleText}>{errorMessage}</Text>
+            <Spacer height={8}/>
+            <PrimaryButton label="Okay" onPress={handleCloseErrorMessage}/>
           </Padding>
         </Column>
       </GenericModal>
@@ -309,7 +340,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,          // Space below before content
     fontFamily: 'SFProText',   // Keep consistent with your app typography
   },
-  touchableHighlight: {K
+  touchableHighlight: {
     paddingHorizontal: 8,
     borderRadius: 8
   }

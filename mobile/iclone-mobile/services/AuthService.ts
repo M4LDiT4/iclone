@@ -1,12 +1,15 @@
+import { AuthServiceError } from "@/core/errors/AuthServiceError";
+import { ValidationError } from "@/core/errors/ValidationError";
 import UserData from "@/data/application/UserData";
 import { getApp } from "@react-native-firebase/app";
-import { getAuth, onAuthStateChanged, FirebaseAuthTypes, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "@react-native-firebase/auth";
+import { getAuth, onAuthStateChanged, FirebaseAuthTypes, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from "@react-native-firebase/auth";
 import firestore from '@react-native-firebase/firestore';
 
-import { getApps } from '@react-native-firebase/app';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
-console.log('Firebase apps:', getApps());
-
+GoogleSignin.configure({
+  webClientId: '960913578128-jai9003ivpjh8jsvgskr2f8d7h0r214g.apps.googleusercontent.com'
+});
 
 class AuthService {
   private auth = getAuth(getApp());
@@ -25,36 +28,56 @@ class AuthService {
       await firestore().collection('users').doc(firebaseUser.uid).set(user.toFirebaseJson());
     } catch (err: any) {
       console.error(`Failed to signup with email: ${err}`)
-      if (err.code === 'auth/email-already-in-use') throw new Error("Email already in use");
-      if (err.code === 'auth/invalid-email') throw new Error("Invalid email format");
-      throw new Error("Unknown error occurred while creating account");
+      if (err.code === 'auth/email-already-in-use') throw new AuthServiceError("Email already in use");
+      if (err.code === 'auth/invalid-email') throw new AuthServiceError("Invalid email format");
+      throw new AuthServiceError("Unknown error occurred while creating account with email");
     }
   }
 
   async signInWithEmail(email: string, password: string) {
     // guard clause to prevent execution of function to invalid inputs
     if (email.length === 0 || password.length === 0) {
-      throw new Error("Email or password must not be empty");
+      throw new ValidationError("Email or password must not be empty");
     }
     try {
       await signInWithEmailAndPassword(this.auth, email, password);
     } catch (err: any) {
       switch (err.code) {
         case "auth/invalid-email":
-          throw new Error("The email address is not valid.");
+          throw new AuthServiceError("The email address is not valid.");
         case "auth/user-disabled":
-          throw new Error("This account has been disabled. Contact support.");
+          throw new AuthServiceError("This account has been disabled. Contact support.");
         case "auth/user-not-found":
-          throw new Error("No account exists with this email.");
+          throw new AuthServiceError("No account exists with this email.");
         case "auth/wrong-password":
-          throw new Error("Incorrect password. Please try again.");
+          throw new AuthServiceError("Incorrect password. Please try again.");
         case "auth/network-request-failed":
-          throw new Error("Network error. Check your internet connection.");
+          throw new AuthServiceError("Network error. Check your internet connection.");
         case "auth/too-many-requests":
-          throw new Error("Too many failed attempts. Please wait and try again later.");
+          throw new AuthServiceError("Too many failed attempts. Please wait and try again later.");
         default:
-          throw new Error("An unexpected error occurred. Please try again.");
+          throw new AuthServiceError("An unexpected error occurred. Please try again.");
       }
+    }
+  }
+
+  async authWithGoogle() {
+    try{
+      await GoogleSignin.hasPlayServices();
+      const signInResult = await GoogleSignin.signIn();
+
+      var idToken = signInResult.data?.idToken;
+
+      if(!idToken){
+        throw new AuthServiceError("Failed to authenticate using your Google account");
+      }
+      const googleCredential = GoogleAuthProvider.credential(idToken);
+      await signInWithCredential(this.auth, googleCredential);
+    }catch(err){
+      if(err instanceof AuthServiceError){
+        throw err;
+      }
+      throw new AuthServiceError("Unexpected error occured while authenticating with your Google account");
     }
   }
 
