@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,          // Space below before content
     fontFamily: 'SFProText',   // Keep consistent with your app typography
   },
-  touchableHighlight: {
+  touchableHighlight: {K
     paddingHorizontal: 8,
     borderRadius: 8
   }
