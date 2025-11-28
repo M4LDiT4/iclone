@@ -8,6 +8,9 @@ import messageDataListToPromptConverter from "@/domain/utils/messageDataListToPr
 import summaryStackDBService from "./localDB/SummaryStackDBService";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
 import SenderType from "@/domain/types/senderTypes";
+import { LLMError } from "@/core/errors/LLMError";
+
+import { eventBus } from "@/core/utils/eventBus";
 
 interface ChatServiceProps {
   chatId: string,
@@ -83,6 +86,18 @@ class ChatService {
     const newMessageData = toMessageData(newMessageModel);
 
     this.slidingWindow.enqueueMessage(newMessageData);
+    if(sender == 'system'){
+      // move summarization and heavy generation and write operations to background
+      void (async () => {
+        try{
+          this.summarizeNConversationSlidingWindow();
+        }catch(err){
+          if(err instanceof LLMError){
+            eventBus.emit("service_error", err);
+          }
+        }
+      }); 
+    }
   }
   /** 
    * - if the sliding window is full
@@ -90,7 +105,6 @@ class ChatService {
    * - get the summary of the summary stack and store it in a field to prevent re query
    */
   async summarizeNConversationSlidingWindow() : Promise<void>{
-    
     if(this.slidingWindow.isFull()){
       const slidingWindowPrompt = messageDataListToPromptConverter(this.slidingWindow.queue.toArray());
       const summary = await this.summaryService.summarizeConversation(slidingWindowPrompt);
@@ -181,7 +195,6 @@ class ChatService {
 
   async chat(){
     const slidingWindowData = this.slidingWindow.toMessageArray();
-    console.log(slidingWindowData)
     const context = this.buildChatPrompt({
       username: this.username,
       longTermMemory: this.chatSummary ?? "No long term memory",
