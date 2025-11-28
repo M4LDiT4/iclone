@@ -15,9 +15,11 @@ import ChatBasicDetailsCard from '@/components/containers/chatBasicDetailsCard';
 import ChatInputBar from '@/components/textinputs/chatInputBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Spacer } from '@/components/layout/layout';
+import { useAuth } from '@/core/contexts/authContext';
 
 
 export default function HomeScreen() {
+  const {user} = useAuth();
   return (
     <SafeAreaView edges={['left', 'right']} style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -30,7 +32,8 @@ export default function HomeScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.upperContainer}>
-            <Text style={styles.primaryText}>Hello, Elena</Text>
+            <Text style={styles.primaryText}>{`Hello, ${user?.displayName}`}</Text>
+            <Spacer height={8}/>
             <Text style={styles.welcomeText}>Welcome back!</Text>
             <View style={styles.svgContainer}>
               <Logo />

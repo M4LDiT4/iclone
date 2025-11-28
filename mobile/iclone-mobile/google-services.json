@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "960913578128",
+    "project_id": "eterne-fcd6e",
+    "storage_bucket": "eterne-fcd6e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:960913578128:android:10c2c9c55c7c5b230c6015",
+        "android_client_info": {
+          "package_name": "com.anonymous.iclonemobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "960913578128-r17p89876sgsloq9qv12dfntn7dtfssb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.anonymous.iclonemobile",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "960913578128-jai9003ivpjh8jsvgskr2f8d7h0r214g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqKBXgRqXP8NxH9Ufc6y7OQOEL64gsAJs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "960913578128-jai9003ivpjh8jsvgskr2f8d7h0r214g.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "960913578128-skhu8icn66944fph6t37tibs63bgmerr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.anonymous.iclonemobile"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,23 +1,13 @@
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { Center } from "@/components/layout/layout";
+import { View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text } from "react-native";
 
 export default function Index() {
-  const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(false);
-
-  useEffect(() => {
-    if (isAuthenticated !== null) {
-      requestAnimationFrame(() => {
-        router.replace(isAuthenticated ? "/home" : "/signIn");
-      });
-    }
-  }, [isAuthenticated]);
-
   return (
     <SafeAreaView>
-      <Text>Index</Text>
+      <Center style ={{flex:1}}>
+          <Text>Starting the app...</Text>
+      </Center>
     </SafeAreaView>
-  )
+  );
 }
