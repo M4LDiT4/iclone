@@ -26,6 +26,15 @@ class AuthService {
     try {
       const { user: firebaseUser } = await createUserWithEmailAndPassword(this.auth, user.email, user.password);
       await firestore().collection('users').doc(firebaseUser.uid).set(user.toFirebaseJson());
+
+      await this.auth.currentUser?.reload();
+      const currentUser = this.auth.currentUser;
+      if(currentUser == null){
+        throw new AuthServiceError("We have difficulty creating your account right now. Please try again later");
+      }
+      await currentUser.updateProfile({
+        displayName: user.username
+      });
     } catch (err: any) {
       console.error(`Failed to signup with email: ${err}`)
       if (err.code === 'auth/email-already-in-use') throw new AuthServiceError("Email already in use");
@@ -40,8 +49,13 @@ class AuthService {
       throw new ValidationError("Email or password must not be empty");
     }
     try {
+      // no need to update the displayName of the user as it is automatically done by firebase
       await signInWithEmailAndPassword(this.auth, email, password);
+      await this.auth.currentUser?.reload(); // make sure that the new user is registered
     } catch (err: any) {
+      if(err instanceof ValidationError){
+        throw err;
+      }
       switch (err.code) {
         case "auth/invalid-email":
           throw new AuthServiceError("The email address is not valid.");
@@ -60,18 +74,23 @@ class AuthService {
       }
     }
   }
-
+  /** ### Signs in/up the using google
+   * - if google account is already registered, user is signed in
+   * - otherwise creates a new account and signs in the user
+   * - we can extend or break down later to show errors when signing up with already existing account
+   */
   async authWithGoogle() {
     try{
       await GoogleSignin.hasPlayServices();
       const signInResult = await GoogleSignin.signIn();
 
       var idToken = signInResult.data?.idToken;
-
+      // null guard for idToken
       if(!idToken){
         throw new AuthServiceError("Failed to authenticate using your Google account");
       }
       const googleCredential = GoogleAuthProvider.credential(idToken);
+      // no need to udpate the displayName as firebase does this for us
       await signInWithCredential(this.auth, googleCredential);
     }catch(err){
       if(err instanceof AuthServiceError){

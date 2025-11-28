@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import AuthService from "@/services/AuthService";
 import { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import AppColors from "@/core/styling/AppColors";
+import { AuthContext } from "@/core/contexts/authContext";
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
+      // TODO: Add a proper loader
       <View style={styles.initialScreenContainer}>
         <ActivityIndicator size="large" color={AppColors.primaryColor}/>
         <Text style = {styles.titleText}>Starting App...</Text>
@@ -38,7 +40,11 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   }
 
   // Render children once auth state is known
-  return <>{children}</>;
+  return (
+    <AuthContext.Provider value={{user: user}}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 const styles = StyleSheet.create({

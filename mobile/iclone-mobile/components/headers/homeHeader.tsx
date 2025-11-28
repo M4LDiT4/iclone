@@ -3,17 +3,19 @@ import AvatarContainer from '../images/avatarContainer';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppColors from '@/core/styling/AppColors';
+import { useAuth } from '@/core/contexts/authContext';
 
 
 export default function HomeHeader() {
   const insets = useSafeAreaInsets();
-
+  const {user} = useAuth();
   return (
     <View style={{...styles.container, height: 70 +insets.top, paddingTop: insets.top}}>
       <View style = {styles.contentContainer}>
         <AvatarContainer
           size={64}
-          source={require("../../assets/images/react-logo.png")}
+          source={user?.photoURL}
+          fallbackIcon = {<Ionicons name="person-circle" size={40} color="#aaa" />}
         />
         <Ionicons name='notifications-outline' size={36} color={AppColors.primaryColor}/>
       </View>
