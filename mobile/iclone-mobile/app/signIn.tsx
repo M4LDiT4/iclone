@@ -20,6 +20,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import AuthService from "@/services/AuthService";
 import { AppValidators } from "@/core/utils/appValidators";
+import { AuthServiceError } from "@/core/errors/AuthServiceError";
+import { ValidationError } from "@/core/errors/ValidationError";
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -29,6 +31,7 @@ export default function SignInScreen() {
   // states
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errMessage, setErrMessage] = useState<string|null>(null);
 
 
   const handleSignInButtonPress = async () => {
@@ -53,6 +56,27 @@ export default function SignInScreen() {
     setRememberMe(!rememberMe);
   }
 
+  const handleCloseErrorMessage = () => {
+    setErrMessage(null);
+  }
+
+  const handleSigninWithGoogle = async () => {
+    try{
+      setIsLoading(true);
+      await AuthService.authWithGoogle();
+    }catch(err){
+      if(err instanceof AuthServiceError){
+        setErrMessage(err.message);
+      }else if(err instanceof ValidationError){
+        setErrMessage(err.message);
+      }else{
+        setErrMessage("Unexpected error occured while signing-in ")
+      }
+    }finally{
+      setIsLoading(false);
+    }
+  }
+
   const gotoSignUp = () => {
     router.replace('/signUp');
   }
@@ -74,6 +98,7 @@ export default function SignInScreen() {
     }
     loadRememberMe();
   }, []);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* Top circular gradient */}
@@ -190,7 +215,7 @@ export default function SignInScreen() {
 
               <Spacer height={12} />
               {/* LOGIN WITH GOOGLE */}
-              <OutlineButton style={{ borderColor: hexToRgba("#000000", 0.75) }}>
+              <OutlineButton style={{ borderColor: hexToRgba("#000000", 0.75)}} onPress={handleSigninWithGoogle}>
                 <Row>
                   <FontAwesome
                     name="google"
@@ -224,6 +249,15 @@ export default function SignInScreen() {
           <Padding style = {styles.signUpModalContainer}>
             <Text style = {styles.signUpModalTitleText}>Signing in...</Text>
             <ActivityIndicator size={'large'} color={AppColors.primaryColor}/>
+          </Padding>
+        </Column>
+      </GenericModal>
+      <GenericModal visible = {!isLoading && errMessage != null} onClose={() => {}}>
+        <Column>
+          <Padding style = {styles.signUpModalContainer}>
+            <Text style = {styles.signUpModalTitleText}>{errMessage}</Text>
+            <Spacer height={8}/>
+            <PrimaryButton label="Okay" onPress={handleCloseErrorMessage}/>
           </Padding>
         </Column>
       </GenericModal>

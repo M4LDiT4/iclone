@@ -9,13 +9,14 @@ export default function RootLayout() {
   return (
     <AuthGate>
       <Stack 
-      screenOptions={{
-        headerShown: false,
-        headerStyle: {
-          backgroundColor: AppColors.backgroundColor,
-        },
-        headerShadowVisible: false
-      }}>
+        screenOptions={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: AppColors.backgroundColor,
+          },
+          headerShadowVisible: false
+        }}
+      >
       <Stack.Screen
         name = 'home'
         options={{
