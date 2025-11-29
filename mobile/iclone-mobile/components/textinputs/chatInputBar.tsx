@@ -16,7 +16,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 
 
-export default function ChatInputBar() {
+export default function ChatInputBar({username}:{username?:string|null}) {
   const [componentStatus, setComponentStatus] = useState<ComponentStatus>("idle");
   const [chatDBService, setChatDBService] = useState<ChatDBService>();
   const [message, setMessage] = useState<string | null>("");
@@ -52,6 +52,7 @@ export default function ChatInputBar() {
         params: {
           userMessage: message,
           chatId: chatId,
+          username: username
         }
       });
     }

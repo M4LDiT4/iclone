@@ -1,5 +1,5 @@
 // ChatScreen.tsx
-import {KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text} from "react-native";
+import {FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text} from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import ChatBubble from "@/components/chat/ChatBubble";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,11 +9,10 @@ import LoadingScreen from "@/components/notifiers/loadingScreen";
 import { Column, Padding, Spacer, Stack } from "@/components/layout/layout";
 import GenericModal from "@/components/modals/genericModal";
 import PrimaryButton from "@/components/buttons/primaryButton";
-import Logo from '../assets/svg/llm_logo.svg';
 import AssistantLogo from "@/components/chat/assistantLogo";
 
 export default function ChatScreen() {
-  const { chatId, userMessage } = useLocalSearchParams();
+  const { chatId, userMessage, username } = useLocalSearchParams();
   const {
     messageList,
     isInitializing,
@@ -21,16 +20,17 @@ export default function ChatScreen() {
     isError,
     isAssistantTyping,
     isUserTyping,
+    flatListRef,
     setIsUserTyping,
     pushUserMessage,
     generateResponse,
     handleErrorModalCloseButtonPress,
-  } = useChatViewModel(chatId as string|undefined, userMessage as string|undefined);
+  } = useChatViewModel(chatId as string|undefined, userMessage as string|undefined, username as string|undefined);
  
   if (isInitializing) return <LoadingScreen/>;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <KeyboardAvoidingView 
         style ={{flex:1}}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -38,16 +38,21 @@ export default function ChatScreen() {
       >
         <Padding style={{flex:1}} horizontal={16}>
           <Stack style = {{flex: 1}}>
-            <ScrollView contentContainerStyle={styles.scroll}>
-              {messageList.map((msg, idx) => (
-                <ChatBubble key={idx} {...msg} />
-              ))}
-              <AssistantLogo 
-                type={(messageList.length> 2 || isUserTyping)? "small": 'large'}
-                isUserTyping = {isUserTyping}
-                isSystemTyping = {isAssistantTyping}
-              />
-            </ScrollView>
+            <FlatList
+              ref={flatListRef}
+              inverted
+              style={{ flex: 1 }}
+              contentContainerStyle={{paddingTop: 50}}
+              data={messageList}
+              keyExtractor={(_, index) => index.toString()}
+              renderItem={({ item }) => <ChatBubble {...item} />}
+              keyboardShouldPersistTaps="handled"
+            />
+            <AssistantLogo 
+              type={(messageList.length> 2 || isUserTyping)? "small": 'large'}
+              isUserTyping = {isUserTyping}
+              isSystemTyping = {isAssistantTyping}
+            />
           </Stack>
           <ChatInputWrapper
             handleSend={pushUserMessage}

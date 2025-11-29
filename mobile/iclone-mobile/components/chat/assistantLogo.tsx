@@ -17,10 +17,10 @@ function AssistantLogo({type, isUserTyping, isSystemTyping}:{
   const size = isSmall ? 48 : 116;
 
   const displayText = () => {
-    if(isUserTyping){
-      return "Listening...";
-    }else if(isSystemTyping){
+    if(isSystemTyping){
       return "Typing...";
+    }else if(isUserTyping){
+      return "Listening...";
     }else {
       return "Hello. How can I help you";
     }

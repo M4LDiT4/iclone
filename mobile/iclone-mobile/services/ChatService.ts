@@ -96,7 +96,7 @@ class ChatService {
             eventBus.emit("service_error", err);
           }
         }
-      }); 
+      })();
     }
   }
   /** 
@@ -105,6 +105,7 @@ class ChatService {
    * - get the summary of the summary stack and store it in a field to prevent re query
    */
   async summarizeNConversationSlidingWindow() : Promise<void>{
+    console.log(`[SLIDING WINDOW SIZE: ${this.slidingWindow.queueMaxSize}: ${this.slidingWindow.conversationCount}`)
     if(this.slidingWindow.isFull()){
       const slidingWindowPrompt = this.slidingWindow.conversationToString();
       const summary = await this.summaryService.summarizeConversation(slidingWindowPrompt);
@@ -202,12 +203,13 @@ class ChatService {
   // - get the short term memory (sliding window)
   // - get the long term memory if present (stack summary)
   // - combine them to create a prompt
-  async chat(){
+  chat(){
     const slidingWindowData = this.slidingWindow.toMessageArray();
     const context = this.buildChatPrompt({
       username: this.username,
       longTermMemory: this.chatSummary ?? "No long term memory",
     });
+    console.log(`[Stack summary]: ${this.chatSummary}`)
     return this.llModel.call([context, ...slidingWindowData]);
   }
 

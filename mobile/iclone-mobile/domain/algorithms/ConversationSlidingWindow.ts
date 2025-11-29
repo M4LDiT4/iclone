@@ -96,10 +96,22 @@ class ConversationSlidingWindow {
   }
 
   conversationToString(): string {
-    const messageList = this.toMessageArray();
-    // join the arrray using empty string
-    return messageList.join("");
+    const messages = this.toMessageArray();
+
+    return messages
+      .map(msg => {
+        const sender =
+          msg.role === "user"
+            ? "User"
+            : msg.role === "assistant"
+            ? "Assistant"
+            : "Unknown";
+
+        return `${sender}: ${msg.content}`;
+      })
+      .join("\n");
   }
+
 
 }
 
