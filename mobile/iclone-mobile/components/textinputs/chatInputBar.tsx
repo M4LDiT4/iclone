@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View,
   TouchableOpacity,
   StyleSheet,
   Keyboard,
@@ -26,17 +25,23 @@ export default function ChatInputBar({username}:{username?:string|null}) {
   const router = useRouter();
 
   useEffect(() => {
-    const chatDBService = new ChatDBService({database: database, userId: 'userId'});
+    const chatDBService = new ChatDBService({ database, userId: "userId" });
     setChatDBService(chatDBService);
 
-    const showSub = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
-    const hideSub = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+    const showSub = Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardVisible(true);
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardVisible(false);
+    });
 
     return () => {
       showSub.remove();
       hideSub.remove();
     };
   }, []);
+
 
   const handleMessageChange = (newMessage: string) => {
     setMessage(newMessage);

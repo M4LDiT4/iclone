@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { Keyboard, View, StyleSheet } from "react-native";
+import { Keyboard, View, StyleSheet, Platform } from "react-native";
 import ChatTextinput from "./chatTextinput";
 
 interface ChatInputWrapperProps {
@@ -22,11 +22,14 @@ function ChatInputWrapper({
 
   // Keyboard listeners
   useEffect(() => {
-    const showSub = Keyboard.addListener("keyboardDidShow", () => {
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const showSub = Keyboard.addListener(showEvent, () => {
       setIsUserTyping(true);
     });
 
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    const hideSub = Keyboard.addListener(hideEvent, () => {
       setIsUserTyping(false);
     });
 
@@ -35,6 +38,7 @@ function ChatInputWrapper({
       hideSub.remove();
     };
   }, []);
+
 
   const handleMessageChange = (newMessage: string) => {
     setMessage(newMessage);
