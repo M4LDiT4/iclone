@@ -18,7 +18,7 @@ export default function GenericContainer({
   opacity = 0.1,
   borderRadius = 0.8,
   children,
-}: TintedContainerProps) {
+}: TintedContainerProps){
   const backgroundColor = Color(tintColor).alpha(opacity).rgb().string();
 
   const containerStyle: ViewStyle = {

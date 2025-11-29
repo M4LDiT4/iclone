@@ -77,6 +77,7 @@ class SummaryService {
     const response = await this.llmClient.call(messages);
     return response;
   }
+
 }
 
 export default SummaryService;

@@ -25,19 +25,18 @@ export default function chatBasicDetailsCard({
       width={82}
       height={76}
       borderRadius={10}
-      children={
-        <View style={[styles.innerContainer, containerStyle]}>
-          <View style={styles.iconWrapper}>
-            <Ionicons name={iconName} size={iconSize} color={iconColor} />
-          </View>
-          <View style={styles.textWrapper}>
-            <Text style={[styles.labelText, { color: iconColor }, textStyle]}>
-              {label}
-            </Text>
-          </View>
+    >
+      <View style={[styles.innerContainer, containerStyle]}>
+        <View style={styles.iconWrapper}>
+          <Ionicons name={iconName} size={iconSize} color={iconColor} />
         </View>
-      }
-    />
+        <View style={styles.textWrapper}>
+          <Text style={[styles.labelText, { color: iconColor }, textStyle]}>
+            {label}
+          </Text>
+        </View>
+      </View>
+    </GenericContainer>
   );
 }
 

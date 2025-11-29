@@ -4,10 +4,12 @@ import SummaryStack from "@/domain/dataStructures/SummaryStack";
 import LocalMessageDBService from "./localDB/LocalMessageDBService";
 import RawMessageData from "@/data/application/RawMessage";
 import { toMessageData } from "@/data/mappers/messageMapper";
-import messageDataListToPromptConverter from "@/domain/utils/messageDataListToPromptConverter";
 import summaryStackDBService from "./localDB/SummaryStackDBService";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
 import SenderType from "@/domain/types/senderTypes";
+import { LLMError } from "@/core/errors/LLMError";
+
+import { eventBus } from "@/core/utils/eventBus";
 
 interface ChatServiceProps {
   chatId: string,
@@ -83,6 +85,19 @@ class ChatService {
     const newMessageData = toMessageData(newMessageModel);
 
     this.slidingWindow.enqueueMessage(newMessageData);
+    if(sender == 'system'){
+      // move summarization and heavy generation and write operations to background
+      // throw an error if you encountered a problem in the LLM
+      void (async () => {
+        try{
+          this.summarizeNConversationSlidingWindow();
+        }catch(err){
+          if(err instanceof LLMError){
+            eventBus.emit("service_error", err);
+          }
+        }
+      })();
+    }
   }
   /** 
    * - if the sliding window is full
@@ -90,14 +105,20 @@ class ChatService {
    * - get the summary of the summary stack and store it in a field to prevent re query
    */
   async summarizeNConversationSlidingWindow() : Promise<void>{
-    
+    console.log(`[SLIDING WINDOW SIZE: ${this.slidingWindow.queueMaxSize}: ${this.slidingWindow.conversationCount}`)
     if(this.slidingWindow.isFull()){
-      const slidingWindowPrompt = messageDataListToPromptConverter(this.slidingWindow.queue.toArray());
+      const slidingWindowPrompt = this.slidingWindow.conversationToString();
       const summary = await this.summaryService.summarizeConversation(slidingWindowPrompt);
       await this.summaryStack.pushLeaf(summary, this.slidingWindow.getMessageIdList());
+      // reset the sliding window count 
+      // note that there could be a write conflict here (e.g you reset the count but also you referenced the previous count)
       this.slidingWindow.resetCount();
+      // get the summary of the stack and save it
       const stackSummary = await this.summaryStackDBService.getSummary(this.chatId);
+      console.log(`[STACK SUMMARY]: ${stackSummary}`);
       if(stackSummary && stackSummary.summary){
+        // save the summary locally
+        // if you reached this part, it is assumed that you have saved your stack summary
         this.chatSummary = stackSummary.summary;
       }
     }
@@ -174,20 +195,28 @@ class ChatService {
 
     return { role: 'assistant', content: systemContent.trim() };
   }
-
+  // retrieves saved messages from the local database
   async getMessages(){
     return this.localMessageDBService.getMessages(this.chatId, 20)
   }
-
-  async chat(){
+  // send a prompt to the LLM
+  // - get the short term memory (sliding window)
+  // - get the long term memory if present (stack summary)
+  // - combine them to create a prompt
+  chat(){
     const slidingWindowData = this.slidingWindow.toMessageArray();
-    console.log(slidingWindowData)
     const context = this.buildChatPrompt({
       username: this.username,
       longTermMemory: this.chatSummary ?? "No long term memory",
     });
+    console.log(`[Stack summary]: ${this.chatSummary}`)
     return this.llModel.call([context, ...slidingWindowData]);
   }
+
+  // summarize the chat
+  // get the theme of the summary
+  // save as the chat summary
+  // 
 }
 
 export default ChatService;

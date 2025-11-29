@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View,
   TouchableOpacity,
   StyleSheet,
   Keyboard,
@@ -16,7 +15,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 
 
-export default function ChatInputBar() {
+export default function ChatInputBar({username}:{username?:string|null}) {
   const [componentStatus, setComponentStatus] = useState<ComponentStatus>("idle");
   const [chatDBService, setChatDBService] = useState<ChatDBService>();
   const [message, setMessage] = useState<string | null>("");
@@ -26,17 +25,23 @@ export default function ChatInputBar() {
   const router = useRouter();
 
   useEffect(() => {
-    const chatDBService = new ChatDBService({database: database, userId: 'userId'});
+    const chatDBService = new ChatDBService({ database, userId: "userId" });
     setChatDBService(chatDBService);
 
-    const showSub = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
-    const hideSub = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+    const showSub = Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardVisible(true);
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardVisible(false);
+    });
 
     return () => {
       showSub.remove();
       hideSub.remove();
     };
   }, []);
+
 
   const handleMessageChange = (newMessage: string) => {
     setMessage(newMessage);
@@ -52,6 +57,7 @@ export default function ChatInputBar() {
         params: {
           userMessage: message,
           chatId: chatId,
+          username: username
         }
       });
     }

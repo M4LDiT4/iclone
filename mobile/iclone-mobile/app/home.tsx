@@ -77,7 +77,9 @@ export default function HomeScreen() {
             </ScrollView>
           </View>
         </ScrollView>
-        <ChatInputBar/>
+        <ChatInputBar
+          username={user?.displayName}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

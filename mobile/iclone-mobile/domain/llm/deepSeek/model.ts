@@ -14,6 +14,9 @@ class DeepSeekClient {
   private readonly model: string = 'deepseek-chat';
 
   constructor(apiKey: string) {
+    if(!apiKey){
+      throw new LLMError("Failed to connect with LLM: No API Key")
+    }
     this.apiKey = apiKey;
   }
 
