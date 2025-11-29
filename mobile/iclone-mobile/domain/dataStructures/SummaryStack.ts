@@ -33,7 +33,10 @@ class SummaryStack {
       this.stack.push(item);
     }
   }
-
+  /** ## Handles insertion of new sliding window summary to the summary stack
+   * @param summary : summary of the sliding window
+   * @param messageIdList : the id of messages that is used to generate the summary. We can use this to rebuild the summary stack from scratch 
+   */
   async pushLeaf(summary: string, messageIdList: string []): Promise<void> {
     try{
       const leaf = new RawSummaryData({
@@ -47,12 +50,12 @@ class SummaryStack {
       const summaryNode = await this.summaryStackDBService.pushLeafSummary(leaf, messageIdList);
 
       this.stack.push(summaryNode);
-      const merged = await this.mergeIfNeeded();
+      // merges the stack to keep only few items on the summary stack
+      await this.mergeIfNeeded();
 
-      if(merged){
-        const summary = await this.summarizeStack();
-        await this.summaryStackDBService.upsertSummaryStack(this.chatId, summary);
-      }
+      // for each push of a node/leaf we need to summarize the stack
+      const stackSummary = await this.summarizeStack();
+      await this.summaryStackDBService.upsertSummaryStack(this.chatId, stackSummary);
     }catch(err){
       if(err instanceof LocalDBError){
         console.error(`Local Database error encountered while trying to push leaf: ${err}`);
@@ -73,9 +76,8 @@ class SummaryStack {
    * repeat the process until stack has length of 1 or the two topmost items
    * do not have the same size
    */
-  private async mergeIfNeeded(): Promise<boolean> {
+  private async mergeIfNeeded(): Promise<void> {
     try{
-      var merged = false;
       while (
         this.stack.size() >= 2 &&
         this.stack.peek()!.size === this.stackItems()[this.stack.size() - 2].size
@@ -100,33 +102,34 @@ class SummaryStack {
         });
 
         const summaryNode = await this.summaryStackDBService.pushSummaryNode(parent, "node");
-
+        // we start summarizing from the top of the stack
+        // we pop two items, merge them, push the result to the stack
+        // repeat the process
         this.stack.push(summaryNode);
-
-        if(!merged){
-          merged = true;
-        }
       }
-      return merged;
     }catch(err){
       if(err instanceof LocalDBError){
-        console.error(`Local Database error occured while merging summary stack if needed: ${err}`);
+        console.error(`Local Database error occured while merging summary summary stack: ${err}`);
         throw err;
       }else if(err instanceof LLMError){
-        console.error(`LLM error encountered while merginng animal if needed: ${err}`);
+        console.error(`LLM error encountered while merging summary stack: ${err}`);
         throw err;
       }
-      console.error(`Unexpected error occured while merging summary stack if needed: ${err}`);
-      throw new ServiceError("Unexpected error occured while merging summary stack if needed");
+      console.error(`Unexpected error occured while merging summary stack: ${err}`);
+      throw new ServiceError("Unexpected error occured while merging summary stack");
     }
   }
-
-  // summarizes the stack to a single node
+  /**
+   * Summarizes the summary stack to a single node
+   * If there is only one node on the stack, returns the summary/content of that node
+   * We only summarizes the stack, we do not save the summary here
+   * @returns [string]: summary of the stack
+   */
   async summarizeStack(): Promise<string> {
     try{
       const items = [...this.getStack()];
       const temp: SummaryNode[] = [...items];
-
+      // merges the stack until only one node left
       while (temp.length > 1) {
         const right = temp.pop()!;
         const left = temp.pop()!;
@@ -138,7 +141,7 @@ class SummaryStack {
           summary: merged
         });
       }
-
+      // return the summary of the remaining node
       return temp[0].summary;
     }catch(err){
       if(err instanceof LocalDBError){

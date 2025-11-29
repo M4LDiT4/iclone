@@ -95,6 +95,12 @@ class ConversationSlidingWindow {
     this.conversationCount = 0;
   }
 
+  conversationToString(): string {
+    const messageList = this.toMessageArray();
+    // join the arrray using empty string
+    return messageList.join("");
+  }
+
 }
 
 export default ConversationSlidingWindow;

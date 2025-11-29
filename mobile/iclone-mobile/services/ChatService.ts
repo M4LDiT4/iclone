@@ -4,7 +4,6 @@ import SummaryStack from "@/domain/dataStructures/SummaryStack";
 import LocalMessageDBService from "./localDB/LocalMessageDBService";
 import RawMessageData from "@/data/application/RawMessage";
 import { toMessageData } from "@/data/mappers/messageMapper";
-import messageDataListToPromptConverter from "@/domain/utils/messageDataListToPromptConverter";
 import summaryStackDBService from "./localDB/SummaryStackDBService";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
 import SenderType from "@/domain/types/senderTypes";
@@ -88,6 +87,7 @@ class ChatService {
     this.slidingWindow.enqueueMessage(newMessageData);
     if(sender == 'system'){
       // move summarization and heavy generation and write operations to background
+      // throw an error if you encountered a problem in the LLM
       void (async () => {
         try{
           this.summarizeNConversationSlidingWindow();
@@ -106,12 +106,17 @@ class ChatService {
    */
   async summarizeNConversationSlidingWindow() : Promise<void>{
     if(this.slidingWindow.isFull()){
-      const slidingWindowPrompt = messageDataListToPromptConverter(this.slidingWindow.queue.toArray());
+      const slidingWindowPrompt = this.slidingWindow.conversationToString();
       const summary = await this.summaryService.summarizeConversation(slidingWindowPrompt);
       await this.summaryStack.pushLeaf(summary, this.slidingWindow.getMessageIdList());
+      // reset the sliding window count 
+      // note that there could be a write conflict here (e.g you reset the count but also you referenced the previous count)
       this.slidingWindow.resetCount();
+      // get the summary of the stack and save it
       const stackSummary = await this.summaryStackDBService.getSummary(this.chatId);
       if(stackSummary && stackSummary.summary){
+        // save the summary locally
+        // if you reached this part, it is assumed that you have saved your stack summary
         this.chatSummary = stackSummary.summary;
       }
     }
@@ -188,11 +193,14 @@ class ChatService {
 
     return { role: 'assistant', content: systemContent.trim() };
   }
-
+  // retrieves saved messages from the local database
   async getMessages(){
     return this.localMessageDBService.getMessages(this.chatId, 20)
   }
-
+  // send a prompt to the LLM
+  // - get the short term memory (sliding window)
+  // - get the long term memory if present (stack summary)
+  // - combine them to create a prompt
   async chat(){
     const slidingWindowData = this.slidingWindow.toMessageArray();
     const context = this.buildChatPrompt({
