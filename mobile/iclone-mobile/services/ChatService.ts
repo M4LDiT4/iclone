@@ -114,6 +114,7 @@ class ChatService {
       this.slidingWindow.resetCount();
       // get the summary of the stack and save it
       const stackSummary = await this.summaryStackDBService.getSummary(this.chatId);
+      console.log(`[STACK SUMMARY]: ${stackSummary}`);
       if(stackSummary && stackSummary.summary){
         // save the summary locally
         // if you reached this part, it is assumed that you have saved your stack summary
@@ -209,6 +210,11 @@ class ChatService {
     });
     return this.llModel.call([context, ...slidingWindowData]);
   }
+
+  // summarize the chat
+  // get the theme of the summary
+  // save as the chat summary
+  // 
 }
 
 export default ChatService;

@@ -76,7 +76,6 @@ function ChatInputWrapper({
   );
 }
 
-ChatInputWrapper.name = "ChatInputWrapper";
 export default memo(ChatInputWrapper);
 
 

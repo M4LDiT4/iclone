@@ -1,15 +1,16 @@
 // ChatScreen.tsx
-import {ScrollView, StyleSheet, View, Text} from "react-native";
+import {KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text} from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import ChatBubble from "@/components/chat/ChatBubble";
-import TypingIndicator from "@/components/texts/typingIndicator";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useChatViewModel } from "@/data/viewModels/ChatViewModel";
 import ChatInputWrapper from "@/components/textinputs/chatInputWrapper";
 import LoadingScreen from "@/components/notifiers/loadingScreen";
-import { Column, Padding, Spacer } from "@/components/layout/layout";
+import { Column, Padding, Spacer, Stack } from "@/components/layout/layout";
 import GenericModal from "@/components/modals/genericModal";
 import PrimaryButton from "@/components/buttons/primaryButton";
+import Logo from '../assets/svg/llm_logo.svg';
+import AssistantLogo from "@/components/chat/assistantLogo";
 
 export default function ChatScreen() {
   const { chatId, userMessage } = useLocalSearchParams();
@@ -30,35 +31,49 @@ export default function ChatScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Padding horizontal={16}>
-        <ScrollView style={styles.scroll}>
-          {messageList.map((msg, idx) => (
-            <ChatBubble key={idx} {...msg} />
-          ))}
-          {isAssistantTyping && <TypingIndicator />}
-        </ScrollView>
-        <ChatInputWrapper
-          handleSend={pushUserMessage}
-          triggerLLMResponse={generateResponse}
-          setIsUserTyping={setIsUserTyping}
-          isUserTyping={isUserTyping}
-        />
-      </Padding>
-      <GenericModal visible = {isError} onClose={() => {}}>
-        <Column>
-          <Padding style = {styles.signUpModalContainer}>
-            <Text style = {styles.signUpModalTitleText}>{error ?? "Something went wrong"}</Text>
-            <Spacer height={8}/>
-            <PrimaryButton label="Okay" onPress={handleErrorModalCloseButtonPress}/>
-          </Padding>
-        </Column>
-      </GenericModal>
+      <KeyboardAvoidingView 
+        style ={{flex:1}}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 80} // sample offsets
+      >
+        <Padding style={{flex:1}} horizontal={16}>
+          <Stack style = {{flex: 1}}>
+            <ScrollView contentContainerStyle={styles.scroll}>
+              {messageList.map((msg, idx) => (
+                <ChatBubble key={idx} {...msg} />
+              ))}
+              <AssistantLogo 
+                type={(messageList.length> 2 || isUserTyping)? "small": 'large'}
+                isUserTyping = {isUserTyping}
+                isSystemTyping = {isAssistantTyping}
+              />
+            </ScrollView>
+          </Stack>
+          <ChatInputWrapper
+            handleSend={pushUserMessage}
+            triggerLLMResponse={generateResponse}
+            setIsUserTyping={setIsUserTyping}
+            isUserTyping={isUserTyping}
+          />
+        </Padding>
+        <GenericModal visible = {isError} onClose={() => {}}>
+          <Column>
+            <Padding style = {styles.signUpModalContainer}>
+              <Text style = {styles.signUpModalTitleText}>{error ?? "Something went wrong"}</Text>
+              <Spacer height={8}/>
+              <PrimaryButton label="Okay" onPress={handleErrorModalCloseButtonPress}/>
+            </Padding>
+          </Column>
+        </GenericModal>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: {
+     flex: 1,
+  },
   scroll: { flex: 1 },
   signUpModalContainer : {
     display: 'flex',

@@ -37,7 +37,7 @@ export const useChatViewModel = (chatId: string | undefined, userMessage?: strin
           chatId,
           username: username ?? "Guest",
           assistantName: "Eterne",
-          slidingWindowSize: 10,
+          slidingWindowSize: 10, // you can adjust the number of messages limit before summarizing
           summaryService,
           summaryStackDBService,
           localMessageDBService,
@@ -117,9 +117,9 @@ export const useChatViewModel = (chatId: string | undefined, userMessage?: strin
   const generateResponse = useCallback(async () => {
     if (!chatService) return;
     setIsAssistantTyping(true);
-
     try {
       const response = await chatService.chat();
+      console.log(response);
       await pushSystemMessage(response);
     } catch (err) {
       console.error("LLM Error:", err);

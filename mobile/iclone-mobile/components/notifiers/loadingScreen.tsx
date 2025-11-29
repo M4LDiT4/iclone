@@ -11,7 +11,6 @@ function LoadingScreen(){
   )
 }
 
-LoadingScreen.name = 'LoadingScreen';
 export default memo(LoadingScreen);
 
 const styles = StyleSheet.create({
