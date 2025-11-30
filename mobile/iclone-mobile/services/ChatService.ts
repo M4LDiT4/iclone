@@ -4,12 +4,12 @@ import SummaryStack from "@/domain/dataStructures/SummaryStack";
 import LocalMessageDBService from "./localDB/LocalMessageDBService";
 import RawMessageData from "@/data/application/RawMessage";
 import { toMessageData } from "@/data/mappers/messageMapper";
-import summaryStackDBService from "./localDB/temp";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
 import SenderType from "@/domain/types/senderTypes";
 import { LLMError } from "@/core/errors/LLMError";
 
 import { eventBus } from "@/core/utils/eventBus";
+import SummaryStackDBService from "./localDB/SummaryStackDBService";
 
 interface ChatServiceProps {
   chatId: string,
@@ -17,7 +17,7 @@ interface ChatServiceProps {
   assistantName: string;
   slidingWindowSize: number
   summaryService: SummaryService;
-  summaryStackDBService: summaryStackDBService;
+  summaryStackDBService: SummaryStackDBService;
   localMessageDBService: LocalMessageDBService;
   llmModel: DeepSeekClient
 }
@@ -33,7 +33,7 @@ class ChatService {
   summaryStack: SummaryStack;
 
   summaryService: SummaryService;
-  summaryStackDBService: summaryStackDBService;
+  summaryStackDBService: SummaryStackDBService;
 
   localMessageDBService: LocalMessageDBService;
 
