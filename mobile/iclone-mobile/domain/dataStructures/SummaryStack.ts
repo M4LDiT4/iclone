@@ -2,7 +2,7 @@ import Stack from "./Stack";
 import SummaryNode from "../../data/application/SummaryNode";
 import SummaryService from "@/services/SummaryService";
 import RawSummaryData from "@/data/application/RawSummaryData";
-import SummaryStackDBService from "@/services/localDB/SummaryStackDBService";
+import SummaryStackDBService from "@/services/localDB/temp";
 import { LocalDBError } from "@/core/errors/LocalDBError";
 import ServiceError from "@/core/errors/ServiceError";
 import { LLMError } from "@/core/errors/LLMError";

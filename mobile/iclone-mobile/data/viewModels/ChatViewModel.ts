@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import ChatService from "@/services/ChatService";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
 import SummaryService from "@/services/SummaryService";
-import SummaryStackDBService from "@/services/localDB/SummaryStackDBService";
+import SummaryStackDBService from "@/services/localDB/temp";
 import LocalMessageDBService from "@/services/localDB/LocalMessageDBService";
 import database from "@/data/database/index.native";
 import { eventBus } from "@/core/utils/eventBus";

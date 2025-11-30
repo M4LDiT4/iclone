@@ -4,7 +4,7 @@ import SummaryStack from "@/domain/dataStructures/SummaryStack";
 import LocalMessageDBService from "./localDB/LocalMessageDBService";
 import RawMessageData from "@/data/application/RawMessage";
 import { toMessageData } from "@/data/mappers/messageMapper";
-import summaryStackDBService from "./localDB/SummaryStackDBService";
+import summaryStackDBService from "./localDB/temp";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
 import SenderType from "@/domain/types/senderTypes";
 import { LLMError } from "@/core/errors/LLMError";
