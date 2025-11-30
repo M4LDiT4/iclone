@@ -9,7 +9,7 @@ import SenderType from "@/domain/types/senderTypes";
 import { LLMError } from "@/core/errors/LLMError";
 
 import { eventBus } from "@/core/utils/eventBus";
-import SummaryStackDBService from "./localDB/SummaryStackDBService";
+import SummaryStackDBService from "./localDB/SummaryStackDatabaseService";
 
 interface ChatServiceProps {
   chatId: string,
