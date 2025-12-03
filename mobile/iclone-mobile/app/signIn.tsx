@@ -63,7 +63,10 @@ export default function SignInScreen() {
   const handleSigninWithGoogle = async () => {
     try{
       setIsLoading(true);
-      await AuthService.authWithGoogle();
+      const credential = await AuthService.authWithGoogle();
+      if(credential.additionalUserInfo?.isNewUser){
+        router.replace("/onboarding/setName");
+      }
     }catch(err){
       if(err instanceof AuthServiceError){
         setErrMessage(err.message);
