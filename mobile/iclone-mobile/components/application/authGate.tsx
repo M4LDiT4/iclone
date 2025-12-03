@@ -23,7 +23,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     if (isLoading) return;
 
     if (user) {
-      router.replace("/home");
+      router.replace("/onboarding/setName");
     } else {
       router.replace("/signIn");
     }
