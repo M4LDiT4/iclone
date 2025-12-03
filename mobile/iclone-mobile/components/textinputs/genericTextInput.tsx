@@ -8,7 +8,7 @@ import { TextInput, ViewStyle, Text, StyleSheet, TouchableOpacity } from "react-
 import { LinearGradient } from "expo-linear-gradient";
 import { hexToRgba } from "@/core/utils/colorHelpers";
 import { debounce } from "lodash";
-import { Column, Row } from "../layout/layout"; // assuming you have Row layout
+import { Column, } from "../layout/layout"; // assuming you have Row layout
 
 export type InputState = "idle" | "error" | "success";
 
