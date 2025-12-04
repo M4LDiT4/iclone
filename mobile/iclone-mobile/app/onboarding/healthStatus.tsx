@@ -6,6 +6,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import AppColors from "@/core/styling/AppColors";
 import LogoWithFloatingText from "@/components/logo/logoWithFloatingText";
 import { Spacer } from "@/components/layout/layout";
+import GradientButton from "@/components/buttons/gradientButton";
 
 function HealthStatusScreen() {
   return <SafeAreaView style = {styles.safeAreaView}>
@@ -18,8 +19,10 @@ function HealthStatusScreen() {
       width={249}
       textContainerVerticalPosition={-75}
     />
-    <Spacer height={75}/>
-    
+    <Spacer height={125}/>
+    <GradientButton label="Yes" state="success"/>
+    <Spacer height={16}/>
+    <GradientButton label="No" state="error"/>
     <LinearGradient
       colors={["#F8F9FA", "#6C9BCF"]}
       style={GlobalStyles.screenGradientBottom}
