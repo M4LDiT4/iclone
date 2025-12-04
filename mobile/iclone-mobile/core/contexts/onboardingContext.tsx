@@ -2,7 +2,7 @@ import { createContext, useContext, useState } from "react";
 
 type OnboardingContext = {
   name: string,
-  birthdate: Date;
+  birthdate: Date | null;
   illness?: string,
 
   setName : (name: string) => void
@@ -14,7 +14,7 @@ const OnboardingContext = createContext<OnboardingContext | undefined>(undefined
 
 export const OnboardingProvider = ({children} : {children: React.ReactNode}) => {
   const [name, setName] = useState("");
-  const [birthDate, setBirthDate] = useState<Date>(new Date())
+  const [birthDate, setBirthDate] = useState<Date| null>(null)
   const [illness, setIllnesss] = useState<string|undefined>();
   return <OnboardingContext.Provider value={{
     name : name,

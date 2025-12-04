@@ -90,4 +90,10 @@ export class AppValidators {
 
     return null;
   }
+  static nonEmptyDate(date: Date | null):string |null{
+    if(! date){
+      return "Required *"
+    }
+    return null;
+  }
 }
