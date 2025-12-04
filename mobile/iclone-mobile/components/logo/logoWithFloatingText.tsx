@@ -8,13 +8,18 @@ import Logo from "../../assets/svg/llm_logo.svg";
 interface LogoWithFloatingTextProps {
   text: string;
   width?: number;
+  textContainerVerticalPosition?: number
 }
 
-const LogoWithFloatingText: React.FC<LogoWithFloatingTextProps> = ({ text, width = 158 }) => {
+const LogoWithFloatingText: React.FC<LogoWithFloatingTextProps> = ({ 
+  text, 
+  width = 158,
+  textContainerVerticalPosition
+}) => {
   return (
     <View style={styles.logoContainer}>
       <Logo />
-      <View style={styles.logoTextContainer}>
+      <View style={[styles.logoTextContainer, {bottom: textContainerVerticalPosition ?? -30}]}>
         <GradientContainer width={width} opacity={0.6} borderRadius={10}>
           <BlurView intensity={30} tint="light" style={styles.logoTextBlurView}>
             <Text style={styles.logoText}>{text}</Text>
@@ -36,7 +41,6 @@ const styles = StyleSheet.create({
   },
   logoTextContainer: {
     position: "absolute",
-    bottom: -30,
   },
   logoTextBlurView: {
     padding: 8,
