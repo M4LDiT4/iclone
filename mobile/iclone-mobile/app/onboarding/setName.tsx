@@ -8,26 +8,25 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   TouchableOpacity,
-  TextInput,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import AppColors from "@/core/styling/AppColors";
-import Logo from "../../assets/svg/llm_logo.svg";
-import { BlurView } from "expo-blur";
-import GradientContainer from "@/components/containers/gradientContainer";
 import GenericTextInput, { GenericTextInputHandle } from "@/components/textinputs/genericTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import { useOnboardingContext } from "@/core/contexts/onboardingContext";
 import { AppValidators } from "@/core/utils/appValidators";
+import { useRouter } from "expo-router";
+import LogoWithFloatingText from "@/components/logo/logoWithFloatingText";
 
 function SetNameScreen() {
+  const router = useRouter();
   const {setName} = useOnboardingContext();
   const textRef = useRef<GenericTextInputHandle>(null);
 
   const onPress = () => {
     if(textRef.current?.validate()) {
       setName(textRef.current?.getValue());
-      // proceed to next
+      router.replace("/onboarding/setBirthDate");
     } 
   }
   return (
@@ -54,23 +53,7 @@ function SetNameScreen() {
             preserving your memory for your legacy.
           </Text>
 
-          {/* Logo + Floating Text */}
-          <View style={styles.logoContainer}>
-            <Logo />
-            <View style={styles.logoTextContainer}>
-              <GradientContainer width={158} opacity={0.6} borderRadius={10}>
-                <BlurView
-                  intensity={30}
-                  tint="light"
-                  style={styles.logoTextBlurView}
-                >
-                  <Text style={styles.logoText}>
-                    How do you want me to call you?
-                  </Text>
-                </BlurView>
-              </GradientContainer>
-            </View>
-          </View>
+          <LogoWithFloatingText text="How do you want me to call you?" width={158} />
         </ScrollView>
 
         {/* Fixed Input Bar at Bottom */}
