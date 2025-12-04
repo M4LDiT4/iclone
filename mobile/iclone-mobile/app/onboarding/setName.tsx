@@ -26,7 +26,7 @@ function SetNameScreen() {
   const onPress = () => {
     if(textRef.current?.validate()) {
       setName(textRef.current?.getValue());
-      router.replace("/onboarding/setBirthDate");
+      router.push("/onboarding/setBirthDate");
     } 
   }
   return (
