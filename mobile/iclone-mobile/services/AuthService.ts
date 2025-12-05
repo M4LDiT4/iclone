@@ -25,8 +25,16 @@ class AuthService {
   async signUpWithEmail(user: UserData) {
     try {
       const { user: firebaseUser } = await createUserWithEmailAndPassword(this.auth, user.email, user.password);
-      await firestore().collection('users').doc(firebaseUser.uid).set(user.toFirebaseJson());
-
+      await firestore().collection('users')
+        .doc(firebaseUser.uid)
+        .set(
+          {
+            ...user.toFirebaseJson(), 
+            createdAt: firestore.FieldValue.serverTimestamp()
+          },{
+            merge: true
+          }
+        );
       await this.auth.currentUser?.reload();
       const currentUser = this.auth.currentUser;
       if(currentUser == null){
@@ -92,6 +100,22 @@ class AuthService {
       const googleCredential = GoogleAuthProvider.credential(idToken);
       // no need to udpate the displayName as firebase does this for us
       const credential = await signInWithCredential(this.auth, googleCredential);
+
+      const user = credential.user;
+      await firestore()
+        .collection('users')
+        .doc(user.uid) // use UID as the doc ID
+        .set(
+          {
+            username: user.displayName ?? "",
+            email: user.email ?? "",
+            contactNumber: user.phoneNumber ?? "",
+            onboardingDone: false, // default flag
+            createdAt: firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true } 
+        );
+
       return credential;
     }catch(err){
       if(err instanceof AuthServiceError){
@@ -100,7 +124,6 @@ class AuthService {
       throw new AuthServiceError("Unexpected error occured while authenticating with your Google account");
     }
   }
-
 }
 
 export default new AuthService();
