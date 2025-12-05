@@ -1,0 +1,58 @@
+import { memo } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native";
+import GlobalStyles from "@/core/styling/GlobalStyles";
+import { LinearGradient } from "expo-linear-gradient";
+import AppColors from "@/core/styling/AppColors";
+import LogoWithFloatingText from "@/components/logo/logoWithFloatingText";
+import { Spacer } from "@/components/layout/layout";
+import GradientButton from "@/components/buttons/gradientButton";
+import { useRouter } from "expo-router";
+
+function HealthStatusScreen() {
+  const router = useRouter();
+  const handleYes = () => {
+    router.push("/onboarding/shareDecision")
+  }
+
+  const handleNo = () => {
+    router.push({
+      pathname: "/onboarding/[message]",
+      params: {
+        message: `You're all set!`
+      }
+    })
+  }
+  return <SafeAreaView style = {styles.safeAreaView}>
+    <LinearGradient
+      colors={["#6C9BCF", "#F8F9FA"]}
+      style={GlobalStyles.screenGradientTop}
+    />
+    <LogoWithFloatingText 
+      text={`For me to function better as your companion, I need to know about your health status. Are you diagnosed with a disease or health issue?`} 
+      width={249}
+      textContainerVerticalPosition={-75}
+    />
+    <Spacer height={125}/>
+    <GradientButton onPress={handleYes} label="Yes" state="success"/>
+    <Spacer height={16}/>
+    <GradientButton onPress={handleNo} label="No" state="error"/>
+    <LinearGradient
+      colors={["#F8F9FA", "#6C9BCF"]}
+      style={GlobalStyles.screenGradientBottom}
+    />
+  </SafeAreaView>
+}
+
+export default memo(HealthStatusScreen);
+
+const styles = StyleSheet.create({
+  safeAreaView: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: AppColors.backgroundColor,
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
+});

@@ -72,15 +72,16 @@ export default function SignUpScreen() {
       password: passwordRef.current?.getValue()!,
       contactNumber: contactNumRef.current?.getFullNumber()!,
       email: emailRef.current?.getValue()!
-    })
-    await AuthService.signUpWithEmail(userData)
-      .then(() => {
-        console.log('created')
-      })
-      .catch(err => {
-        console.log(err)
-      })
+    });
+    try {
+    await AuthService.signUpWithEmail(userData);
+      router.replace("/onboarding/setName")
+    } catch (err) {
+      console.log(err);
+    } finally {
       setIsLoading(false);
+    }
+
   }
 
   const handleCloseErrorMessage = () => {
@@ -92,6 +93,7 @@ export default function SignUpScreen() {
       setIsLoading(true);
       await AuthService.authWithGoogle();
       setIsLoading(false);
+      router.replace("/onboarding/setName")
     }catch(err){
       if(err instanceof AuthServiceError){
         setErrorMessage(err.message);

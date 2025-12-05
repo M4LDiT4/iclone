@@ -1,5 +1,4 @@
 import AuthGate from "@/components/application/authGate";
-import ChatHeader from "@/components/headers/chatHeader";
 import GenericHeader from "@/components/headers/genericHeader";
 import HomeHeader from "@/components/headers/homeHeader";
 import AppColors from "@/core/styling/AppColors";

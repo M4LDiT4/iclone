@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import ChatService from "@/services/ChatService";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
 import SummaryService from "@/services/SummaryService";
-import SummaryStackDBService from "@/services/localDB/temp";
 import LocalMessageDBService from "@/services/localDB/LocalMessageDBService";
 import database from "@/data/database/index.native";
 import { eventBus } from "@/core/utils/eventBus";
@@ -10,6 +9,7 @@ import ServiceError from "@/core/errors/ServiceError";
 import { LocalDBError } from "@/core/errors/LocalDBError";
 import { LLMError } from "@/core/errors/LLMError";
 import { FlatList } from "react-native";
+import SummaryStackDBService from "@/services/localDB/SummaryStackDatabaseService";
 
 export const useChatViewModel = (chatId?: string, userMessage?: string, username?: string) => {
   const [chatService, setChatService] = useState<ChatService | null>(null);

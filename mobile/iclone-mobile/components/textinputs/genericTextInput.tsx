@@ -8,7 +8,7 @@ import { TextInput, ViewStyle, Text, StyleSheet, TouchableOpacity } from "react-
 import { LinearGradient } from "expo-linear-gradient";
 import { hexToRgba } from "@/core/utils/colorHelpers";
 import { debounce } from "lodash";
-import { Column, Row } from "../layout/layout"; // assuming you have Row layout
+import { Column, } from "../layout/layout"; // assuming you have Row layout
 
 export type InputState = "idle" | "error" | "success";
 
@@ -28,6 +28,7 @@ type GenericTextInputProps = {
   isRequired?: boolean;
   isSensitive?: boolean;
   successMessage?: string;
+  multiline?: boolean,
 };
 
 const GenericTextInputInner = (
@@ -41,6 +42,7 @@ const GenericTextInputInner = (
     isRequired = false,
     isSensitive = false,
     successMessage,
+    multiline,
   }: GenericTextInputProps,
   ref: React.Ref<GenericTextInputHandle>
 ) => {
@@ -111,6 +113,7 @@ const GenericTextInputInner = (
           placeholder={`${placeholder}${isRequired ? "*" : ""}`}
           placeholderTextColor={placeholderTextColor}
           value={value}
+          multiline = {multiline}
           autoCapitalize="none"
           secureTextEntry={isSensitive && !showText} // toggle here
           onChangeText={(txt) => {
@@ -119,7 +122,7 @@ const GenericTextInputInner = (
           }}
           style={{
             flex: 1,
-            height: 47,
+            minHeight: 47,
             fontSize: 14,
             padding: 0,
           }}

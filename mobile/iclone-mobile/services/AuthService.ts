@@ -79,7 +79,7 @@ class AuthService {
    * - otherwise creates a new account and signs in the user
    * - we can extend or break down later to show errors when signing up with already existing account
    */
-  async authWithGoogle() {
+  async authWithGoogle(): Promise<FirebaseAuthTypes.UserCredential> {
     try{
       await GoogleSignin.hasPlayServices();
       const signInResult = await GoogleSignin.signIn();
@@ -91,7 +91,8 @@ class AuthService {
       }
       const googleCredential = GoogleAuthProvider.credential(idToken);
       // no need to udpate the displayName as firebase does this for us
-      await signInWithCredential(this.auth, googleCredential);
+      const credential = await signInWithCredential(this.auth, googleCredential);
+      return credential;
     }catch(err){
       if(err instanceof AuthServiceError){
         throw err;
