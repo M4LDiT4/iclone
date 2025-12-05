@@ -7,8 +7,13 @@ import AppColors from "@/core/styling/AppColors";
 import LogoWithFloatingText from "@/components/logo/logoWithFloatingText";
 import { Spacer } from "@/components/layout/layout";
 import GradientButton from "@/components/buttons/gradientButton";
+import { useRouter } from "expo-router";
 
 function HealthStatusScreen() {
+  const router = useRouter();
+  const handleYes = () => {
+    router.push("/onboarding/shareDecision")
+  }
   return <SafeAreaView style = {styles.safeAreaView}>
     <LinearGradient
       colors={["#6C9BCF", "#F8F9FA"]}
@@ -20,7 +25,7 @@ function HealthStatusScreen() {
       textContainerVerticalPosition={-75}
     />
     <Spacer height={125}/>
-    <GradientButton label="Yes" state="success"/>
+    <GradientButton onPress={handleYes} label="Yes" state="success"/>
     <Spacer height={16}/>
     <GradientButton label="No" state="error"/>
     <LinearGradient
