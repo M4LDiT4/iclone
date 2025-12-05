@@ -1,10 +1,9 @@
 import { AuthServiceError } from "@/core/errors/AuthServiceError";
 import { ValidationError } from "@/core/errors/ValidationError";
 import UserData from "@/data/application/UserData";
-import { date } from "@nozbe/watermelondb/decorators";
 import { getApp } from "@react-native-firebase/app";
-import { getAuth, onAuthStateChanged, FirebaseAuthTypes, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from "@react-native-firebase/auth";
-import firestore, { collection, doc, getDoc, getFirestore, serverTimestamp, setDoc } from '@react-native-firebase/firestore';
+import { getAuth, onAuthStateChanged, FirebaseAuthTypes, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential, updateProfile } from "@react-native-firebase/auth";
+import firestore, { collection, doc, getDoc, getFirestore, serverTimestamp, setDoc, Timestamp } from '@react-native-firebase/firestore';
 
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
@@ -63,6 +62,46 @@ class AuthService {
     const data = docSnap.data();
     return data?.onboardingDone === true;
   }
+
+
+  async getUserProfile(uid: string): Promise<UserData | null>{
+    const userDocRef = doc(this.store, 'users', uid);
+    const docSnap = await getDoc(userDocRef);
+    if(!docSnap.exists()){
+      return null;
+    }
+    if(!docSnap.data()){
+      return null;
+    }
+    return UserData.fromFirebaseJson(docSnap.data());
+  }
+
+  async updateUserProfile({name, birthdate, illness}:{
+    name: string,
+    birthdate: Date,
+    illness? : string
+  }) {
+    // assume that there is a user
+    const currentUser = this.auth.currentUser;
+    if(!currentUser){
+      throw new AuthServiceError("You must be signed in to complete onboarding");
+    }
+    const data : Record<string, any> = {
+      'username': name,
+      'birthdate': Timestamp.fromDate(birthdate),
+      'onboardingDone': true
+    }
+    if(illness) {
+      data.illness = illness
+    }
+
+    await setDoc(
+      doc(collection(this.store, `users`), currentUser.uid),
+      data,
+      {merge: true}
+    );
+  }
+
 
   async signInWithEmail(email: string, password: string) {
     // guard clause to prevent execution of function to invalid inputs

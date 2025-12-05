@@ -3,7 +3,6 @@ import { View, ActivityIndicator, Text, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import AuthService from "@/services/AuthService";
 import {FirebaseAuthTypes } from "@react-native-firebase/auth";
-import firestore from '@react-native-firebase/firestore';
 import AppColors from "@/core/styling/AppColors";
 import { AuthContext } from "@/core/contexts/authContext";
 import { AppUser } from "@/data/application/UserData";

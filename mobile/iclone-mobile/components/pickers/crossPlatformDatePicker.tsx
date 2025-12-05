@@ -55,8 +55,8 @@ const CrossPlatformDatePicker = forwardRef<DatePickerHandle, Props>(
     }));
 
     const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-      if (event.type === "dismissed") return;
       setShowPicker(Platform.OS === "ios");
+      if (event.type === "dismissed") return;
       if (selectedDate) {
         setDate(selectedDate);
         setError(null);
