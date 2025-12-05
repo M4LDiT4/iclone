@@ -2,8 +2,8 @@ import { AuthServiceError } from "@/core/errors/AuthServiceError";
 import { ValidationError } from "@/core/errors/ValidationError";
 import UserData from "@/data/application/UserData";
 import { getApp } from "@react-native-firebase/app";
-import { getAuth, onAuthStateChanged, FirebaseAuthTypes, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from "@react-native-firebase/auth";
-import firestore from '@react-native-firebase/firestore';
+import { getAuth, onAuthStateChanged, FirebaseAuthTypes, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential, updateProfile } from "@react-native-firebase/auth";
+import firestore, { collection, doc, getDoc, getFirestore, serverTimestamp, setDoc, Timestamp } from '@react-native-firebase/firestore';
 
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
@@ -12,7 +12,9 @@ GoogleSignin.configure({
 });
 
 class AuthService {
+
   private auth = getAuth(getApp());
+  private store = getFirestore(getApp());
 
   getCurrentUser(): FirebaseAuthTypes.User | null {
     return this.auth.currentUser;
@@ -25,8 +27,14 @@ class AuthService {
   async signUpWithEmail(user: UserData) {
     try {
       const { user: firebaseUser } = await createUserWithEmailAndPassword(this.auth, user.email, user.password);
-      await firestore().collection('users').doc(firebaseUser.uid).set(user.toFirebaseJson());
-
+      await setDoc(
+        doc(collection(this.store, 'users'), firebaseUser.uid),
+        {
+          ...user.toFirebaseJson(),
+          createdAt: serverTimestamp()
+        },
+        {merge: true}
+      )
       await this.auth.currentUser?.reload();
       const currentUser = this.auth.currentUser;
       if(currentUser == null){
@@ -42,6 +50,58 @@ class AuthService {
       throw new AuthServiceError("Unknown error occurred while creating account with email");
     }
   }
+
+  async hasFinishedOnboarding(user:FirebaseAuthTypes.User): Promise<boolean>{
+    if(!user) return false;
+    const userDocRef = doc(this.store, 'users', user.uid);
+    const docSnap = await getDoc(userDocRef);
+
+    if(!docSnap.exists()){
+      return false; // no profile yet -> not onboarded
+    }
+    const data = docSnap.data();
+    return data?.onboardingDone === true;
+  }
+
+
+  async getUserProfile(uid: string): Promise<UserData | null>{
+    const userDocRef = doc(this.store, 'users', uid);
+    const docSnap = await getDoc(userDocRef);
+    if(!docSnap.exists()){
+      return null;
+    }
+    if(!docSnap.data()){
+      return null;
+    }
+    return UserData.fromFirebaseJson(docSnap.data());
+  }
+
+  async updateUserProfile({name, birthdate, illness}:{
+    name: string,
+    birthdate: Date,
+    illness? : string
+  }) {
+    // assume that there is a user
+    const currentUser = this.auth.currentUser;
+    if(!currentUser){
+      throw new AuthServiceError("You must be signed in to complete onboarding");
+    }
+    const data : Record<string, any> = {
+      'username': name,
+      'birthdate': Timestamp.fromDate(birthdate),
+      'onboardingDone': true
+    }
+    if(illness) {
+      data.illness = illness
+    }
+
+    await setDoc(
+      doc(collection(this.store, `users`), currentUser.uid),
+      data,
+      {merge: true}
+    );
+  }
+
 
   async signInWithEmail(email: string, password: string) {
     // guard clause to prevent execution of function to invalid inputs
@@ -92,6 +152,20 @@ class AuthService {
       const googleCredential = GoogleAuthProvider.credential(idToken);
       // no need to udpate the displayName as firebase does this for us
       const credential = await signInWithCredential(this.auth, googleCredential);
+
+      const user = credential.user;
+      await setDoc(
+        doc(collection(this.store, 'users'), user.uid),
+          {
+            username: user.displayName ?? "",
+            email: user.email ?? "",
+            contactNumber: user.phoneNumber ?? "",
+            onboardingDone: false, // default flag
+            createdAt: firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+      );
+
       return credential;
     }catch(err){
       if(err instanceof AuthServiceError){
@@ -100,7 +174,6 @@ class AuthService {
       throw new AuthServiceError("Unexpected error occured while authenticating with your Google account");
     }
   }
-
 }
 
 export default new AuthService();

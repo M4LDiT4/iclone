@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Text,
   View,
@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import AppColors from '@/core/styling/AppColors';
 import Logo from '../assets/svg/llm_logo.svg';
@@ -16,10 +17,41 @@ import ChatInputBar from '@/components/textinputs/chatInputBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Spacer } from '@/components/layout/layout';
 import { useAuth } from '@/core/contexts/authContext';
+import AuthService from '@/services/AuthService';
 
 
 export default function HomeScreen() {
   const {user} = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [displayName, setDisplayName] = useState<string|null>(null);
+
+  useEffect(() => {
+    getUserProfile();
+  }, []);
+
+  const getUserProfile = async() => {
+    try{
+      setIsLoading(true);
+      if(!user) return;
+      const profile = await AuthService.getUserProfile(user?.uid);
+      if(profile?.username){
+        setDisplayName(profile.username);
+      }
+    }catch(err){
+      console.error(`Failed to get the user profiles`);
+    }finally{
+      setIsLoading(false);
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView edges={['left', 'right']} style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -32,7 +64,7 @@ export default function HomeScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.upperContainer}>
-            <Text style={styles.primaryText}>{`Hello, ${user?.displayName}`}</Text>
+            <Text style={styles.primaryText}>{`Hello, ${displayName ?? user?.displayName ?? ""}`}</Text>
             <Spacer height={8}/>
             <Text style={styles.welcomeText}>Welcome back!</Text>
             <View style={styles.svgContainer}>
@@ -142,6 +174,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     fontFamily: 'SFProText',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "white", // optional, keeps it clean
   },
 
 });
