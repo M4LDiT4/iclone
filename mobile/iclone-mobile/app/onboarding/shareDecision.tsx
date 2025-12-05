@@ -10,8 +10,12 @@ import GradientButton from "@/components/buttons/gradientButton";
 import GenericTextInput, { GenericTextInputHandle } from "@/components/textinputs/genericTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import { AppValidators } from "@/core/utils/appValidators";
+import { useOnboardingContext } from "@/core/contexts/onboardingContext";
+import { useRouter } from "expo-router";
 
 function ShareDecisionScreen(){
+  const {setIllness} = useOnboardingContext();
+  const router = useRouter();
   const [showTextInput, setShowTextInput] = useState(false);
   const textRef = useRef<GenericTextInputHandle>(null);
 
@@ -20,7 +24,10 @@ function ShareDecisionScreen(){
   }
 
   const onSend = () => {
-
+    if(textRef.current?.validate()){
+      setIllness(textRef.current?.getValue());
+      router.push("/onboarding/onboardingFinish");
+    }
   }
 
   return <SafeAreaView style = {styles.safeArea}>
@@ -43,7 +50,7 @@ function ShareDecisionScreen(){
         { showTextInput
         ?<View style={styles.textinputContainer}>
           <View style={{ flex: 1 }}>
-            <GenericTextInput containerStyle={styles.textinput} ref={textRef} validator={AppValidators.nonEmpty}/>
+            <GenericTextInput multiline = {true} containerStyle={styles.textinput} ref={textRef} validator={AppValidators.nonEmpty}/>
           </View>
           <TouchableOpacity style={styles.sendButton} onPress={onSend}>
             <Ionicons name="send" size={20} color={AppColors.primaryColor} />
@@ -73,7 +80,6 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.backgroundColor,
     paddingVertical: 8,
     paddingHorizontal: 16,
-    justifyContent: 'center',
   },
   textinputContainer: {
     flexDirection: "row",
