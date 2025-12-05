@@ -1,9 +1,10 @@
 import { AuthServiceError } from "@/core/errors/AuthServiceError";
 import { ValidationError } from "@/core/errors/ValidationError";
 import UserData from "@/data/application/UserData";
+import { date } from "@nozbe/watermelondb/decorators";
 import { getApp } from "@react-native-firebase/app";
 import { getAuth, onAuthStateChanged, FirebaseAuthTypes, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from "@react-native-firebase/auth";
-import firestore from '@react-native-firebase/firestore';
+import firestore, { collection, doc, getDoc, getFirestore, serverTimestamp, setDoc } from '@react-native-firebase/firestore';
 
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
@@ -12,7 +13,9 @@ GoogleSignin.configure({
 });
 
 class AuthService {
+
   private auth = getAuth(getApp());
+  private store = getFirestore(getApp());
 
   getCurrentUser(): FirebaseAuthTypes.User | null {
     return this.auth.currentUser;
@@ -25,16 +28,14 @@ class AuthService {
   async signUpWithEmail(user: UserData) {
     try {
       const { user: firebaseUser } = await createUserWithEmailAndPassword(this.auth, user.email, user.password);
-      await firestore().collection('users')
-        .doc(firebaseUser.uid)
-        .set(
-          {
-            ...user.toFirebaseJson(), 
-            createdAt: firestore.FieldValue.serverTimestamp()
-          },{
-            merge: true
-          }
-        );
+      await setDoc(
+        doc(collection(this.store, 'users'), firebaseUser.uid),
+        {
+          ...user.toFirebaseJson(),
+          createdAt: serverTimestamp()
+        },
+        {merge: true}
+      )
       await this.auth.currentUser?.reload();
       const currentUser = this.auth.currentUser;
       if(currentUser == null){
@@ -49,6 +50,18 @@ class AuthService {
       if (err.code === 'auth/invalid-email') throw new AuthServiceError("Invalid email format");
       throw new AuthServiceError("Unknown error occurred while creating account with email");
     }
+  }
+
+  async hasFinishedOnboarding(user:FirebaseAuthTypes.User): Promise<boolean>{
+    if(!user) return false;
+    const userDocRef = doc(this.store, 'users', user.uid);
+    const docSnap = await getDoc(userDocRef);
+
+    if(!docSnap.exists()){
+      return false; // no profile yet -> not onboarded
+    }
+    const data = docSnap.data();
+    return data?.onboardingDone === true;
   }
 
   async signInWithEmail(email: string, password: string) {
@@ -102,10 +115,8 @@ class AuthService {
       const credential = await signInWithCredential(this.auth, googleCredential);
 
       const user = credential.user;
-      await firestore()
-        .collection('users')
-        .doc(user.uid) // use UID as the doc ID
-        .set(
+      await setDoc(
+        doc(collection(this.store, 'users'), user.uid),
           {
             username: user.displayName ?? "",
             email: user.email ?? "",
@@ -113,8 +124,8 @@ class AuthService {
             onboardingDone: false, // default flag
             createdAt: firestore.FieldValue.serverTimestamp(),
           },
-          { merge: true } 
-        );
+          { merge: true }
+      );
 
       return credential;
     }catch(err){

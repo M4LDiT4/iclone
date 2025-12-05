@@ -2,32 +2,66 @@ import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator, Text, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import AuthService from "@/services/AuthService";
-import { FirebaseAuthTypes } from "@react-native-firebase/auth";
+import {FirebaseAuthTypes } from "@react-native-firebase/auth";
+import firestore from '@react-native-firebase/firestore';
 import AppColors from "@/core/styling/AppColors";
 import { AuthContext } from "@/core/contexts/authContext";
+import { AppUser } from "@/data/application/UserData";
+import { AuthServiceError } from "@/core/errors/AuthServiceError";
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = AuthService.onAuthStateChanged((userState) => {
-      setUser(userState);
-      setIsLoading(false);
+      handleChangeCredentials(userState);
     });
     return unsubscribe;
   }, []);
 
   useEffect(() => {
     if (isLoading) return;
-
     if (user) {
-      router.replace("/onboarding/setName");
+      if(user.profile.onboardingDone){
+        router.replace("/home");
+      }else{
+        router.replace("/onboarding/setName");
+      }
     } else {
       router.replace("/signIn");
     }
   }, [user, isLoading, router]);
+
+  const handleChangeCredentials = async(userState: FirebaseAuthTypes.User | null) =>{
+    try{
+      if(! userState){
+        setUser(userState);
+      }else{
+        const finishedOnboarding = await AuthService.hasFinishedOnboarding(userState);
+        const appUser: AppUser = {
+          auth: userState,
+          profile :{
+            onboardingDone: finishedOnboarding
+          }
+        }
+        setUser(appUser);
+        setError(null);
+      }
+    } catch (err) {
+      if (err instanceof AuthServiceError) {
+        console.error(`AuthServiceError encountered while authenticating: ${err}`);
+        setError(err.message); // already user-friendly
+      } else {
+        console.error(`Unexpected error occurred while authenticating: ${err}`);
+        setError("We ran into a problem signing you in. Please try again or check your connection.");
+      }
+    }finally{
+      setIsLoading(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -39,9 +73,18 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     );
   }
 
+  if (error) {
+    return (
+      <View style={styles.initialScreenContainer}>
+        <ActivityIndicator size="large" color={AppColors.primaryColor}/>
+        <Text style={styles.titleText}>⚠️ {error}</Text>
+      </View>
+    );
+  }
+
   // Render children once auth state is known
   return (
-    <AuthContext.Provider value={{user: user}}>
+    <AuthContext.Provider value={{user: user!.auth}}>
       {children}
     </AuthContext.Provider>
   )
@@ -49,7 +92,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
 const styles = StyleSheet.create({
   initialScreenContainer : {
-    backgroundColor: AppColors.primaryColor,
+    backgroundColor: AppColors.backgroundColor,
     flex: 1, 
     justifyContent: "center", 
     alignItems: "center" 

@@ -1,3 +1,5 @@
+import { FirebaseAuthTypes } from "@react-native-firebase/auth";
+
 export default class UserData {
   username: string;
   password: string;
@@ -42,5 +44,12 @@ export default class UserData {
       email: json.email,
       onboardingDone: json.onboardingDone,
     });
+  }
+}
+
+export type AppUser = {
+  auth: FirebaseAuthTypes.User,
+  profile: {
+    onboardingDone: boolean;
   }
 }
