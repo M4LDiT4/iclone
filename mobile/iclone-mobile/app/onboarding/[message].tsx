@@ -7,14 +7,16 @@ import AppColors from "@/core/styling/AppColors";
 import LogoWithFloatingText from "@/components/logo/logoWithFloatingText";
 import { Spacer } from "@/components/layout/layout";
 import PrimaryButton from "@/components/buttons/primaryButton";
+import { useLocalSearchParams } from "expo-router";
 
 function OnboardingFinishScreen(){
+  const {message} = useLocalSearchParams<{message: string}>();
   return <SafeAreaView style = {styles.safeAreaView}>
     <LinearGradient
       colors={["#6C9BCF", "#F8F9FA"]}
       style={GlobalStyles.screenGradientTop}
     />
-    <LogoWithFloatingText width={249} text="That’s fine. I respect your privacy." />
+    <LogoWithFloatingText width={249} text={message} />
     <Spacer height={75}/>
     <PrimaryButton label="Finish onboarding"/>
     <LinearGradient

@@ -14,6 +14,15 @@ function HealthStatusScreen() {
   const handleYes = () => {
     router.push("/onboarding/shareDecision")
   }
+
+  const handleNo = () => {
+    router.push({
+      pathname: "/onboarding/[message]",
+      params: {
+        message: `You're all set!`
+      }
+    })
+  }
   return <SafeAreaView style = {styles.safeAreaView}>
     <LinearGradient
       colors={["#6C9BCF", "#F8F9FA"]}
@@ -27,7 +36,7 @@ function HealthStatusScreen() {
     <Spacer height={125}/>
     <GradientButton onPress={handleYes} label="Yes" state="success"/>
     <Spacer height={16}/>
-    <GradientButton label="No" state="error"/>
+    <GradientButton onPress={handleNo} label="No" state="error"/>
     <LinearGradient
       colors={["#F8F9FA", "#6C9BCF"]}
       style={GlobalStyles.screenGradientBottom}

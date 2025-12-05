@@ -23,10 +23,20 @@ function ShareDecisionScreen(){
     setShowTextInput(true);
   }
 
+  const handleNo = () => {
+    router.push({
+      pathname: "/onboarding/[message]",
+      params: {message: "That’s fine. I respect your privacy."}
+    })
+  }
+
   const onSend = () => {
     if(textRef.current?.validate()){
       setIllness(textRef.current?.getValue());
-      router.push("/onboarding/onboardingFinish");
+      router.push({
+        pathname: "/onboarding/[message]",
+        params: {message: "You're all set!"}
+      });
     }
   }
 
@@ -59,7 +69,7 @@ function ShareDecisionScreen(){
         :<>
           <GradientButton onPress={handleYes} label="Yes" state="success"/>
           <Spacer height={16}/>
-          <GradientButton label="No" state="error"/>
+          <GradientButton onPress={handleNo} label="No" state="error"/>
         </>
       }
 
