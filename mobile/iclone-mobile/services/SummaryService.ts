@@ -83,24 +83,26 @@ class SummaryService {
   }
 
   async summarizeStory(longtermMemory: string, shortTermMemory:string, latestConversation: string) {
-    const systemPrompt = `Task: Create a structured memory summary from the provided Long-Term Memory (LTM) and the Current Conversation (STM). The summary must preserve everything required to reconstruct the user's story later in the user's own voice.
-      Combine both memory inputs, remove redundancy, and retain only future-relevant, reconstructable information.
+    const systemPrompt = `Task: Create a structured memory summary from the provided Long-Term Memory (LTM) and the Current Conversation (STM).  
+      The summary must preserve everything required to reconstruct the user's story later in the user's own voice.
 
       You MUST output valid JSON only.
 
       Required JSON fields:
       {
-        "tag": string,                     // Short classifier for quick routing, e.g. "story", "project", "personal", "preferences"
-        "summary": {                       // The merged memory summary
-          "user_intent": string,           // Why the user is talking or what they want to achieve
-          "key_events": [string],          // What happened, from user perspective
-          "tone": string,                  // Short emotional descriptor (e.g. "curious", "excited", "frustrated")
-          "voice_style": string,           // How the user tends to speak (casual, detailed, direct, sarcastic, etc.)
-          "important_facts": [string],     // Story/world/personal facts that must persist
-          "opinions_beliefs": [string],    // User’s stated preferences, likes/dislikes, views
+        "tag": string,                      // Short classifier for quick routing (e.g., "story", "project", "personal", "preferences")
+        "title": string,                    // Short descriptive title for this memory
+        "summary": {                        
+          "user_intent": string,            // Why the user is talking or what they want to achieve
+          "key_events": [string],           // What happened, from the user’s perspective
+          "tone": string,                   // Short emotional descriptor (e.g., "curious", "excited", "frustrated")
+          "voice_style": string,            // How the user tends to speak (casual, detailed, direct, sarcastic, etc.)
+          "important_facts": [string],      // Story/world/personal facts that must persist
+          "opinions_beliefs": [string],     // User’s stated preferences, likes/dislikes, views
           "decisions_realizations": [string], // Commitments, conclusions, or new understanding
-          "next_steps": [string]           // What the user wants to do next or expects in future interactions
-        }
+          "next_steps": [string]            // What the user wants to do next or expects in future interactions
+        },
+        "narrative": string                 // A coherent first-person narrative reconstruction of the events and meaning
       }
 
       Instructions:
@@ -108,6 +110,7 @@ class SummaryService {
       - Preserve unique details from each memory source.
       - Keep it concise but reconstructable.
       - Prefer user-perspective framing when describing events.
+      - The narrative should read like the user telling their own story naturally, in first person.
       - Never include verbatim dialogue.
       - Do NOT output anything outside the JSON object.
 
