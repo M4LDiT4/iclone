@@ -10,6 +10,8 @@ import { LocalDBError } from "@/core/errors/LocalDBError";
 import { LLMError } from "@/core/errors/LLMError";
 import { FlatList } from "react-native";
 import SummaryStackDBService from "@/services/localDB/SummaryStackDatabaseService";
+import ChatDBService from "@/services/localDB/ChatDBService";
+import { useAuth } from "@/core/contexts/authContext";
 
 export const useChatViewModel = (chatId?: string, userMessage?: string, username?: string) => {
   const [chatService, setChatService] = useState<ChatService | null>(null);
@@ -23,6 +25,8 @@ export const useChatViewModel = (chatId?: string, userMessage?: string, username
   // refs
   const flatListRef = useRef<FlatList>(null);
 
+  const auth = useAuth();
+
   /** Initialize chat service */
   useEffect(() => {
     const initializeChatService = async () => {
@@ -31,10 +35,15 @@ export const useChatViewModel = (chatId?: string, userMessage?: string, username
         const apiKey = process.env.EXPO_PUBLIC_DEEP_SEEK_API_KEY;
         if (!apiKey) throw new ServiceError("Problem connecting to DeepSeek");
 
+        if(! auth.user?.uid){
+          throw new ServiceError("User info not found");
+        }
         const model = new DeepSeekClient(apiKey);
         const summaryService = new SummaryService(model);
         const summaryStackDBService = new SummaryStackDBService(database);
         const localMessageDBService = new LocalMessageDBService(database);
+        
+        const chatDBService = new ChatDBService({database: database, userId: auth.user.uid})
 
         const service = new ChatService({
           chatId,
@@ -45,6 +54,7 @@ export const useChatViewModel = (chatId?: string, userMessage?: string, username
           summaryStackDBService,
           localMessageDBService,
           llmModel: model,
+          chatDBService: chatDBService
         });
 
         await service.initializeChat();

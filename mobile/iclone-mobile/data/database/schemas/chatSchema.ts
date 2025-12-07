@@ -4,7 +4,7 @@ const chatSchema = tableSchema({
   name: 'chats',
   columns: [
     {name: 'user_id', type: 'string', isOptional: false},
-    {name: 'theme', type: 'string'}, 
+    {name: 'tag', type: 'string'}, 
     {name: 'status', type: 'string', isOptional: false},
     {name: 'agent_id', type: 'string', isOptional: false},
     {name: 'title', type: 'string'}, 

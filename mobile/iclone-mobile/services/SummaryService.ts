@@ -1,6 +1,14 @@
 import { SummaryServiceError } from "@/core/errors/SummaryServiceError";
 import DeepSeekClient, { DeepSeekMessageStructure } from "@/domain/llm/deepSeek/model";
 
+
+interface HighLevelChatSummary {
+  tag: string[],
+  title: string,
+  summary: string,
+  narrative: string
+}
+
 class SummaryService {
   llmClient: DeepSeekClient;
 
@@ -82,7 +90,7 @@ class SummaryService {
     return response;
   }
 
-  async summarizeStory(longtermMemory: string, shortTermMemory:string, latestConversation: string) {
+  async summarizeStory(longtermMemory: string, latestConversation: string) {
     const systemPrompt = `Task: Create a structured memory summary from the provided Long-Term Memory (LTM) and the Current Conversation (STM).  
       The summary must preserve everything required to reconstruct the user's story later in the user's own voice.
 
@@ -90,7 +98,7 @@ class SummaryService {
 
       Required JSON fields:
       {
-        "tag": string,                      // Short classifier for quick routing (e.g., "story", "project", "personal", "preferences")
+        "tag": [string],                      // Short classifier for quick routing (e.g., "family", "work", "personal", "preferences")
         "title": string,                    // Short descriptive title for this memory
         "summary": {                        
           "user_intent": string,            // Why the user is talking or what they want to achieve
@@ -118,9 +126,6 @@ class SummaryService {
       Long-Term Memory:
       ${longtermMemory}
 
-      Short-Term Conversation:
-      ${shortTermMemory}
-
       Latest Conversation:
       ${latestConversation}
       `
@@ -129,37 +134,32 @@ class SummaryService {
     ];
 
     const response = await this.llmClient.call(messages);
+    const parsedResponse = JSON.parse(response);
+    
+    if(!parsedResponse){
+      console.error(`Parsed conversation summary is null or undefined`);
+      throw new SummaryServiceError("Problem generating conversation summary");
+    }
 
-    /// response format
-    // {
-  //   "tag": "story",
-  //   "summary": {
-  //     "user_intent": "Develop a character-driven sci-fi plot.",
-  //     "key_events": [
-  //       "User explained their world concept involving dimensional rifts.",
-  //       "User clarified the protagonist's emotional conflict with Mira."
-  //     ],
-  //     "tone": "curious",
-  //     "voice_style": "casual and reflective",
-  //     "important_facts": [
-  //       "Rifts emit blue light",
-  //       "Mira is a physicist hiding past trauma"
-  //     ],
-  //     "opinions_beliefs": [
-  //       "User prefers slow-burn storytelling",
-  //       "User dislikes info dumps"
-  //     ],
-  //     "decisions_realizations": [
-  //       "User decided the protagonist will confront Mira in the next chapter"
-  //     ],
-  //     "next_steps": [
-  //       "Continue refining the emotional dynamic"
-  //     ]
-  //   }
-  // }
+    if(typeof parsedResponse === 'object'
+      && Array.isArray(parsedResponse.tag)
+      && parsedResponse.tag.every((t: any) => typeof t === 'string')
+      && typeof parsedResponse.title === 'string'
+      && typeof parsedResponse.summary === 'object'
+      && typeof parsedResponse.summary !== null
+      && typeof parsedResponse.narrative === 'string'
+    ){
+      const typedResponse: HighLevelChatSummary = {
+        title: parsedResponse.title,
+        summary: JSON.stringify(parsedResponse.summary),
+        tag: parsedResponse.tag,
+        narrative: parsedResponse.narrative
+      }
+      return typedResponse;
+    }
+    console.error(`Response recieved is not of type  High level chat summary`);
+    throw new SummaryServiceError('Failed to generate conversation summary')
   }
-
-  
 }
 
 export default SummaryService;

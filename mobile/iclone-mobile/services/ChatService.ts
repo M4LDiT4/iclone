@@ -10,6 +10,7 @@ import { LLMError } from "@/core/errors/LLMError";
 
 import { eventBus } from "@/core/utils/eventBus";
 import SummaryStackDBService from "./localDB/SummaryStackDatabaseService";
+import ChatDBService from "./localDB/ChatDBService";
 
 interface ChatServiceProps {
   chatId: string,
@@ -20,6 +21,7 @@ interface ChatServiceProps {
   summaryStackDBService: SummaryStackDBService;
   localMessageDBService: LocalMessageDBService;
   llmModel: DeepSeekClient
+  chatDBService: ChatDBService;
 }
 
 class ChatService {
@@ -41,12 +43,15 @@ class ChatService {
 
   chatSummary: string | null = null;
 
+  chatDBService: ChatDBService;
+
   constructor(props: ChatServiceProps){
     this.chatId = props.chatId;
     this.slidingWindowSize = props.slidingWindowSize;
     this.summaryService = props.summaryService;
     this.summaryStackDBService = props.summaryStackDBService;
     this.localMessageDBService = props.localMessageDBService;
+    this.chatDBService = props.chatDBService;
     
     this.username = props.username;
     this.assistantName = props.assistantName;
@@ -209,14 +214,21 @@ class ChatService {
       username: this.username,
       longTermMemory: this.chatSummary ?? "No long term memory",
     });
-    console.log(`[Stack summary]: ${this.chatSummary}`)
     return this.llModel.call([context, ...slidingWindowData]);
   }
 
-  // summarize the chat
-  // get the theme of the summary
-  // save as the chat summary
-  // 
+  // create a summary for the chats
+  async summarizeConversation(){
+    const longTermMemory = this.chatSummary ?? "No long term memory";
+    const shortTermMemory = this.slidingWindow.conversationToString();
+
+    const chatSummary = await this.summaryService.summarizeStory(longTermMemory, shortTermMemory);
+    await this.chatDBService.updateChat(this.chatId, {
+      tag: JSON.stringify(chatSummary.tag),
+      title: chatSummary.title,
+      narrative: chatSummary.narrative
+    });
+  }
 }
 
 export default ChatService;
