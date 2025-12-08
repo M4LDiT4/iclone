@@ -1,6 +1,6 @@
 // ChatScreen.tsx
-import {FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text} from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import {FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text} from "react-native";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import ChatBubble from "@/components/chat/ChatBubble";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useChatViewModel } from "@/data/viewModels/ChatViewModel";
@@ -10,6 +10,9 @@ import { Column, Padding, Spacer, Stack } from "@/components/layout/layout";
 import GenericModal from "@/components/modals/genericModal";
 import PrimaryButton from "@/components/buttons/primaryButton";
 import AssistantLogo from "@/components/chat/assistantLogo";
+import { useLayoutEffect, useState } from "react";
+import { Menu } from "react-native-paper";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function ChatScreen() {
   const { chatId, userMessage, username } = useLocalSearchParams();
@@ -26,11 +29,19 @@ export default function ChatScreen() {
     generateResponse,
     handleErrorModalCloseButtonPress,
   } = useChatViewModel(chatId as string|undefined, userMessage as string|undefined, username as string|undefined);
- 
+
+  const navigation = useNavigation();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () =>  <KebabMenu chatId={chatId as string} onSave={()=>{}} />
+    })
+  }, [navigation, chatId]);
+
   if (isInitializing) return <LoadingScreen/>;
 
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right']}>
+    <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView 
         style ={{flex:1}}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -75,6 +86,40 @@ export default function ChatScreen() {
   );
 }
 
+type KebabMenuProps = {
+  chatId: string;
+  onSave: (chatId: string) => void;
+};
+
+function KebabMenu({ chatId, onSave }: KebabMenuProps) {
+  const [visible, setVisible] = useState(false);
+
+  const openMenu = () => setVisible(true);
+  const closeMenu = () => setVisible(false);
+
+  return (
+    <Menu
+      visible={visible}
+      onDismiss={closeMenu}
+      anchor={
+        <Pressable style={styles.iconButton} onPress={openMenu}>
+          <MaterialIcons name="more-vert" size={24} color="#333" />
+        </Pressable>
+      }
+    >
+      <Menu.Item
+        onPress={() => {
+          onSave(chatId);
+          closeMenu();
+        }}
+        title="Save Conversation"
+      />
+    </Menu>
+  );
+}
+
+
+
 const styles = StyleSheet.create({
   container: {
      flex: 1,
@@ -94,5 +139,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,          // Space below before content
     fontFamily: 'SFProText',   // Keep consistent with your app typography
   },
+  iconButton: {
+    padding: 8,              // touch target size
+    borderRadius: 20,        // circular feel
+    shadowColor: "#000",     // shadow on iOS
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
+    marginRight: 8,          // spacing from edge
+  },
+
 });
 

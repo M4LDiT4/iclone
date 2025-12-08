@@ -23,10 +23,11 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isLoading) return;
+
     if (user) {
-      if(user.profile.onboardingDone){
+      if (user.profile.onboardingDone) {
         router.replace("/home");
-      }else{
+      } else {
         router.replace("/onboarding/setName");
       }
     } else {
@@ -34,40 +35,37 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     }
   }, [user, isLoading, router]);
 
-  const handleChangeCredentials = async(userState: FirebaseAuthTypes.User | null) =>{
-    try{
-      if(! userState){
-        setUser(userState);
-      }else{
+  const handleChangeCredentials = async (userState: FirebaseAuthTypes.User | null) => {
+    try {
+      if (!userState) {
+        setUser(null);
+      } else {
         const finishedOnboarding = await AuthService.hasFinishedOnboarding(userState);
         const appUser: AppUser = {
           auth: userState,
-          profile :{
-            onboardingDone: finishedOnboarding
-          }
-        }
+          profile: { onboardingDone: finishedOnboarding },
+        };
         setUser(appUser);
         setError(null);
       }
     } catch (err) {
       if (err instanceof AuthServiceError) {
         console.error(`AuthServiceError encountered while authenticating: ${err}`);
-        setError(err.message); // already user-friendly
+        setError(err.message);
       } else {
         console.error(`Unexpected error occurred while authenticating: ${err}`);
         setError("We ran into a problem signing you in. Please try again or check your connection.");
       }
-    }finally{
+    } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   if (isLoading) {
     return (
-      // TODO: Add a proper loader
       <View style={styles.initialScreenContainer}>
-        <ActivityIndicator size="large" color={AppColors.primaryColor}/>
-        <Text style = {styles.titleText}>Starting App...</Text>
+        <ActivityIndicator size="large" color={AppColors.primaryColor} />
+        <Text style={styles.titleText}>Starting App...</Text>
       </View>
     );
   }
@@ -75,18 +73,16 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   if (error) {
     return (
       <View style={styles.initialScreenContainer}>
-        <ActivityIndicator size="large" color={AppColors.primaryColor}/>
         <Text style={styles.titleText}>⚠️ {error}</Text>
       </View>
     );
   }
 
-  // Render children once auth state is known
   return (
-    <AuthContext.Provider value={{user: user!.auth}}>
+    <AuthContext.Provider value={{ user: user ? user.auth : null }}>
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
