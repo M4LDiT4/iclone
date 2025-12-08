@@ -4,7 +4,7 @@ import { StyleSheet, View, Text, TouchableOpacity, Pressable } from "react-nativ
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import AppColors from "@/core/styling/AppColors";
 import { router } from "expo-router";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Menu } from "react-native-paper";
 
 type ChatHeaderProps = {
@@ -13,7 +13,7 @@ type ChatHeaderProps = {
   onSave: (chatId: string) => void;
 };
 
-export default function ChatHeader({ label, chatId, onSave }: ChatHeaderProps) {
+function ChatHeader({ label, chatId, onSave }: ChatHeaderProps) {
   const insets = useSafeAreaInsets();
   const [visible, setVisible] = useState(false);
 
@@ -65,6 +65,7 @@ export default function ChatHeader({ label, chatId, onSave }: ChatHeaderProps) {
   );
 }
 
+export default memo(ChatHeader)
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",

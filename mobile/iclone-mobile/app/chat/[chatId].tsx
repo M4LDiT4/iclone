@@ -1,5 +1,5 @@
 // ChatScreen.tsx
-import {FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {FlatList, KeyboardAvoidingView, Platform,StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import ChatBubble from "@/components/chat/ChatBubble";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -10,11 +10,9 @@ import { Column, Padding, Spacer, Stack } from "@/components/layout/layout";
 import GenericModal from "@/components/modals/genericModal";
 import PrimaryButton from "@/components/buttons/primaryButton";
 import AssistantLogo from "@/components/chat/assistantLogo";
-import { useLayoutEffect, useState } from "react";
-import { Menu } from "react-native-paper";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useLayoutEffect, } from "react";
+import { Ionicons, } from "@expo/vector-icons";
 import ChatHeader from "@/components/headers/chatHeader";
-import { StatusBar } from "expo-status-bar";
 import AppColors from "@/core/styling/AppColors";
 
 export default function ChatScreen() {
