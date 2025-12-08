@@ -1,5 +1,5 @@
 // ChatScreen.tsx
-import {FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text} from "react-native";
+import {FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import ChatBubble from "@/components/chat/ChatBubble";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,7 +12,10 @@ import PrimaryButton from "@/components/buttons/primaryButton";
 import AssistantLogo from "@/components/chat/assistantLogo";
 import { useLayoutEffect, useState } from "react";
 import { Menu } from "react-native-paper";
-import { MaterialIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import ChatHeader from "@/components/headers/chatHeader";
+import { StatusBar } from "expo-status-bar";
+import AppColors from "@/core/styling/AppColors";
 
 export default function ChatScreen() {
   const { chatId, userMessage, username } = useLocalSearchParams();
@@ -34,7 +37,11 @@ export default function ChatScreen() {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () =>  <KebabMenu chatId={chatId as string} onSave={()=>{}} />
+      header: () =>  <ChatHeader
+          label="Converse"
+          chatId={chatId as string}
+          onSave={(id) => console.log("Save conversation:", id)}
+        />
     })
   }, [navigation, chatId]);
 
@@ -45,15 +52,15 @@ export default function ChatScreen() {
       <KeyboardAvoidingView 
         style ={{flex:1}}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 80} // sample offsets
+        keyboardVerticalOffset={80}
       >
-        <Padding style={{flex:1}} horizontal={16}>
+        <Padding style={{flex:1, paddingHorizontal: 16}}>
           <Stack style = {{flex: 1}}>
             <FlatList
               ref={flatListRef}
               inverted
-              style={{ flex: 1 }}
-              contentContainerStyle={{paddingTop: 50}}
+              style={{ flex: 1,}}
+              contentContainerStyle={{paddingTop: isUserTyping ? 50 : 0}}
               data={messageList}
               keyExtractor={(_, index) => index.toString()}
               renderItem={({ item }) => <ChatBubble {...item} />}
@@ -65,12 +72,19 @@ export default function ChatScreen() {
               isSystemTyping = {isAssistantTyping}
             />
           </Stack>
-          <ChatInputWrapper
-            handleSend={pushUserMessage}
-            triggerLLMResponse={generateResponse}
-            setIsUserTyping={setIsUserTyping}
-            isUserTyping={isUserTyping}
-          />
+          <View style ={{width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'flex-start'}}>
+            <TouchableOpacity style = {{padding: 8, justifyContent: 'center', alignItems: 'center'}}>
+              <Ionicons size={46} name="save-outline" color={AppColors.primaryColor}/>
+            </TouchableOpacity>
+           <View style ={{flex: 1}}>
+             <ChatInputWrapper
+              handleSend={pushUserMessage}
+              triggerLLMResponse={generateResponse}
+              setIsUserTyping={setIsUserTyping}
+              isUserTyping={isUserTyping}
+            />
+           </View>
+          </View>
         </Padding>
         <GenericModal visible = {isError} onClose={() => {}}>
           <Column>
@@ -85,39 +99,6 @@ export default function ChatScreen() {
     </SafeAreaView>
   );
 }
-
-type KebabMenuProps = {
-  chatId: string;
-  onSave: (chatId: string) => void;
-};
-
-function KebabMenu({ chatId, onSave }: KebabMenuProps) {
-  const [visible, setVisible] = useState(false);
-
-  const openMenu = () => setVisible(true);
-  const closeMenu = () => setVisible(false);
-
-  return (
-    <Menu
-      visible={visible}
-      onDismiss={closeMenu}
-      anchor={
-        <Pressable style={styles.iconButton} onPress={openMenu}>
-          <MaterialIcons name="more-vert" size={24} color="#333" />
-        </Pressable>
-      }
-    >
-      <Menu.Item
-        onPress={() => {
-          onSave(chatId);
-          closeMenu();
-        }}
-        title="Save Conversation"
-      />
-    </Menu>
-  );
-}
-
 
 
 const styles = StyleSheet.create({
@@ -139,15 +120,5 @@ const styles = StyleSheet.create({
     marginBottom: 12,          // Space below before content
     fontFamily: 'SFProText',   // Keep consistent with your app typography
   },
-  iconButton: {
-    padding: 8,              // touch target size
-    borderRadius: 20,        // circular feel
-    shadowColor: "#000",     // shadow on iOS
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    shadowOffset: { width: 0, height: 1 },
-    marginRight: 8,          // spacing from edge
-  },
-
 });
 

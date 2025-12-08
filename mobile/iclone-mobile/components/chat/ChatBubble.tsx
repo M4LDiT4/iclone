@@ -7,10 +7,9 @@ import AvatarContainer from '../images/avatarContainer';
 export type ChatBubbleProps = {
   content: string;
   sentByUser: boolean;
-  isLastByUser?: boolean; // indicates if it's the last message in a sequence
 };
 
-export default function ChatBubble({ content, sentByUser, isLastByUser = false }: ChatBubbleProps) {
+export default function ChatBubble({ content, sentByUser}: ChatBubbleProps) {
   const alignment = sentByUser ? 'flex-end' : 'flex-start';
   const bubbleColor = sentByUser
     ? Color(AppColors.secondaryColor).alpha(0.2).rgb().string()
@@ -18,40 +17,18 @@ export default function ChatBubble({ content, sentByUser, isLastByUser = false }
 
   return (
     <View style={[styles.container, { alignItems: alignment }]}>
-      {/* Show avatar only if NOT sent by user and is the last in the group */}
-      {!sentByUser && isLastByUser && (
-        <View style={[styles.avatarContainer, { left: -1 }]}>
-          <AvatarContainer
-            size={42}
-            source={require('../../assets/images/react-logo.png')}
-          />
-        </View>
-      )}
-
       <View
         style={[
           styles.contentContainer,
           {
             backgroundColor: bubbleColor,
             alignSelf: alignment,
-            marginLeft: sentByUser ? 40 : 0,
-            marginRight: sentByUser ? 20 : 0,
             borderRadius: 10,
           },
         ]}
       >
         <Text style={styles.contentText}>{content}</Text>
       </View>
-
-      {/* ✅ Only show avatar if it's sent by the user AND it's the last by the user */}
-      {sentByUser && isLastByUser && (
-        <View style={[styles.avatarContainer, { right: -1 }]}>
-          <AvatarContainer
-            size={42}
-            source={require('../../assets/images/react-logo.png')}
-          />
-        </View>
-      )}
     </View>
   );
 }

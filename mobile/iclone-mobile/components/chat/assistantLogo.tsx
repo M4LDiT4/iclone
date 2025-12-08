@@ -53,6 +53,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     overflow: 'visible',
+    paddingTop: 30,
   },
   mainContainerTop: {
     top: 0,       // pinned to top

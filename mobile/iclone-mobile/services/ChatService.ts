@@ -228,6 +228,8 @@ class ChatService {
       title: chatSummary.title,
       narrative: chatSummary.narrative
     });
+
+    return chatSummary;
   }
 }
 

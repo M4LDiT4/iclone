@@ -159,6 +159,18 @@ export const useChatViewModel = (chatId?: string, userMessage?: string, username
     setIsError(false);
   }
 
+  /** summarize the conversation and save a local copy */
+  const saveNarrative = async () => {
+    try{
+      if(!chatService) return;
+      const conversationNarrative = await chatService.summarizeConversation();
+      // navigate to the summary screen
+    }catch(err){
+      console.error(`Failed to summarize the narrative: ${err}`);
+      // maybe show error
+    }
+  }
+
   return {
     isInitializing,
     error,
