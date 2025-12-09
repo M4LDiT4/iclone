@@ -7,27 +7,12 @@ import { router } from "expo-router";
 import { memo, useState } from "react";
 import { Menu } from "react-native-paper";
 
-type ChatHeaderProps = {
-  label: string;
-  chatId: string;
-  onSave: (chatId: string) => void;
-};
 
-function ChatHeader({ label, chatId, onSave }: ChatHeaderProps) {
+function ChatHeader({label}: {label: string}) {
   const insets = useSafeAreaInsets();
-  const [visible, setVisible] = useState(false);
 
   const handleGoBack = () => {
     router.back();
-  };
-
-  const openMenu = () => {
-    setVisible(true);
-    console.log('open');
-  };
-  const closeMenu = () => {
-    setVisible(false);
-    console.log('close');
   };
 
   return (
@@ -42,24 +27,9 @@ function ChatHeader({ label, chatId, onSave }: ChatHeaderProps) {
         {/* Title */}
         <Text style={styles.labelText}>{label}</Text>
 
-        {/* Kebab menu */}
-        <Menu
-          visible={visible}
-          onDismiss={closeMenu}
-          anchor={
-            <TouchableOpacity style={styles.iconButton} onPress={openMenu}>
-              <MaterialIcons name="more-vert" size={28} color={AppColors.secondaryColor} />
-            </TouchableOpacity>
-          }
-        >
-          <Menu.Item
-            onPress={() => {
-              onSave(chatId);
-              closeMenu();
-            }}
-            title="Save Conversation"
-          />
-        </Menu>
+        <TouchableOpacity style={styles.iconButton} onPress={()=> {}}>
+          <MaterialIcons name="more-vert" size={28} color={AppColors.secondaryColor} />
+        </TouchableOpacity>
       </View>
     </View>
   );

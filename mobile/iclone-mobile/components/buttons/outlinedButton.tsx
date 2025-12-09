@@ -40,7 +40,6 @@ const styles = StyleSheet.create({
   mainContainer: {
     backgroundColor: "transparent", // 👈 transparent background
     borderRadius: 10,
-    width: "100%",
     height: 47,
     borderWidth: 1,
     borderColor: hexToRgba("#005BFF", 0.85), // 👈 outline color

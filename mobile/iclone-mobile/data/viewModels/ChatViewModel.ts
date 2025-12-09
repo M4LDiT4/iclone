@@ -183,5 +183,6 @@ export const useChatViewModel = (chatId?: string, userMessage?: string, username
     pushUserMessage,
     generateResponse,
     handleErrorModalCloseButtonPress,
+    saveNarrative
   };
 };

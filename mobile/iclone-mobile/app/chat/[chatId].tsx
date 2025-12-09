@@ -10,10 +10,10 @@ import { Column, Padding, Spacer, Stack } from "@/components/layout/layout";
 import GenericModal from "@/components/modals/genericModal";
 import PrimaryButton from "@/components/buttons/primaryButton";
 import AssistantLogo from "@/components/chat/assistantLogo";
-import { useLayoutEffect, } from "react";
-import { Ionicons, } from "@expo/vector-icons";
-import ChatHeader from "@/components/headers/chatHeader";
+import { useLayoutEffect, useState, } from "react";
+import { Ionicons, MaterialIcons, } from "@expo/vector-icons";
 import AppColors from "@/core/styling/AppColors";
+import { Menu } from "react-native-paper";
 
 export default function ChatScreen() {
   const { chatId, userMessage, username } = useLocalSearchParams();
@@ -29,19 +29,50 @@ export default function ChatScreen() {
     pushUserMessage,
     generateResponse,
     handleErrorModalCloseButtonPress,
+    saveNarrative,
   } = useChatViewModel(chatId as string|undefined, userMessage as string|undefined, username as string|undefined);
 
   const navigation = useNavigation();
+  const [menuVisible, setMenuVisible] = useState(false);
+
+  const openMenu = () => setMenuVisible(true);
+  const closeMenu = () => setMenuVisible(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      header: () =>  <ChatHeader
-          label="Converse"
-          chatId={chatId as string}
-          onSave={(id) => console.log("Save conversation:", id)}
-        />
-    })
-  }, [navigation, chatId]);
+      headerRight: () => (
+        <Menu
+          visible={menuVisible}
+          onDismiss={closeMenu}
+          anchor={
+            <TouchableOpacity onPress={openMenu} style={{ paddingHorizontal: 8 }}>
+              <MaterialIcons
+                name="more-vert"
+                size={28}
+                color={AppColors.secondaryColor}
+              />
+            </TouchableOpacity>
+          }
+        >
+          <Menu.Item
+            onPress={() => {
+              console.log("Save conversation:", chatId);
+              closeMenu();
+            }}
+            title="Save Conversation"
+          />
+          <Menu.Item
+            onPress={() => {
+              console.log("Another action");
+              closeMenu();
+            }}
+            title="Another Action"
+          />
+        </Menu>
+      ),
+    });
+  }, [navigation, menuVisible, chatId]);
+
 
   if (isInitializing) return <LoadingScreen/>;
 
@@ -58,6 +89,9 @@ export default function ChatScreen() {
               ref={flatListRef}
               inverted
               style={{ flex: 1,}}
+              // makes sure that the whole text input is visible,
+              // this includes the container of the textinput
+              // not just the textinput
               contentContainerStyle={{paddingTop: isUserTyping ? 50 : 0}}
               data={messageList}
               keyExtractor={(_, index) => index.toString()}
@@ -70,19 +104,13 @@ export default function ChatScreen() {
               isSystemTyping = {isAssistantTyping}
             />
           </Stack>
-          <View style ={{width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'flex-start'}}>
-            <TouchableOpacity style = {{padding: 8, justifyContent: 'center', alignItems: 'center'}}>
-              <Ionicons size={46} name="save-outline" color={AppColors.primaryColor}/>
-            </TouchableOpacity>
-           <View style ={{flex: 1}}>
-             <ChatInputWrapper
+          <ChatInputWrapper
               handleSend={pushUserMessage}
               triggerLLMResponse={generateResponse}
               setIsUserTyping={setIsUserTyping}
               isUserTyping={isUserTyping}
-            />
-           </View>
-          </View>
+              handleSaveNarrative={saveNarrative}
+          />
         </Padding>
         <GenericModal visible = {isError} onClose={() => {}}>
           <Column>

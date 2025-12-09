@@ -1,4 +1,5 @@
 import AuthGate from "@/components/application/authGate";
+import ChatHeader from "@/components/headers/chatHeader";
 import GenericHeader from "@/components/headers/genericHeader";
 import HomeHeader from "@/components/headers/homeHeader";
 import AppColors from "@/core/styling/AppColors";
@@ -8,7 +9,6 @@ import { PaperProvider, Portal } from "react-native-paper";
 export default function RootLayout() {
   return (
        <PaperProvider>
-        <Portal.Host>
           <AuthGate>
             <Stack 
               screenOptions={{
@@ -36,11 +36,11 @@ export default function RootLayout() {
               name="chat/[chatId]"
               options={{
                 headerShown: true,
+                header: ()=> <ChatHeader label={"converse"}/>
               }}
             />
           </Stack>
         </AuthGate>
-        </Portal.Host>
     </PaperProvider>
   )
 }
