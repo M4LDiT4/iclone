@@ -217,17 +217,12 @@ class ChatService {
     return this.llModel.call([context, ...slidingWindowData]);
   }
 
-  // create a summary for the chats
-  async summarizeConversation(){
+  // generate summary narrative 
+  async generateSummary(){
     const longTermMemory = this.chatSummary ?? "No long term memory";
     const shortTermMemory = this.slidingWindow.conversationToString();
 
-    const chatSummary = await this.summaryService.summarizeStory(longTermMemory, shortTermMemory);
-    await this.chatDBService.updateChat(this.chatId, {
-      tag: JSON.stringify(chatSummary.tag),
-      title: chatSummary.title,
-      narrative: chatSummary.narrative
-    });
+    const chatSummary = await this.summaryService.summarizeNarrative(longTermMemory, shortTermMemory);
 
     return chatSummary;
   }

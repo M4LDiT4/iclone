@@ -2,7 +2,7 @@ import { SummaryServiceError } from "@/core/errors/SummaryServiceError";
 import DeepSeekClient, { DeepSeekMessageStructure } from "@/domain/llm/deepSeek/model";
 
 
-interface HighLevelChatSummary {
+export interface HighLevelChatSummary {
   tag: string[],
   title: string,
   summary: string,
@@ -90,7 +90,7 @@ class SummaryService {
     return response;
   }
 
-  async summarizeStory(longtermMemory: string, latestConversation: string) {
+  async summarizeNarrative(longtermMemory: string, latestConversation: string):Promise<HighLevelChatSummary> {
     const systemPrompt = `Task: Create a structured memory summary from the provided Long-Term Memory (LTM) and the Current Conversation (STM).  
       The summary must preserve everything required to reconstruct the user's story later in the user's own voice.
 
@@ -113,6 +113,8 @@ class SummaryService {
         "narrative": string                 // A coherent first-person narrative reconstruction of the events and meaning
       }
 
+      
+
       Instructions:
       - Use both memories (LTM + STM) to build a unified summary.
       - Preserve unique details from each memory source.
@@ -121,6 +123,10 @@ class SummaryService {
       - The narrative should read like the user telling their own story naturally, in first person.
       - Never include verbatim dialogue.
       - Do NOT output anything outside the JSON object.
+      - Do NOT include code fences, labels, or any text outside the JSON.
+      - Do NOT add explanations or commentary.
+      - Output must begin with '{' and end with '}'.
+
 
       Inputs:
       Long-Term Memory:
@@ -134,6 +140,8 @@ class SummaryService {
     ];
 
     const response = await this.llmClient.call(messages);
+
+    console.log(`Response is: ${response}`);
     const parsedResponse = JSON.parse(response);
     
     if(!parsedResponse){

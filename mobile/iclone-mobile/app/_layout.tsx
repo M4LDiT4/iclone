@@ -39,6 +39,13 @@ export default function RootLayout() {
                 header: ()=> <ChatHeader label={"converse"}/>
               }}
             />
+            <Stack.Screen
+              name="chat/confirmMemory"
+              options={{
+                headerShown: true,
+                header: ()=> <GenericHeader label="Chat Narrative"/>
+              }}
+            />
           </Stack>
         </AuthGate>
     </PaperProvider>

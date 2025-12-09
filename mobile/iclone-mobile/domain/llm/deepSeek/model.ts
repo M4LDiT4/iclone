@@ -28,6 +28,9 @@ class DeepSeekClient {
           model: this.model,
           messages,
           stream: false,
+          reponse_format: {
+            'type': 'json_object'
+          }
         },
         {
           headers: {

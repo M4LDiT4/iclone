@@ -5,7 +5,6 @@ import { Feather, MaterialIcons } from "@expo/vector-icons";
 import AppColors from "@/core/styling/AppColors";
 import { router } from "expo-router";
 import { memo, useState } from "react";
-import { Menu } from "react-native-paper";
 
 
 function ChatHeader({label}: {label: string}) {
@@ -16,7 +15,7 @@ function ChatHeader({label}: {label: string}) {
   };
 
   return (
-    <View style={[styles.container, {height: 70 + insets.top}]}>
+    <View style={[styles.container, {minHeight: insets.top}]}>
       <View style ={[styles.statusBar, {height: insets.top}]} ></View>
       <View style={styles.contentContainer}>
         {/* Back button */}
@@ -51,7 +50,6 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: 'transparent',
     paddingVertical: 12,
     paddingHorizontal: 20,
   },

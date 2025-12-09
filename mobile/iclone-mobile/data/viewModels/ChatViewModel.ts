@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import ChatService from "@/services/ChatService";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
-import SummaryService from "@/services/SummaryService";
+import SummaryService, { HighLevelChatSummary } from "@/services/SummaryService";
 import LocalMessageDBService from "@/services/localDB/LocalMessageDBService";
 import database from "@/data/database/index.native";
 import { eventBus } from "@/core/utils/eventBus";
@@ -160,14 +160,17 @@ export const useChatViewModel = (chatId?: string, userMessage?: string, username
   }
 
   /** summarize the conversation and save a local copy */
-  const saveNarrative = async () => {
+  const saveNarrative = async (): Promise<HighLevelChatSummary> => {
     try{
-      if(!chatService) return;
-      const conversationNarrative = await chatService.summarizeConversation();
+      if(!chatService){
+        throw new Error(`chatService is not initialized`);
+      }
+      const conversationNarrative = await chatService.generateSummary();
+      return conversationNarrative;
       // navigate to the summary screen
     }catch(err){
       console.error(`Failed to summarize the narrative: ${err}`);
-      // maybe show error
+      throw err;
     }
   }
 

@@ -77,9 +77,9 @@ export default function ChatScreen() {
   if (isInitializing) return <LoadingScreen/>;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={['left', 'right']} style={styles.container}>
       <KeyboardAvoidingView 
-        style ={{flex:1}}
+        style ={{flex:1,}}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={80}
       >
@@ -109,7 +109,7 @@ export default function ChatScreen() {
               triggerLLMResponse={generateResponse}
               setIsUserTyping={setIsUserTyping}
               isUserTyping={isUserTyping}
-              handleSaveNarrative={saveNarrative}
+              generateNarrative={saveNarrative}
           />
         </Padding>
         <GenericModal visible = {isError} onClose={() => {}}>

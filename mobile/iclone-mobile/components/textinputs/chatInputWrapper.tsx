@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { Keyboard, View, StyleSheet, Platform, TouchableOpacity } from "react-native";
+import { Keyboard, View, StyleSheet, Platform, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ChatTextinput from "./chatTextinput";
 import { Ionicons } from "@expo/vector-icons";
@@ -9,12 +9,14 @@ import GenericModal from "../modals/genericModal";
 import PrimaryButton from "../buttons/primaryButton";
 import { Text } from "react-native";
 import OutlineButton from "../buttons/outlinedButton";
+import { HighLevelChatSummary } from "@/services/SummaryService";
+import { router } from "expo-router";
 
 interface ChatInputWrapperProps {
   handleSend: (content: string) => void | Promise<void>;
   triggerLLMResponse: () => void;
   setIsUserTyping: (val: boolean) => void;
-  handleSaveNarrative: () => void;
+  generateNarrative: () => Promise<HighLevelChatSummary>;
   isUserTyping: boolean;
 }
 
@@ -23,11 +25,12 @@ function ChatInputWrapper({
   triggerLLMResponse,
   setIsUserTyping,
   isUserTyping,
-  handleSaveNarrative,
+  generateNarrative,
 }: ChatInputWrapperProps) {
-  const insets = useSafeAreaInsets(); // 👈 get safe area values
+  const insets = useSafeAreaInsets(); 
   const [message, setMessage] = useState<string>("");
   const [showSave, setShowSave] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const lastSentMessageRef = useRef<string | null>(null);
   const typingTimeoutRef = useRef<number | null>(null);
@@ -61,8 +64,22 @@ function ChatInputWrapper({
     }
   };
 
-  const handleSaveMessage = () => {
+  const handleSaveMessage = async () => {
     closeSaveModal();
+    try{
+      setIsLoading(true);
+      const narrative = await generateNarrative();
+      router.push({
+        pathname: '/chat/confirmMemory',
+        params: {
+          chatSummary: JSON.stringify(narrative)
+        }
+      })
+    }catch(err){
+      console.error(`Failed `)
+    }finally{
+      setIsLoading(false);
+    }
   }
 
   const openSaveModal = () => setShowSave(true);
@@ -91,7 +108,6 @@ function ChatInputWrapper({
       style={[
         styles.textinputContainer,
         {
-          // 👇 dynamic bottom padding using safe area
           paddingBottom: insets.bottom + 8 + (isUserTyping? 30: 0),
         },
       ]}
@@ -107,20 +123,27 @@ function ChatInputWrapper({
         componentStatus="idle"
       />
       <GenericModal visible = {showSave} onClose={() => {}}>
-          <Column>
-            <Padding style = {styles.modalContainer}>
-              <Text style = {styles.modalTitleText}>Save Conversation as Memory?</Text>
-              <Spacer height={8}/>
-              <View style ={{width: '100%', flexDirection: 'row'}}>
-                <OutlineButton onPress={closeSaveModal} style={{flex: 1}} label="No"/>
-                <Spacer width={8}/>
-                <PrimaryButton style={{flex: 1}} label="Yes" onPress={handleSaveMessage}/>
-              </View>
-            </Padding>
-          </Column>
-        </GenericModal>
+        <Column>
+          <Padding style = {styles.modalContainer}>
+            <Text style = {styles.modalTitleText}>Save Conversation as Memory?</Text>
+            <Spacer height={8}/>
+            <View style ={{width: '100%', flexDirection: 'row'}}>
+              <OutlineButton onPress={closeSaveModal} style={{flex: 1}} label="No"/>
+              <Spacer width={8}/>
+              <PrimaryButton style={{flex: 1}} label="Yes" onPress={handleSaveMessage}/>
+            </View>
+          </Padding>
+        </Column>
+      </GenericModal>
+      <GenericModal visible = {isLoading} onClose={() => {}}>
+        <Column>
+          <Padding style = {styles.modalContainer}>
+            <Text style = {styles.modalTitleText}>Generating narrative...</Text>
+            <ActivityIndicator size={'large'} color={AppColors.primaryColor}/>
+          </Padding>
+        </Column>
+      </GenericModal>
     </View>
-
   );
 }
 
