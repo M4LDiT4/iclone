@@ -1,10 +1,8 @@
 import AuthGate from "@/components/application/authGate";
-import ChatHeader from "@/components/headers/chatHeader";
-import GenericHeader from "@/components/headers/genericHeader";
 import HomeHeader from "@/components/headers/homeHeader";
 import AppColors from "@/core/styling/AppColors";
 import { Stack } from "expo-router";
-import { PaperProvider, Portal } from "react-native-paper";
+import { PaperProvider} from "react-native-paper";
 
 export default function RootLayout() {
   return (
@@ -31,20 +29,6 @@ export default function RootLayout() {
             />
             <Stack.Screen
               name="signIn"
-            />
-            <Stack.Screen
-              name="chat/[chatId]"
-              options={{
-                headerShown: true,
-                header: ()=> <ChatHeader label={"converse"}/>
-              }}
-            />
-            <Stack.Screen
-              name="chat/confirmMemory"
-              options={{
-                headerShown: true,
-                header: ()=> <GenericHeader label="Chat Narrative"/>
-              }}
             />
           </Stack>
         </AuthGate>

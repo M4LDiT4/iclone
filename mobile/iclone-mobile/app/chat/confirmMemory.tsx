@@ -78,7 +78,7 @@ export default function ConfirmMemoryScreen() {
       <GenericModal visible = {isLoading} onClose={() => {}}>
         <Column>
           <Padding style = {styles.modalContainer}>
-            <Text style = {styles.modalTitleText}>Generating narrative...</Text>
+            <Text style = {styles.modalTitleText}>Saving narrative narrative...</Text>
             <ActivityIndicator size={'large'} color={AppColors.primaryColor}/>
           </Padding>
         </Column>
