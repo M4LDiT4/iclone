@@ -18,12 +18,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Spacer } from '@/components/layout/layout';
 import { useAuth } from '@/core/contexts/authContext';
 import AuthService from '@/services/AuthService';
+import { useRouter } from 'expo-router';
 
 
 export default function HomeScreen() {
   const {user} = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [displayName, setDisplayName] = useState<string|null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     getUserProfile();
@@ -42,6 +44,10 @@ export default function HomeScreen() {
     }finally{
       setIsLoading(false);
     }
+  }
+
+  const gotoMemoryList = () => {
+    router.push("/memory/memoryList");
   }
 
   if (isLoading) {
@@ -67,9 +73,12 @@ export default function HomeScreen() {
             <Text style={styles.primaryText}>{`Hello, ${displayName ?? user?.displayName ?? ""}`}</Text>
             <Spacer height={8}/>
             <Text style={styles.welcomeText}>Welcome back!</Text>
-            <View style={styles.svgContainer}>
+            <TouchableOpacity 
+              onPress={gotoMemoryList} 
+              style={styles.svgContainer}
+            >
               <Logo />
-            </View>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.lowerContainer}>
