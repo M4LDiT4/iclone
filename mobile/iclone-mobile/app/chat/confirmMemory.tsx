@@ -6,9 +6,10 @@ import AppColors from "@/core/styling/AppColors";
 import { HighLevelChatSummary } from "@/services/SummaryService";
 import { SafeAreaView } from "react-native-safe-area-context";
 import GenericModal from "@/components/modals/genericModal";
-import { Column, Padding } from "@/components/layout/layout";
+import { Column, Padding, Spacer } from "@/components/layout/layout";
 import { useChatContext } from "@/core/contexts/chatContext";
 import {ModalType} from "@/core/types/modalTypes";
+import PrimaryButton from "@/components/buttons/primaryButton";
 
 export default function ConfirmMemoryScreen() {
   const router = useRouter();
@@ -45,12 +46,21 @@ export default function ConfirmMemoryScreen() {
 
       }
       await chatService?.saveSummary(updatedSummary);
+      setModalState("success");
     }catch(err){
-      console.error(`Failed to save narrative`)
-    }finally{
-      setModalState("none");
+      console.error(`Failed to save narrative`);
+      setModalState("error");
     }
   };
+
+  const handleCloseSuccessModal = () => {
+    setModalState("none");
+    router.back();
+  }
+
+  const handleCloseErrorModal = () => {
+    setModalState("none");
+  }
 
 
   return (
@@ -109,6 +119,24 @@ export default function ConfirmMemoryScreen() {
           <Padding style = {styles.modalContainer}>
             <Text style = {styles.modalTitleText}>Saving narrative narrative...</Text>
             <ActivityIndicator size={'large'} color={AppColors.primaryColor}/>
+          </Padding>
+        </Column>
+      </GenericModal>
+      <GenericModal visible = {modalState === 'success'} onClose={() => {}}>
+        <Column>
+          <Padding style = {styles.modalContainer}>
+            <Text style = {styles.modalTitleText}>Narrative saved successfully!</Text>
+            <Spacer height={16}/>
+            <PrimaryButton style={{flexDirection: 'row', justifyContent: 'center'}} onPress={handleCloseSuccessModal} label="Okay"/>
+          </Padding>
+        </Column>
+      </GenericModal>
+      <GenericModal visible = {modalState === 'error'} onClose={() => {}}>
+        <Column>
+          <Padding style = {styles.modalContainer}>
+            <Text style = {styles.modalTitleText}>Failed to save narrative</Text>
+            <Spacer height={16}/>
+            <PrimaryButton onPress={handleCloseSuccessModal} label="Cancel"/>
           </Padding>
         </Column>
       </GenericModal>
