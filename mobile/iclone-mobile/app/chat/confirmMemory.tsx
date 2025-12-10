@@ -7,28 +7,48 @@ import { HighLevelChatSummary } from "@/services/SummaryService";
 import { SafeAreaView } from "react-native-safe-area-context";
 import GenericModal from "@/components/modals/genericModal";
 import { Column, Padding } from "@/components/layout/layout";
+import { useChatContext } from "@/core/contexts/chatContext";
+import {ModalType} from "@/core/types/modalTypes";
 
 export default function ConfirmMemoryScreen() {
   const router = useRouter();
 
+  const {chatService} = useChatContext();
+
   const {chatSummary} = useLocalSearchParams<{chatSummary: string}>();
 
-  const parsed: HighLevelChatSummary = JSON.parse(chatSummary);
+  const parsedSummary: HighLevelChatSummary = JSON.parse(chatSummary);
 
-  const [tag, setTag] = useState<string>(parsed.tag.join(", ").replace("_", " "));
-  const [summary, setSummary] = useState<string>(parsed.narrative);
-  const [isLoading, setIsLoading] = useState(false);
+  const [tag, setTag] = useState<string>(parsedSummary.tag.join(", ").replace("_", " "));
+  const [narrative, setNarrative] = useState<string>(parsedSummary.narrative);
+  const [title, setTitle] = useState<string>(parsedSummary.title);
+  const [modalState, setModalState] = useState<ModalType>("none");
   const handleCancel = () => {
     router.back();
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     try{
-      setIsLoading(true);
+      // log and do nothing when chat service is not present
+      // you can throw error here depending on the future design
+      if(!chatService){
+        console.error(`ChatService is not available on the confirm memory screen.\n?Double check the chatProvider if it is initialized, preferably inside the [chatId].tsx`);
+        return;
+      }
+      setModalState("loading");
+      const tags = tag.split(",").map(t => t.trim());
+      const updatedSummary: HighLevelChatSummary = {
+        tag: tags,
+        title: title,
+        summary: parsedSummary.narrative,
+        narrative: narrative
+
+      }
+      await chatService?.saveSummary(updatedSummary);
     }catch(err){
       console.error(`Failed to save narrative`)
     }finally{
-      setIsLoading(false);
+      setModalState("none");
     }
   };
 
@@ -54,12 +74,21 @@ export default function ConfirmMemoryScreen() {
             placeholderTextColor={AppColors.secondaryColor}
           />
 
+          <Text style={styles.label}>Title</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter Title"
+            value={title}
+            onChangeText={setTitle}
+            placeholderTextColor={AppColors.secondaryColor}
+          />
+
           <Text style={styles.label}>Narrative</Text>
           <TextInput
             style={[styles.input, styles.multiline]}
-            placeholder="Enter summary"
-            value={summary}
-            onChangeText={setSummary}
+            placeholder="Enter Narrative"
+            value={narrative}
+            onChangeText={setNarrative}
             multiline
             placeholderTextColor={AppColors.secondaryColor}
           />
@@ -75,7 +104,7 @@ export default function ConfirmMemoryScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-      <GenericModal visible = {isLoading} onClose={() => {}}>
+      <GenericModal visible = {modalState === 'loading'} onClose={() => {}}>
         <Column>
           <Padding style = {styles.modalContainer}>
             <Text style = {styles.modalTitleText}>Saving narrative narrative...</Text>
