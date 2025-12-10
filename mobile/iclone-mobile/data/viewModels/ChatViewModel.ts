@@ -1,17 +1,19 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import ChatService from "@/services/ChatService";
 import { FlatList } from "react-native";
+import ComponentStatus from "@/core/types/componentStatusType";
+import { ModalType } from "@/core/types/modalTypes";
 
 export const useChatViewModel = (
   chatService: ChatService | null,
   initialUserMessage?: string
 ) => {
   const [messageList, setMessageList] = useState<any[]>([]);
-  const [isInitializing, setIsInitializing] = useState(true);
   const [isAssistantTyping, setIsAssistantTyping] = useState(false);
   const [isUserTyping, setIsUserTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isError, setIsError] = useState(false);
+  const [componentStatus, setComponentStatus] = useState<ComponentStatus>("idle");
+  const [modalState, setModalStatus] = useState<ModalType>("none");
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -38,9 +40,9 @@ export const useChatViewModel = (
         }
       } catch (err: any) {
         setError("Failed to load messages");
-        setIsError(true);
+        setModalStatus("error");
       } finally {
-        setIsInitializing(false);
+        setComponentStatus("idle");
       }
     };
 
@@ -84,7 +86,7 @@ export const useChatViewModel = (
       await pushSystemMessage(response);
     } catch (err: any) {
       setError("Failed to get response");
-      setIsError(true);
+      setModalStatus("error")
     } finally {
       setIsAssistantTyping(false);
     }
@@ -98,12 +100,15 @@ export const useChatViewModel = (
 
   /** Close the error modal */
   const closeErrorModal = useCallback(() => {
+    // the modal is dependent on the error string
+    // if we set the error string to null, the modal should disappear by design
+    // update this if the modal is not updated and is no longer dependent on  the 
+    // error string
     setError(null);
   }, []);
 
   return {
     messageList,
-    isInitializing,
     isAssistantTyping,
     isUserTyping,
     setIsUserTyping,
@@ -112,8 +117,9 @@ export const useChatViewModel = (
     saveNarrative,
     closeErrorModal,
     error,
-    isError,
     flatListRef,
+    componentStatus,
+    modalState,
   };
 };
 

@@ -64,7 +64,7 @@ export default function ChatScreen() {
   // ──────────────────────────────────────────────
   const vm = useChatViewModel(chatService, (userMessage as string));
 
-  if (vm.isInitializing) return <LoadingScreen />;
+  if (vm.componentStatus === "initializing") return <LoadingScreen />;
 
   // ──────────────────────────────────────────────
   // 3. UI Rendering
@@ -114,7 +114,7 @@ export default function ChatScreen() {
         </Padding>
 
         {/* Error modal */}
-        <GenericModal visible={vm.isError} onClose={() => {}}>
+        <GenericModal visible={vm.modalState === "error"} onClose={() => {}}>
           <Column>
             <Padding style={styles.modalContainer}>
               <Text style={styles.modalText}>
