@@ -1,7 +1,7 @@
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import AppColors from "@/core/styling/AppColors";
-import { Feather, SimpleLineIcons } from "@expo/vector-icons";
+import { Feather, MaterialIcons, SimpleLineIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
 type HeaderProps = {
@@ -22,7 +22,7 @@ export default function GenericHeader({ label }: HeaderProps) {
           <Feather name="arrow-left-circle" size={36} color={AppColors.secondaryColor} />
         </TouchableOpacity>
         <Text style={styles.labelText}>{label}</Text>
-        <SimpleLineIcons name="options" size={36} color={AppColors.secondaryColor} />
+        <MaterialIcons name="more-vert" size={28} color={AppColors.secondaryColor} />
       </View>
     </View>
   );

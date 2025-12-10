@@ -89,7 +89,8 @@ class AuthService {
     const data : Record<string, any> = {
       'username': name,
       'birthdate': Timestamp.fromDate(birthdate),
-      'onboardingDone': true
+      'onboardingDone': true,
+      'updatedAt': Timestamp.fromDate(new Date())
     }
     if(illness) {
       data.illness = illness
@@ -153,19 +154,22 @@ class AuthService {
       // no need to udpate the displayName as firebase does this for us
       const credential = await signInWithCredential(this.auth, googleCredential);
 
-      const user = credential.user;
-      await setDoc(
-        doc(collection(this.store, 'users'), user.uid),
-          {
-            username: user.displayName ?? "",
-            email: user.email ?? "",
-            contactNumber: user.phoneNumber ?? "",
-            onboardingDone: false, // default flag
-            createdAt: firestore.FieldValue.serverTimestamp(),
-          },
-          { merge: true }
-      );
-
+      if(credential.additionalUserInfo?.isNewUser){
+        // create a user profile only if it is new user
+        const user = credential.user;
+        await setDoc(
+          doc(collection(this.store, 'users'), user.uid),
+            {
+              username: user.displayName ?? "",
+              email: user.email ?? "",
+              contactNumber: user.phoneNumber ?? "",
+              onboardingDone: false, // default flag
+              createdAt: firestore.FieldValue.serverTimestamp(),
+              updatedAt: firestore.FieldValue.serverTimestamp()
+            },
+            { merge: true }
+          );
+      }
       return credential;
     }catch(err){
       if(err instanceof AuthServiceError){

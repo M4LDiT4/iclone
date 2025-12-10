@@ -1,3 +1,3 @@
-type ComponentStatus = 'idle' | 'error' | 'loading';
+type ComponentStatus = 'idle' | 'error' | 'initializing';
 
 export default ComponentStatus;

@@ -1,74 +1,50 @@
 import { SummaryServiceError } from "@/core/errors/SummaryServiceError";
 import DeepSeekClient, { DeepSeekMessageStructure } from "@/domain/llm/deepSeek/model";
 
+
+export interface HighLevelChatSummary {
+  tag: string[],
+  title: string,
+  summary: string,
+  narrative: string
+}
+
 class SummaryService {
   llmClient: DeepSeekClient;
-  constructor(llmClient: DeepSeekClient){
-    this.llmClient = llmClient; 
+
+  constructor(llmClient: DeepSeekClient) {
+    this.llmClient = llmClient;
   }
 
   async summarizePair(left: string, right: string): Promise<string> {
-    if (left.length === 0 || right.length === 0) {
+    if (!left || !right) {
       throw new SummaryServiceError("[Merge Summarization Failed]", "`left` or `right` string is empty");
     }
 
     const systemPrompt = `
-      Task: Merge the following two summaries into a single, concise long-term memory summary.
+      Task: Merge Summary A and Summary B into one concise long-term memory summary.
 
-      Goal: Preserve essential context, decisions, and preferences while eliminating redundancy. The result should support continuity, personalization, and future recall.
+      Goal: Preserve all meaningful, future-relevant information that helps reconstruct the user’s story in their voice.
 
-      Instructions:
-      - Identify overlapping ideas and unify them logically.
-      - Retain unique insights, facts, or decisions from each summary.
-      - Abstract where possible, but preserve concrete details that support future relevance.
-      - Maintain consistency in tone and perspective (assistant’s memory context).
-      - Limit to ~150 words or 8–10 bullet points for readability.
+      Include (merge these fields if present):
+      - User Intent
+      - Key Events (from user perspective)
+      - User Tone/Emotion
+      - User Voice/Style
+      - Important Facts / Story Details
+      - User Opinions/Beliefs
+      - Decisions/Realizations
+      - Next Steps or Ongoing Plans
 
-      Include:
-      - People & roles
-      - Topics & key decisions
-      - Purpose & motivation
-      - Context of application
-      - Next steps or ongoing preferences
-      - Emotional tone or relational cues
+      Rules:
+      - Keep only essential content; remove redundancy.
+      - Preserve unique details and user identity markers (style, motivations).
+      - Maintain a consistent structure.
+      - Limit to ~150 words OR 8–12 bullet points.
 
-      Input Summaries:
       Summary A: ${left}
       Summary B: ${right}
-  `.trim();
-
-    const messages : DeepSeekMessageStructure[] = [
-      { role: 'system', content: systemPrompt }
-    ];
-
-    const response = await this.llmClient.call(messages);
-    return response;
-  }
-
-  async summarizeConversation(conversation: string): Promise<string> {
-    if (conversation.length === 0) {
-      throw new SummaryServiceError("[Conversation Summarization Failed]", "Conversation is empty");
-    }
-
-    const systemPrompt = `
-      Task: Summarize this conversation for long-term memory.
-
-      Goal: Capture essential context to help future interactions feel continuous, relevant, and personalized.
-
-      Include:
-      - People & roles: Who was involved or referenced.
-      - Topics & decisions: What was discussed, clarified, or decided.
-      - Purpose & motivation: Why it matters — the underlying goal or problem being solved.
-      - Context of application: Where or in what project/situation this applies.
-      - Next steps or preferences: How the user wants to proceed, follow up, or be supported in the future.
-      - Tone & emotional state: Brief note on the user’s emotional tone or attitude (e.g., curious, confident, frustrated).
-
-      Style:
-      Write concisely in bullet or structured paragraph form. Focus on meaning, not verbatim detail.
-
-      Conversation:
-      ${conversation}
-  `.trim();
+    `.trim();
 
     const messages: DeepSeekMessageStructure[] = [
       { role: 'system', content: systemPrompt }
@@ -78,6 +54,120 @@ class SummaryService {
     return response;
   }
 
+  async summarizeConversation(conversation: string): Promise<string> {
+    if (!conversation) {
+      throw new SummaryServiceError("[Conversation Summarization Failed]", "Conversation is empty");
+    }
+
+    const systemPrompt = `
+      Task: Summarize the conversation into a structured long-term memory entry that supports future reconstruction in the user's voice.
+
+      Extract the following fields:
+
+      - User Intent: Why the user is engaging or what they aim to achieve.
+      - Key Events (User Perspective): What the user expressed, did, or focused on.
+      - User Tone/Emotion: 1–2 words capturing mood.
+      - User Voice/Style: How the user tends to speak (casual, direct, playful, detailed, etc.).
+      - Important Facts: Story details, personal info, preferences, constraints.
+      - User Opinions/Beliefs: Meaningful positions or preferences.
+      - Decisions/Realizations: Any changes, commitments, or conclusions.
+      - Next Steps: What the user wants to do next or expects.
+
+      Style:
+      - Use bullet points or a clean structured block.
+      - Do NOT include verbatim dialogue.
+      - Focus on meaning, perspective, and reconstructable details.
+
+      Conversation:
+      ${conversation}
+    `.trim();
+
+    const messages: DeepSeekMessageStructure[] = [
+      { role: 'system', content: systemPrompt }
+    ];
+
+    const response = await this.llmClient.call(messages);
+    return response;
+  }
+
+  async summarizeNarrative(longtermMemory: string, latestConversation: string):Promise<HighLevelChatSummary> {
+    const systemPrompt = `Task: Create a structured memory summary from the provided Long-Term Memory (LTM) and the Current Conversation (STM).  
+      The summary must preserve everything required to reconstruct the user's story later in the user's own voice.
+
+      You MUST output valid JSON only.
+
+      Required JSON fields:
+      {
+        "tag": [string],                      // Short classifier for quick routing (e.g., "family", "work", "personal", "preferences")
+        "title": string,                    // Short descriptive title for this memory
+        "summary": {                        
+          "user_intent": string,            // Why the user is talking or what they want to achieve
+          "key_events": [string],           // What happened, from the user’s perspective
+          "tone": string,                   // Short emotional descriptor (e.g., "curious", "excited", "frustrated")
+          "voice_style": string,            // How the user tends to speak (casual, detailed, direct, sarcastic, etc.)
+          "important_facts": [string],      // Story/world/personal facts that must persist
+          "opinions_beliefs": [string],     // User’s stated preferences, likes/dislikes, views
+          "decisions_realizations": [string], // Commitments, conclusions, or new understanding
+          "next_steps": [string]            // What the user wants to do next or expects in future interactions
+        },
+        "narrative": string                 // A coherent first-person narrative reconstruction of the events and meaning
+      }
+
+      
+
+      Instructions:
+      - Use both memories (LTM + STM) to build a unified summary.
+      - Preserve unique details from each memory source.
+      - Keep it concise but reconstructable.
+      - Prefer user-perspective framing when describing events.
+      - The narrative should read like the user telling their own story naturally, in first person.
+      - Never include verbatim dialogue.
+      - Do NOT output anything outside the JSON object.
+      - Do NOT include code fences, labels, or any text outside the JSON.
+      - Do NOT add explanations or commentary.
+      - Output must begin with '{' and end with '}'.
+
+
+      Inputs:
+      Long-Term Memory:
+      ${longtermMemory}
+
+      Latest Conversation:
+      ${latestConversation}
+      `
+    const messages: DeepSeekMessageStructure[] = [
+      { role: 'system', content: systemPrompt }
+    ];
+
+    const response = await this.llmClient.call(messages);
+
+    console.log(`Response is: ${response}`);
+    const parsedResponse = JSON.parse(response);
+    
+    if(!parsedResponse){
+      console.error(`Parsed conversation summary is null or undefined`);
+      throw new SummaryServiceError("Problem generating conversation summary");
+    }
+
+    if(typeof parsedResponse === 'object'
+      && Array.isArray(parsedResponse.tag)
+      && parsedResponse.tag.every((t: any) => typeof t === 'string')
+      && typeof parsedResponse.title === 'string'
+      && typeof parsedResponse.summary === 'object'
+      && typeof parsedResponse.summary !== null
+      && typeof parsedResponse.narrative === 'string'
+    ){
+      const typedResponse: HighLevelChatSummary = {
+        title: parsedResponse.title,
+        summary: JSON.stringify(parsedResponse.summary),
+        tag: parsedResponse.tag,
+        narrative: parsedResponse.narrative
+      }
+      return typedResponse;
+    }
+    console.error(`Response recieved is not of type  High level chat summary`);
+    throw new SummaryServiceError('Failed to generate conversation summary')
+  }
 }
 
 export default SummaryService;

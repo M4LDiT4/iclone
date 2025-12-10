@@ -1,4 +1,4 @@
-import SummaryService from "./SummaryService";
+import SummaryService, { HighLevelChatSummary } from "./SummaryService";
 import ConversationSlidingWindow from "../domain/algorithms/ConversationSlidingWindow";
 import SummaryStack from "@/domain/dataStructures/SummaryStack";
 import LocalMessageDBService from "./localDB/LocalMessageDBService";
@@ -10,6 +10,8 @@ import { LLMError } from "@/core/errors/LLMError";
 
 import { eventBus } from "@/core/utils/eventBus";
 import SummaryStackDBService from "./localDB/SummaryStackDatabaseService";
+import ChatDBService from "./localDB/ChatDBService";
+import { sum } from "lodash";
 
 interface ChatServiceProps {
   chatId: string,
@@ -20,6 +22,7 @@ interface ChatServiceProps {
   summaryStackDBService: SummaryStackDBService;
   localMessageDBService: LocalMessageDBService;
   llmModel: DeepSeekClient
+  chatDBService: ChatDBService;
 }
 
 class ChatService {
@@ -41,12 +44,15 @@ class ChatService {
 
   chatSummary: string | null = null;
 
+  chatDBService: ChatDBService;
+
   constructor(props: ChatServiceProps){
     this.chatId = props.chatId;
     this.slidingWindowSize = props.slidingWindowSize;
     this.summaryService = props.summaryService;
     this.summaryStackDBService = props.summaryStackDBService;
     this.localMessageDBService = props.localMessageDBService;
+    this.chatDBService = props.chatDBService;
     
     this.username = props.username;
     this.assistantName = props.assistantName;
@@ -209,14 +215,30 @@ class ChatService {
       username: this.username,
       longTermMemory: this.chatSummary ?? "No long term memory",
     });
-    console.log(`[Stack summary]: ${this.chatSummary}`)
     return this.llModel.call([context, ...slidingWindowData]);
   }
 
-  // summarize the chat
-  // get the theme of the summary
-  // save as the chat summary
-  // 
+  // generate summary narrative 
+  async generateSummary(){
+    const longTermMemory = this.chatSummary ?? "No long term memory";
+    const shortTermMemory = this.slidingWindow.conversationToString();
+
+    const chatSummary = await this.summaryService.summarizeNarrative(longTermMemory, shortTermMemory);
+
+    return chatSummary;
+  }
+
+  async saveSummary (summary: HighLevelChatSummary) {
+    await this.chatDBService.updateChat(
+      this.chatId,
+      {
+        tag: summary.tag.join(", "),
+        status: 'saved',
+        title: summary.title,
+        narrative: summary.narrative
+      }
+    )
+  }
 }
 
 export default ChatService;

@@ -1,165 +1,125 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import ChatService from "@/services/ChatService";
-import DeepSeekClient from "@/domain/llm/deepSeek/model";
-import SummaryService from "@/services/SummaryService";
-import LocalMessageDBService from "@/services/localDB/LocalMessageDBService";
-import database from "@/data/database/index.native";
-import { eventBus } from "@/core/utils/eventBus";
-import ServiceError from "@/core/errors/ServiceError";
-import { LocalDBError } from "@/core/errors/LocalDBError";
-import { LLMError } from "@/core/errors/LLMError";
 import { FlatList } from "react-native";
-import SummaryStackDBService from "@/services/localDB/SummaryStackDatabaseService";
+import ComponentStatus from "@/core/types/componentStatusType";
+import { ModalType } from "@/core/types/modalTypes";
 
-export const useChatViewModel = (chatId?: string, userMessage?: string, username?: string) => {
-  const [chatService, setChatService] = useState<ChatService | null>(null);
+export const useChatViewModel = (
+  chatService: ChatService | null,
+  initialUserMessage?: string
+) => {
   const [messageList, setMessageList] = useState<any[]>([]);
-  const [isInitializing, setIsInitializing] = useState(true);
   const [isAssistantTyping, setIsAssistantTyping] = useState(false);
   const [isUserTyping, setIsUserTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isError, setIsError] = useState(false);
+  const [componentStatus, setComponentStatus] = useState<ComponentStatus>("idle");
+  const [modalState, setModalStatus] = useState<ModalType>("none");
 
-  // refs
   const flatListRef = useRef<FlatList>(null);
 
-  /** Initialize chat service */
-  useEffect(() => {
-    const initializeChatService = async () => {
-      try {
-        if (!chatId) throw new ServiceError("Invalid chat ID");
-        const apiKey = process.env.EXPO_PUBLIC_DEEP_SEEK_API_KEY;
-        if (!apiKey) throw new ServiceError("Problem connecting to DeepSeek");
-
-        const model = new DeepSeekClient(apiKey);
-        const summaryService = new SummaryService(model);
-        const summaryStackDBService = new SummaryStackDBService(database);
-        const localMessageDBService = new LocalMessageDBService(database);
-
-        const service = new ChatService({
-          chatId,
-          username: username ?? "Guest",
-          assistantName: "Eterne",
-          slidingWindowSize: 3,
-          summaryService,
-          summaryStackDBService,
-          localMessageDBService,
-          llmModel: model,
-        });
-
-        await service.initializeChat();
-        setChatService(service);
-      } catch (err: any) {
-        console.error("ChatService init failed:", err);
-        if (err instanceof ServiceError || err instanceof LocalDBError) {
-          setError(err.message);
-          setIsError(true);
-        } else {
-          setError("Unexpected error occurred");
-          setIsError(true);
-        }
-      } finally {
-        setIsInitializing(false);
-      }
-    };
-
-    initializeChatService();
-
-    const onServiceError = () => setIsError(true);
-    eventBus.on("service_error", onServiceError);
-
-    return () => eventBus.off("service_error", onServiceError);
-  }, [chatId]);
-
-  /** Load messages & handle initial user message once chatService is ready */
+  /** Load messages */
   useEffect(() => {
     if (!chatService) return;
 
-    const loadMessagesAndInit = async () => {
+    const load = async () => {
       try {
-        const chatMessages = await chatService.getMessages();
+        await chatService.initializeChat();
+
+        const msgs = await chatService.getMessages();
         setMessageList(
-          chatMessages.map((m) => ({
+          msgs.map(m => ({
             content: m.content,
             sentByUser: m.sender === "user",
             isLastByUser: false,
           }))
         );
 
-        // If no existing messages and there is an initial user message, send it
-        if (!chatMessages.length && userMessage) {
-          await pushUserMessage(userMessage);
+        if (!msgs.length && initialUserMessage) {
+          await pushUserMessage(initialUserMessage);
           await generateResponse();
         }
-      } catch (err) {
-        console.error("Failed to load messages:", err);
+      } catch (err: any) {
         setError("Failed to load messages");
+        setModalStatus("error");
+      } finally {
+        setComponentStatus("idle");
       }
     };
 
-    loadMessagesAndInit();
+    load();
   }, [chatService]);
 
-  useEffect(() => {
-    flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-  }, [messageList]);
-
-  /** Push user message */
+  /** User message */
   const pushUserMessage = useCallback(
     async (content: string) => {
-      if (!chatService) throw new Error("ChatService not initialized");
+      if (!chatService) return;
       await chatService.insertNewMessage(content, "user");
-      setMessageList((prev) => [{ content, sentByUser: true, isLastByUser: false }, ...prev, ]);
+      setMessageList(prev => [
+        { content, sentByUser: true, isLastByUser: false },
+        ...prev,
+      ]);
     },
     [chatService]
   );
 
-  /** Push system message */
+  /** System/assistant message */
   const pushSystemMessage = useCallback(
     async (content: string) => {
-      if (!chatService) throw new Error("ChatService not initialized");
+      if (!chatService) return;
       await chatService.insertNewMessage(content, "system");
-      setMessageList((prev) => [{ content, sentByUser: false, isLastByUser: false }, ...prev]);
+      setMessageList(prev => [
+        { content, sentByUser: false, isLastByUser: false },
+        ...prev,
+      ]);
     },
     [chatService]
   );
 
-  /** Generate LLM response */
+  /** LLM response */
   const generateResponse = useCallback(async () => {
     if (!chatService) return;
+
     setIsAssistantTyping(true);
+
     try {
       const response = await chatService.chat();
       await pushSystemMessage(response);
     } catch (err: any) {
-      console.error("LLM Error:", err);
-      if (err instanceof LocalDBError || err instanceof LLMError || err instanceof ServiceError) {
-        setError(err.message);
-      } else {
-        setError("Failed to get response");
-      }
+      setError("Failed to get response");
+      setModalStatus("error")
     } finally {
       setIsAssistantTyping(false);
     }
   }, [chatService, pushSystemMessage]);
 
-  /** Close error modal */
-  const handleErrorModalCloseButtonPress = () => {
+  /** Summary */
+  const saveNarrative = useCallback(async () => {
+    if (!chatService) throw new Error("ChatService is not initialized");
+    return await chatService.generateSummary();
+  }, [chatService]);
+
+  /** Close the error modal */
+  const closeErrorModal = useCallback(() => {
+    // the modal is dependent on the error string
+    // if we set the error string to null, the modal should disappear by design
+    // update this if the modal is not updated and is no longer dependent on  the 
+    // error string
     setError(null);
-    setIsError(false);
-  }
+  }, []);
 
   return {
-    isInitializing,
-    error,
+    messageList,
     isAssistantTyping,
     isUserTyping,
-    messageList,
-    isError,
-    flatListRef,
     setIsUserTyping,
     pushUserMessage,
     generateResponse,
-    handleErrorModalCloseButtonPress,
+    saveNarrative,
+    closeErrorModal,
+    error,
+    flatListRef,
+    componentStatus,
+    modalState,
   };
 };
+

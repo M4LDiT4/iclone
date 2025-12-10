@@ -40,7 +40,6 @@ const styles = StyleSheet.create({
   mainContainer: {
     backgroundColor: hexToRgba("#005BFF", 0.85),
     borderRadius: 10,
-    width: "100%",
     height: 47,
   },
   labelText: {

@@ -53,10 +53,10 @@ export default function ChatInputBar({username}:{username?:string|null}) {
   
   function navigateToChatScreen (chatId: string) {
       router.push({
-        pathname: '/chat',
+        pathname: `/chat/[chatId]`,
         params: {
-          userMessage: message,
           chatId: chatId,
+          userMessage: message,
           username: username
         }
       });
