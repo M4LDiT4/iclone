@@ -1,12 +1,17 @@
 import { SummaryServiceError } from "@/core/errors/SummaryServiceError";
 import DeepSeekClient, { DeepSeekMessageStructure } from "@/domain/llm/deepSeek/model";
+import { parseRouteSegments } from "expo-router/build/getReactNavigationConfig";
 
 
 export interface HighLevelChatSummary {
   tag: string[],
   title: string,
   summary: string,
-  narrative: string
+  narrative: string,
+  icon: {
+    library: string,
+    name: string
+  }
 }
 
 class SummaryService {
@@ -110,7 +115,11 @@ class SummaryService {
           "decisions_realizations": [string], // Commitments, conclusions, or new understanding
           "next_steps": [string]            // What the user wants to do next or expects in future interactions
         },
-        "narrative": string                 // A coherent first-person narrative reconstruction of the events and meaning
+        "narrative": string,                 // A coherent first-person narrative reconstruction of the events and meaning
+        "icon": {                             // Icon that best describes the narrative
+          "library": "<React Native Vector Icons library>",
+          "name": "<icon name from that library>"
+        }
       }
 
       
@@ -126,7 +135,9 @@ class SummaryService {
       - Do NOT include code fences, labels, or any text outside the JSON.
       - Do NOT add explanations or commentary.
       - Output must begin with '{' and end with '}'.
-
+      - Choose the icon based on the title or narrative.
+      - The icon library must be one of the supported sets in React Native Vector Icons (e.g AntDesign, Ionicons etc)
+      - The icon name must exactly match the icon name in the library (e.g "ellipsis-horizontal")
 
       Inputs:
       Long-Term Memory:
@@ -156,12 +167,19 @@ class SummaryService {
       && typeof parsedResponse.summary === 'object'
       && typeof parsedResponse.summary !== null
       && typeof parsedResponse.narrative === 'string'
+      && typeof parsedResponse.icon === 'object'
+      && typeof parsedResponse.icon.library === 'string'
+      && typeof parsedResponse.icon.name === 'string'
     ){
       const typedResponse: HighLevelChatSummary = {
         title: parsedResponse.title,
         summary: JSON.stringify(parsedResponse.summary),
         tag: parsedResponse.tag,
-        narrative: parsedResponse.narrative
+        narrative: parsedResponse.narrative,
+        icon : {
+          name: parsedResponse.icon.name,
+          library: parsedResponse.icon.library
+        }
       }
       return typedResponse;
     }

@@ -10,6 +10,7 @@ import { Column, Padding, Spacer } from "@/components/layout/layout";
 import { useChatContext } from "@/core/contexts/chatContext";
 import {ModalType} from "@/core/types/modalTypes";
 import PrimaryButton from "@/components/buttons/primaryButton";
+import IconRenderer from "@/components/icons/iconRenderer";
 
 export default function ConfirmMemoryScreen() {
   const router = useRouter();
@@ -42,8 +43,8 @@ export default function ConfirmMemoryScreen() {
         tag: tags,
         title: title,
         summary: parsedSummary.narrative,
-        narrative: narrative
-
+        narrative: narrative,
+        icon: parsedSummary.icon
       }
       await chatService?.saveSummary(updatedSummary);
       setModalState("success");
@@ -83,7 +84,8 @@ export default function ConfirmMemoryScreen() {
             onChangeText={setTag}
             placeholderTextColor={AppColors.secondaryColor}
           />
-
+          <Text style={styles.label}>Icon</Text>
+          <IconRenderer library={parsedSummary.icon.library} name={parsedSummary.icon.name}/>
           <Text style={styles.label}>Title</Text>
           <TextInput
             style={styles.input}
@@ -136,7 +138,7 @@ export default function ConfirmMemoryScreen() {
           <Padding style = {styles.modalContainer}>
             <Text style = {styles.modalTitleText}>Failed to save narrative</Text>
             <Spacer height={16}/>
-            <PrimaryButton onPress={handleCloseSuccessModal} label="Cancel"/>
+            <PrimaryButton onPress={handleCloseErrorModal} label="Cancel"/>
           </Padding>
         </Column>
       </GenericModal>

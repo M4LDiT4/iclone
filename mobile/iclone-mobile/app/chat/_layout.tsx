@@ -16,7 +16,7 @@ export default function ChatScreenLayout() {
         name="confirmMemory"
         options={{
           headerShown: true,
-          header: ()=> <GenericHeader label="Chat Narrative"/>
+          header: ()=> <GenericHeader label="Preview"/>
         }}
       />
     </Stack>
