@@ -109,7 +109,7 @@ export default function ChatScreen() {
             triggerLLMResponse={vm.generateResponse}
             setIsUserTyping={vm.setIsUserTyping}
             isUserTyping={vm.isUserTyping}
-            generateNarrative={vm.saveNarrative}
+            generateNarrative={vm.generateNarrative}
           />
         </Padding>
 

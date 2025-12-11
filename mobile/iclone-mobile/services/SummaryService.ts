@@ -1,6 +1,5 @@
 import { SummaryServiceError } from "@/core/errors/SummaryServiceError";
 import DeepSeekClient, { DeepSeekMessageStructure } from "@/domain/llm/deepSeek/model";
-import { parseRouteSegments } from "expo-router/build/getReactNavigationConfig";
 
 
 export interface HighLevelChatSummary {
