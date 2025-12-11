@@ -3,7 +3,7 @@ import ChatModel from "@/data/database/models/chatModel";
 import { ChatTagModel } from "@/data/database/models/chatTagModel";
 import { TagModel } from "@/data/database/models/tagModel";
 import ChatStatus from "@/domain/types/chatStatus";
-import { Database } from "@nozbe/watermelondb";
+import { Database, Q } from "@nozbe/watermelondb";
 
 interface ChatDBServiceProps {
   database: Database;
@@ -99,40 +99,74 @@ export default class ChatDBService {
           const tagsCollection = this.database.get<TagModel>(TagModel.table);
           const chatTagCollection = this.database.get<ChatTagModel>(ChatTagModel.table);
 
-          // Fetch existing tags
-          const existingTags: TagModel[] = await tagsCollection.query().fetch();
-          const existingNames = new Set(existingTags.map((tag) => tag.name));
+          // 1. Fetch all existing tags
+          const existingTags = await tagsCollection.query().fetch();
+          const existingNames = new Set(existingTags.map(t => t.name));
 
-          // Filter out duplicates
-          const newNames = tags.filter((name) => !existingNames.has(name));
+          // 2. Determine new tag names
+          const newNames = tags.filter(name => !existingNames.has(name));
 
-          // Prepare new tag creations
-          const preparedTags = newNames.map((name) =>
-            tagsCollection.prepareCreate((tag) => {
+          // 3. Create new tags
+          const newTagCreates = newNames.map(name =>
+            tagsCollection.prepareCreate(tag => {
               tag.name = name;
             })
           );
 
-          // Commit new tags
-          await this.database.batch(...preparedTags);
+          // Commit newly created tags
+          if (newTagCreates.length > 0) {
+            await this.database.batch(...newTagCreates);
+          }
 
-          // Collect all tags (existing + newly created)
-          const allTags = [
-            ...existingTags.filter((tag) => tags.includes(tag.name)),
-            ...preparedTags,
-          ];
+          // 4. Re-fetch tags matching the updated tag list
+          const updatedTags = await tagsCollection
+            .query(Q.where("name", Q.oneOf(tags)))
+            .fetch();
 
-          // Prepare join records
-          const joinOps = allTags.map((tag) =>
-            chatTagCollection.prepareCreate((chatTag) => {
-              chatTag.chat_id = chat.id; // foreign key
-              chatTag.tag_id = tag.id;   // foreign key
+          // Build map name → id (guaranteed valid IDs)
+          const nameToId = new Map<string, string>();
+          updatedTags.forEach(tag => nameToId.set(tag.name, tag.id));
+
+          // 5. Load existing chat-tag relations
+          const existingChatTags = await chatTagCollection
+            .query(Q.where("chat_id", chat.id))
+            .fetch();
+
+          const existingTagIds = new Set(existingChatTags.map(ct => ct.tag_id));
+
+          // 6. Compute desired tag IDs
+          const tagIdsToKeep = new Set(
+            tags
+              .map(name => nameToId.get(name))
+              .filter((id): id is string => id !== undefined) // remove undefined
+          );
+
+          // 7. Determine which chatTag rows to delete
+          const toDelete = existingChatTags.filter(
+            ct => !tagIdsToKeep.has(ct.tag_id)
+          );
+
+          if (toDelete.length > 0) {
+            await this.database.batch(
+              ...toDelete.map(ct => ct.prepareDestroyPermanently())
+            );
+          }
+
+          // 8. Determine which new tag relations to add
+          const toAdd = [...tagIdsToKeep].filter(id => !existingTagIds.has(id));
+
+          const joinOps = toAdd.map(tagId =>
+            chatTagCollection.prepareCreate(ct => {
+              ct.chat_id = chat.id;
+              ct.tag_id = tagId;
             })
           );
 
-          // Commit join records
-          await this.database.batch(...joinOps);
+          if (joinOps.length > 0) {
+            await this.database.batch(...joinOps);
+          }
         }
+
       });
     } catch (err) {
       console.error(`Failed to update chat: ${err}`);
