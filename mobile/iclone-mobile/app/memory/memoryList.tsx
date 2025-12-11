@@ -42,9 +42,7 @@ function MemoryListScreen () {
           </GradientContainer>
         </BlurView>
       </View>
-      <MemoryContainer>
-        <Text>Hello</Text>
-      </MemoryContainer>
+      <MemoryContainer/>
     </ScrollView>
     <LinearGradient
       colors={["#F8F9FA", "#6C9BCF"]}
