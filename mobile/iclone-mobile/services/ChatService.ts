@@ -11,7 +11,6 @@ import { LLMError } from "@/core/errors/LLMError";
 import { eventBus } from "@/core/utils/eventBus";
 import SummaryStackDBService from "./localDB/SummaryStackDatabaseService";
 import ChatDBService from "./localDB/ChatDBService";
-import { sum } from "lodash";
 
 interface ChatServiceProps {
   chatId: string,
@@ -232,7 +231,6 @@ class ChatService {
     await this.chatDBService.updateChat(
       this.chatId,
       {
-        tag: summary.tag.join(", "),
         status: 'saved',
         title: summary.title,
         narrative: summary.narrative

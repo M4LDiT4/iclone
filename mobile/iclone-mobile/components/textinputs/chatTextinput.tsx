@@ -21,7 +21,7 @@ export default function ChatTextinput({
 }: ChatTextInputGroupProps) {
   const renderSendIcon = () => {
     switch (componentStatus) {
-      case 'loading':
+      case 'initializing':
         return <Ionicons name="time-outline" size={20} color={AppColors.primaryColor} />;
       case 'error':
         return <Ionicons name="alert-circle-outline" size={20} color="red" />;

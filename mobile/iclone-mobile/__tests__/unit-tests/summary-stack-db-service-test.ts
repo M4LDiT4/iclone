@@ -1,7 +1,7 @@
-import SummaryStackDBService from '@/services/localDB/temp';
 import SummaryModel from '@/data/database/models/summaryModel';
 import RawSummaryData from '@/data/application/RawSummaryData';
 import { toSummaryNodeShallow } from '@/data/mappers/summaryNode';
+import SummaryStackDBService from '@/services/localDB/SummaryStackDatabaseService';
 
 jest.mock('@/data/mappers/summaryNode', () => ({
   toSummaryNodeShallow: jest.fn(),

@@ -14,9 +14,6 @@ export default class ChatModel extends Model {
   @text('user_id')
   userId!: string;
 
-  @text('tag')
-  tag!: string | null;
-
   @text('status')
   status!: ChatStatus;
 

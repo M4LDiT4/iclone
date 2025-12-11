@@ -38,12 +38,10 @@ export default class ChatDBService {
   async updateChat(
     chatId: string,
     {
-      tag,
       status,
       title,
       narrative,
     }: {
-      tag?: string;
       status?: ChatStatus;
       title?: string;
       narrative?: string;
@@ -53,9 +51,6 @@ export default class ChatDBService {
       await this.database.write(async () => {
         const chat = await this.database.get<ChatModel>(ChatModel.table).find(chatId);
         await chat.update((record) => {
-          if (tag !== undefined) {
-            record.tag = tag;
-          }
           if (status !== undefined) {
             record.status = status;
           }

@@ -74,10 +74,10 @@ export default function ChatInputBar({username}:{username?:string|null}) {
     // prevent execution of write operation when
     // - currently loading
     // - message is undefined or empty string
-    if(!message || message.length === 0 || componentStatus === 'loading'){
+    if(!message || message.length === 0 || componentStatus === 'initializing'){
       return;
     }
-    updateComponentStatus('loading');
+    updateComponentStatus('initializing');
     await chatDBService?.createNewChat()
     .then((chat) => {
       updateComponentStatus('idle');

@@ -3,8 +3,7 @@ import { tableSchema } from "@nozbe/watermelondb";
 const chatSchema = tableSchema({
   name: 'chats',
   columns: [
-    {name: 'user_id', type: 'string', isOptional: false},
-    {name: 'tag', type: 'string'}, 
+    {name: 'user_id', type: 'string', isOptional: false}, 
     {name: 'status', type: 'string', isOptional: false},
     {name: 'agent_id', type: 'string', isOptional: false},
     {name: 'title', type: 'string'}, 
