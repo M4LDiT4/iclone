@@ -16,6 +16,8 @@ function MemoryContainer({
     tag: TagModel,
     tagService: TagService
   }
+
+  
   ){
   return <GenericContainer borderRadius={10}>
     <View style = {styles.contentContainer}>

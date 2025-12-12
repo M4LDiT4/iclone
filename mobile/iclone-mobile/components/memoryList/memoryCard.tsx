@@ -1,12 +1,19 @@
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import GradientContainer from "../containers/gradientContainer";
 import { AntDesign } from "@expo/vector-icons";
 import AppColors from "@/core/styling/AppColors";
 import { LinearGradient } from "expo-linear-gradient";
 import { Spacer } from "../layout/layout";
+import ComponentStatus from "@/core/types/componentStatusType";
 
 function MemoryCard(){
+  // get context for the memory service
+  const [componentStatus, setComponentStatus] = useState<ComponentStatus>('idle');
+
+  useEffect(() =>{
+
+  });
   return <View style = {styles.container}>
       <LinearGradient
         colors={["#FFFFFF", 'rgba(186, 224, 243, 1)']}

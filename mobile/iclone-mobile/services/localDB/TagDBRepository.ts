@@ -41,7 +41,7 @@ export default class TagDBRepository{
 
   async getTags(): Promise<TagModel[]>{
     // maybe paginate this
-    const tagCollection = this.database.get<TagModel>(TagModel.table);
+    const tagCollection = this.database.collections.get<TagModel>(TagModel.table);
     const response = await tagCollection.query().fetch();
     return response;
   }

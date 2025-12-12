@@ -1,6 +1,6 @@
-import { memo,} from "react";
+import { memo } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet, TouchableOpacity, View, Text, ScrollView } from "react-native";
+import { StyleSheet, TouchableOpacity, View, Text, FlatList } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import GlobalStyles from "@/core/styling/GlobalStyles";
 import AppColors from "@/core/styling/AppColors";
@@ -12,67 +12,83 @@ import { BlurView } from "expo-blur";
 import GradientContainer from "@/components/containers/gradientContainer";
 import { useMemoryListViewModel } from "@/data/viewModels/memoryList/MemoryListViewModel";
 import { ActivityIndicator } from "react-native-paper";
+import { TagModel } from "@/data/database/models/tagModel";
+import { Spacer } from "@/components/layout/layout";
 
-function MemoryListScreen () {
+function MemoryListScreen() {
   const router = useRouter();
   const vm = useMemoryListViewModel();
 
   const handleGoBack = () => {
     router.back();
-  }
+  };
 
-  const renderBody = () => {
-    if (vm.componentStatus === 'initializing') {
-      return (
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <ActivityIndicator size={"large"} color={AppColors.primaryColor} />
-        </View>
-      );
-    }
+  const renderHeader = () => (
+    <View style={styles.logoContainer}>
+      <Logo width={116} height={116} />
+      <BlurView style={styles.logoTextContainer}>
+        <GradientContainer opacity={0.8}>
+          <View style={styles.logoTextContentContainer}>
+            <Text style={styles.logoText}>
+              These are what you shared to me so far
+            </Text>
+          </View>
+        </GradientContainer>
+      </BlurView>
+    </View>
+  );
 
+  const renderItem = ({ item}: {item: TagModel}) => (
+    <MemoryContainer tag={item} tagService={vm.tagService!} />
+  );
+
+  if (vm.componentStatus === "initializing") {
     return (
-      <>
-        <View style={styles.logoContainer}>
-          <Logo width={116} height={116}/>
-          <BlurView style={styles.logoTextContainer}>
-            <GradientContainer opacity={0.8}>
-              <View style={styles.logoTextContentContainer}>
-                <Text style={styles.logoText}>
-                  These are what you shared to me so far
-                </Text>
-              </View>
-            </GradientContainer>
-          </BlurView>
+      <SafeAreaView style={styles.safeAreaView}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={AppColors.primaryColor} />
         </View>
-
-        {/* Render list of memories */}
-        {vm.tagService && vm.tagList?.map(tag => (
-          <MemoryContainer
-            key={tag.id}
-            tag={tag}
-            tagService={vm.tagService!} // safe, narrowed by the condition
-          />))
-        }
-      </>
+      </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <LinearGradient
-        colors={['#6C9BCF', "#F8F9FA"]}
+        colors={["#6C9BCF", "#F8F9FA"]}
         style={GlobalStyles.screenGradientTop}
       />
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack}>
-          <Feather name="arrow-left-circle" size={36} color={AppColors.secondaryColor} />
+          <Feather
+            name="arrow-left-circle"
+            size={36}
+            color={AppColors.secondaryColor}
+          />
         </TouchableOpacity>
         <Text style={styles.labelText}>{"Memory"}</Text>
-        <MaterialIcons name="more-vert" size={28} color={AppColors.secondaryColor} />
+        <MaterialIcons
+          name="more-vert"
+          size={28}
+          color={AppColors.secondaryColor}
+        />
       </View>
-      <ScrollView contentContainerStyle={styles.scrollViewContentContainer}>
-        {renderBody()}
-      </ScrollView>
+
+      {vm.tagService ? (
+        <FlatList
+          data={vm.tagList}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          ListHeaderComponent={renderHeader}
+          contentContainerStyle={styles.scrollViewContentContainer}
+          ItemSeparatorComponent={() => <Spacer height={8}/>}
+        />
+      ) : (
+        <Text style={{ textAlign: "center", marginTop: 20 }}>
+          Service not available
+        </Text>
+      )}
+
       <LinearGradient
         colors={["#F8F9FA", "#6C9BCF"]}
         style={GlobalStyles.screenGradientBottom}
@@ -104,20 +120,22 @@ const styles = StyleSheet.create({
     lineHeight: 31,
     color: AppColors.primaryColor,
   },
-  scrollViewContentContainer : {
-   paddingHorizontal: 16,
+  scrollViewContentContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
   },
   logoContainer: {
-    width: '100%',
-    alignItems: 'center',
-    position: 'relative',
+    width: "100%",
+    alignItems: "center",
+    position: "relative",
     paddingBottom: 20,
     marginBottom: 20,
   },
   logoTextContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: -10,
-    borderRadius: 10, overflow: 'hidden',
+    borderRadius: 10,
+    overflow: "hidden",
   },
   logoTextContentContainer: {
     padding: 8,
@@ -129,5 +147,5 @@ const styles = StyleSheet.create({
     fontFamily: "SFProText",
     color: AppColors.primaryColor,
     textAlign: "center",
-  }
+  },
 });
