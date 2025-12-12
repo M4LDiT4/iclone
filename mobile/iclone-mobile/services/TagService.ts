@@ -1,6 +1,7 @@
 import { TagServiceError } from "@/core/errors/TagServiceError";
 import DeepSeekClient, { DeepSeekMessageStructure } from "@/domain/llm/deepSeek/model";
 import TagDBRepository from "./localDB/TagDBRepository";
+import { TagModel } from "@/data/database/models/tagModel";
 
 type IconMetaData = {
   iconName: string,
@@ -102,5 +103,15 @@ export default class TagService{
 
     // return metadata so that we can display it on the ui
     return iconMetaData;
+  }
+
+  async getTags(): Promise<TagModel[]> {
+    try{
+      const response = await this.tagRepository.getTags();
+      return response;
+    }catch(err){
+      console.error(`Failed to get tags: ${err}`);
+      throw new TagServiceError(`Something went wrong while fetching tags`);
+    }
   }
 }

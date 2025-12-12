@@ -25,10 +25,10 @@ export default function RootLayout() {
               }}
             />
             <Stack.Screen
-              name="signUp"
+              name="authentication/signUp"
             />
             <Stack.Screen
-              name="signIn"
+              name="authentication/signIn"
             />
           </Stack>
         </AuthGate>

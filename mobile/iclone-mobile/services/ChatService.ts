@@ -233,7 +233,8 @@ class ChatService {
       {
         status: 'saved',
         title: summary.title,
-        narrative: summary.narrative
+        narrative: summary.narrative,
+        tags: summary.tag,
       }
     )
   }

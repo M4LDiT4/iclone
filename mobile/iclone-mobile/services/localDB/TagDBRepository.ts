@@ -25,15 +25,24 @@ export default class TagDBRepository{
     }
   ){
     try{
-      const tag = this.database.get<TagModel>(TagModel.table).find(tagId);
+      this.database.write( async () => {
+        const tag = this.database.get<TagModel>(TagModel.table).find(tagId);
 
-      (await tag).update((record) => {
-        record.iconName = iconName,
-        record.iconLibrary = iconLibrary
+        (await tag).update((record) => {
+          record.iconName = iconName,
+          record.iconLibrary = iconLibrary
+        });
       });
     }catch(err){
       console.error(`Failed to update tag`);
       throw new LocalDBError(`Failed to update tag`);
     }
+  }
+
+  async getTags(): Promise<TagModel[]>{
+    // maybe paginate this
+    const tagCollection = this.database.get<TagModel>(TagModel.table);
+    const response = await tagCollection.query().fetch();
+    return response;
   }
 }

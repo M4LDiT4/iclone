@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo,} from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, TouchableOpacity, View, Text, ScrollView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -10,45 +10,75 @@ import MemoryContainer from "@/components/memoryList/memoryContainer";
 import Logo from "../../assets/svg/llm_logo.svg";
 import { BlurView } from "expo-blur";
 import GradientContainer from "@/components/containers/gradientContainer";
+import { useMemoryListViewModel } from "@/data/viewModels/memoryList/MemoryListViewModel";
+import { ActivityIndicator } from "react-native-paper";
 
 function MemoryListScreen () {
   const router = useRouter();
+  const vm = useMemoryListViewModel();
 
   const handleGoBack = () => {
     router.back();
   }
-  return <SafeAreaView style = {styles.safeAreaView}>
-    <LinearGradient
-      colors={['#6C9BCF', "#F8F9FA"]}
-      style={GlobalStyles.screenGradientTop}
-    />
-    <View style = {styles.header}>
-      <TouchableOpacity onPress={handleGoBack}>
-        <Feather name="arrow-left-circle" size={36} color={AppColors.secondaryColor} />
-      </TouchableOpacity>
-      <Text style={styles.labelText}>{"Memory"}</Text>
-      <MaterialIcons name="more-vert" size={28} color={AppColors.secondaryColor} />
-    </View>
-    <ScrollView
-      contentContainerStyle = {styles.scrollViewContentContainer}
-    >
-      <View style = {styles.logoContainer}>
-        <Logo width={116} height={116}/>
-        <BlurView style = {styles.logoTextContainer}>
-          <GradientContainer opacity={0.8}>
-            <View style = {styles.logoTextContentContainer}>
-              <Text style = {styles.logoText}>These are what you shared to me so far</Text>
-            </View>
-          </GradientContainer>
-        </BlurView>
+
+  const renderBody = () => {
+    if (vm.componentStatus === 'initializing') {
+      return (
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <ActivityIndicator size={"large"} color={AppColors.primaryColor} />
+        </View>
+      );
+    }
+
+    return (
+      <>
+        <View style={styles.logoContainer}>
+          <Logo width={116} height={116}/>
+          <BlurView style={styles.logoTextContainer}>
+            <GradientContainer opacity={0.8}>
+              <View style={styles.logoTextContentContainer}>
+                <Text style={styles.logoText}>
+                  These are what you shared to me so far
+                </Text>
+              </View>
+            </GradientContainer>
+          </BlurView>
+        </View>
+
+        {/* Render list of memories */}
+        {vm.tagService && vm.tagList?.map(tag => (
+          <MemoryContainer
+            key={tag.id}
+            tag={tag}
+            tagService={vm.tagService!} // safe, narrowed by the condition
+          />))
+        }
+      </>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.safeAreaView}>
+      <LinearGradient
+        colors={['#6C9BCF', "#F8F9FA"]}
+        style={GlobalStyles.screenGradientTop}
+      />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleGoBack}>
+          <Feather name="arrow-left-circle" size={36} color={AppColors.secondaryColor} />
+        </TouchableOpacity>
+        <Text style={styles.labelText}>{"Memory"}</Text>
+        <MaterialIcons name="more-vert" size={28} color={AppColors.secondaryColor} />
       </View>
-      <MemoryContainer/>
-    </ScrollView>
-    <LinearGradient
-      colors={["#F8F9FA", "#6C9BCF"]}
-      style={GlobalStyles.screenGradientBottom}
-    />
-  </SafeAreaView>
+      <ScrollView contentContainerStyle={styles.scrollViewContentContainer}>
+        {renderBody()}
+      </ScrollView>
+      <LinearGradient
+        colors={["#F8F9FA", "#6C9BCF"]}
+        style={GlobalStyles.screenGradientBottom}
+      />
+    </SafeAreaView>
+  );
 }
 
 export default memo(MemoryListScreen);

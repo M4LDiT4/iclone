@@ -1,18 +1,34 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { StyleSheet, View, Text, ScrollView } from "react-native";
 import GenericContainer from "../containers/genericContainer";
 import { Entypo, Ionicons } from "@expo/vector-icons";
 import AppColors from "@/core/styling/AppColors";
 import MemoryCard from "./memoryCard";
+import { TagModel } from "@/data/database/models/tagModel";
+import TagService from "@/services/TagService";
+import TagIconRenderer from "../icons/tagIconRenderer";
 
 
-function MemoryContainer(){
+function MemoryContainer({
+    tag,
+    tagService
+  }: {
+    tag: TagModel,
+    tagService: TagService
+  }
+  ){
   return <GenericContainer borderRadius={10}>
     <View style = {styles.contentContainer}>
       <View style = {styles.header}>
         {/* generate icon here */}
-        <Ionicons size={24} name = "images-outline" color={AppColors.primaryColor}/>
-        <Text style = {styles.headerText}>Gallery</Text>
+        <TagIconRenderer
+          tagId= {tag.id}
+          tagName={tag.name}
+          tagService={tagService}
+          iconLibrary={tag.iconLibrary}
+          iconName={tag.iconName}
+        />
+        <Text style = {styles.headerText}>{tag.name}</Text>
         <Entypo size={24} name="dots-three-horizontal" color={AppColors.primaryColor}/>
       </View>
       <ScrollView horizontal>

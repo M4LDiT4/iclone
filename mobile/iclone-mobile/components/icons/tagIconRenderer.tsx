@@ -37,8 +37,8 @@ type TagIconProps = {
   tagId: string;
   tagName: string;
   tagService: TagService;
-  iconLibrary: string | null;
-  iconName: string | null;
+  iconLibrary?: string | null;
+  iconName?: string | null;
   size?: number;
   color?: string;
 };
