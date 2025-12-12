@@ -12,7 +12,7 @@ import ChatModel from "@/data/database/models/chatModel";
 import ComponentStatus from "@/core/types/componentStatusType";
 import database from "@/data/database/index.native";
 import { ActivityIndicator } from "react-native-paper";
-import { MemoryDBRepository } from "@/services/localDB/temp";
+import { MemoryDBRepository } from "@/services/localDB/memoryDBRepository";
 
 function MemoryContainer({
   tag,
