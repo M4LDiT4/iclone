@@ -1,19 +1,17 @@
-import { memo, useEffect, useState } from "react";
+import { memo} from "react";
 import { View, Text, StyleSheet } from "react-native";
 import GradientContainer from "../containers/gradientContainer";
-import { AntDesign } from "@expo/vector-icons";
 import AppColors from "@/core/styling/AppColors";
 import { LinearGradient } from "expo-linear-gradient";
 import { Spacer } from "../layout/layout";
-import ComponentStatus from "@/core/types/componentStatusType";
+import IconRenderer from "../icons/iconRenderer";
+import ChatModel from "@/data/database/models/chatModel";
 
-function MemoryCard(){
-  // get context for the memory service
-  const [componentStatus, setComponentStatus] = useState<ComponentStatus>('idle');
+interface MemoryCardProps {
+  chat: ChatModel
+}
 
-  useEffect(() =>{
-
-  });
+function MemoryCard(props : MemoryCardProps){
   return <View style = {styles.container}>
       <LinearGradient
         colors={["#FFFFFF", 'rgba(186, 224, 243, 1)']}
@@ -22,15 +20,20 @@ function MemoryCard(){
         style={StyleSheet.absoluteFillObject}
       />
       <GradientContainer width={82} height={76} borderRadius={10}>
-      <View style = {styles.contentContainer}>
-        <AntDesign size={24} color={AppColors.primaryColor} name = "message"/>
+      <View style = {styles.contentContainer}> 24
+        {/* <AntDesign size={24} color={AppColors.primaryColor} name = "message"/> */}
+        <IconRenderer
+          library={props.chat.iconLibrary ?? ""}
+          name={props.chat.iconName ?? ""}
+          size={24}
+        />
         <Spacer height={4}/>
         <Text 
           style = {styles.contentText}
           ellipsizeMode="tail"
           numberOfLines={3}
         >
-          Advice for important life moments 
+          {props.chat.title}
         </Text>
       </View>
     </GradientContainer>

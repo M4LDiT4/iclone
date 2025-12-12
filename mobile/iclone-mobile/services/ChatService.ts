@@ -235,6 +235,8 @@ class ChatService {
         title: summary.title,
         narrative: summary.narrative,
         tags: summary.tag,
+        iconName: summary.icon.name,
+        iconLibrary: summary.icon.library
       }
     )
   }

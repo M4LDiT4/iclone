@@ -55,11 +55,15 @@ export default class ChatDBService {
       title,
       narrative,
       tags,
+      iconName,
+      iconLibrary,
     }: {
       status?: ChatStatus;
       title?: string;
       narrative?: string;
       tags?: string[];
+      iconName?: string,
+      iconLibrary?: string
     }
   ) {
     try {
@@ -71,6 +75,8 @@ export default class ChatDBService {
           if (status !== undefined) record.status = status;
           if (title !== undefined) record.title = title;
           if (narrative !== undefined) record.narrative = narrative;
+          if (iconName) record.iconName = iconName;
+          if (iconLibrary) record.iconLibrary = iconLibrary;
         });
 
         if (tags) {
