@@ -31,7 +31,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         router.replace("/onboarding/setName");
       }
     } else {
-      router.replace("/signIn");
+      router.replace("/authentication/signIn");
     }
   }, [user, isLoading, router]);
 
