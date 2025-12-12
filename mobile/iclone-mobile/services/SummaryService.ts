@@ -12,7 +12,6 @@ export interface HighLevelChatSummary {
     name: string
   }
 }
-
 class SummaryService {
   llmClient: DeepSeekClient;
 
@@ -182,7 +181,7 @@ class SummaryService {
       }
       return typedResponse;
     }
-    console.error(`Response recieved is not of type  High level chat summary`);
+    console.error(`Response received is not of type  High level chat summary`);
     throw new SummaryServiceError('Failed to generate conversation summary')
   }
 }

@@ -15,7 +15,7 @@ import {
   Zocial,
 } from "@expo/vector-icons";
 import AppColors from "@/core/styling/AppColors";
-import { TagService } from "@/services/TagService"; // <-- your service for resolving icons
+import TagService from "@/services/TagService";
 
 const iconLibraries: Record<string, any> = {
   AntDesign,
@@ -34,40 +34,53 @@ const iconLibraries: Record<string, any> = {
 };
 
 type TagIconProps = {
-  tagId: string;              // ID of the tag in DB
-  iconLibrary: string | null; // may be null initially
-  iconName: string | null;    // may be null initially
+  tagId: string;
+  tagName: string;
+  tagService: TagService;
+  iconLibrary: string | null;
+  iconName: string | null;
   size?: number;
   color?: string;
 };
 
 function TagIcon({
   tagId,
+  tagName,
   iconLibrary,
+  tagService,
   iconName,
   size = 24,
   color = AppColors.primaryColor,
 }: TagIconProps) {
   const [resolvedLibrary, setResolvedLibrary] = useState(iconLibrary);
   const [resolvedName, setResolvedName] = useState(iconName);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const maxRetries = 3;
 
   useEffect(() => {
     const resolveIcon = async () => {
-      if (!resolvedLibrary || !resolvedName) {
+      if ((!resolvedLibrary || !resolvedName) && retryCount < maxRetries) {
         try {
-          // Ask TagService to generate + persist icon metadata
-          const suggestion = await TagService.resolveIcon(tagId);
+          const suggestion = await tagService.generateAndSaveIconMetadata({
+            tagId,
+            tagName,
+            tagIconLibrary: iconLibrary ?? undefined,
+            tagIconName: iconName ?? undefined,
+          });
 
-          setResolvedLibrary(suggestion.library);
-          setResolvedName(suggestion.name);
+          setResolvedLibrary(suggestion.iconLibrary);
+          setResolvedName(suggestion.iconName);
         } catch (err) {
           console.error("Failed to resolve icon:", err);
+          setRetryCount((prev) => prev + 1);
         }
       }
     };
 
     resolveIcon();
-  }, [tagId, resolvedLibrary, resolvedName]);
+    // Only depend on tagId and retryCount to avoid infinite loops
+  }, [tagId, retryCount]);
 
   try {
     if (!resolvedLibrary || !resolvedName) {
@@ -81,7 +94,7 @@ function TagIcon({
 
     throw new Error("Invalid library or icon name");
   } catch (err) {
-    // Fallback icon
+    // Fallback icon after max retries
     return <AntDesign name="question-circle" size={size} color={color} />;
   }
 }
