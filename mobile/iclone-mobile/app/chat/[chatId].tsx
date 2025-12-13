@@ -105,6 +105,7 @@ export default function ChatScreen() {
 
           {/* chat input */}
           <ChatInputWrapper
+            chatId={chatId as string}
             handleSend={vm.pushUserMessage}
             triggerLLMResponse={vm.generateResponse}
             setIsUserTyping={vm.setIsUserTyping}

@@ -1,5 +1,4 @@
-// app/confirm-memory.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AppColors from "@/core/styling/AppColors";
@@ -8,48 +7,83 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import GenericModal from "@/components/modals/genericModal";
 import { Column, Padding, Spacer } from "@/components/layout/layout";
 import { useChatContext } from "@/core/contexts/chatContext";
-import {ModalType} from "@/core/types/modalTypes";
+import { ModalType } from "@/core/types/modalTypes";
 import PrimaryButton from "@/components/buttons/primaryButton";
 import IconRenderer from "@/components/icons/iconRenderer";
 
+// services
+import DeepSeekClient from "@/domain/llm/deepSeek/model";
+import ChatService from "@/services/ChatService";
+import ChatDBService from "@/services/localDB/ChatDBService";
+import LocalMessageDBService from "@/services/localDB/LocalMessageDBService";
+import SummaryStackDBService from "@/services/localDB/SummaryStackDatabaseService";
+import SummaryService from "@/services/SummaryService";
+import database from "@/data/database/index.native";
+import { useAuth } from "@/core/contexts/authContext";
+
 export default function ConfirmMemoryScreen() {
   const router = useRouter();
+  const { chatService, setChatService } = useChatContext();
+  const auth = useAuth();
 
-  const {chatService} = useChatContext();
-
-  const {chatSummary} = useLocalSearchParams<{chatSummary: string}>();
-
+  const { chatSummary, chatId } = useLocalSearchParams<{ chatSummary: string; chatId: string }>();
   const parsedSummary: HighLevelChatSummary = JSON.parse(chatSummary);
 
   const [tag, setTag] = useState<string>(parsedSummary.tag.join(", ").replace("_", " "));
   const [narrative, setNarrative] = useState<string>(parsedSummary.narrative);
   const [title, setTitle] = useState<string>(parsedSummary.title);
   const [modalState, setModalState] = useState<ModalType>("none");
-  const handleCancel = () => {
-    router.back();
-  };
+
+  // ──────────────────────────────────────────────
+  // Ensure ChatService exists and matches chatId
+  // ──────────────────────────────────────────────
+  useEffect(() => {
+    if (!chatId || !auth.user?.uid) return;
+
+    if (!chatService || chatService.chatId !== chatId) {
+      const apiKey = process.env.EXPO_PUBLIC_DEEP_SEEK_API_KEY!;
+      const model = new DeepSeekClient(apiKey);
+
+      const newService = new ChatService({
+        chatId: chatId as string,
+        username: auth.user?.displayName ?? "Guest",
+        assistantName: "Eterne",
+        slidingWindowSize: 3,
+        summaryService: new SummaryService(model),
+        summaryStackDBService: new SummaryStackDBService(database),
+        localMessageDBService: new LocalMessageDBService(database),
+        llmModel: model,
+        chatDBService: new ChatDBService({
+          database,
+          userId: auth.user.uid,
+        }),
+      });
+
+      setChatService(newService);
+    }
+  }, [chatId, auth.user?.uid]);
+
+  const handleCancel = () => router.back();
 
   const handleSave = async () => {
-    try{
-      // log and do nothing when chat service is not present
-      // you can throw error here depending on the future design
-      if(!chatService){
-        console.error(`ChatService is not available on the confirm memory screen.\n?Double check the chatProvider if it is initialized, preferably inside the [chatId].tsx`);
+    try {
+      if (!chatService) {
+        console.error("ChatService is not available on the confirm memory screen.");
         return;
       }
       setModalState("loading");
-      const tags = tag.split(",").map(t => t.trim());
+      const tags = tag.split(",").map((t) => t.trim());
       const updatedSummary: HighLevelChatSummary = {
         tag: tags,
-        title: title,
-        summary: parsedSummary.narrative,
-        narrative: narrative,
-        icon: parsedSummary.icon
-      }
-      await chatService?.saveSummary(updatedSummary);
+        title,
+        summary: parsedSummary.summary, // corrected to use summary
+        narrative,
+        icon: parsedSummary.icon,
+      };
+      await chatService.saveSummary(updatedSummary);
       setModalState("success");
-    }catch(err){
-      console.error(`Failed to save narrative`);
+    } catch (err) {
+      console.error("Failed to save narrative", err);
       setModalState("error");
     }
   };
@@ -57,24 +91,24 @@ export default function ConfirmMemoryScreen() {
   const handleCloseSuccessModal = () => {
     setModalState("none");
     router.back();
-  }
+  };
 
-  const handleCloseErrorModal = () => {
-    setModalState("none");
-  }
+  const handleCloseErrorModal = () => setModalState("none");
 
-
+  // ──────────────────────────────────────────────
+  // UI Rendering
+  // ──────────────────────────────────────────────
   return (
-    <SafeAreaView edges={["left", 'right', 'bottom']} style={styles.container}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.container}>
       <KeyboardAvoidingView
-        style  = {{flex: 1,}}
+        style={{ flex: 1 }}
         keyboardVerticalOffset={80}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <ScrollView
-          contentContainerStyle = {styles.scrollViewContentContainer}
+          contentContainerStyle={styles.scrollViewContentContainer}
           keyboardShouldPersistTaps="handled"
-          scrollEnabled={true}
+          scrollEnabled
         >
           <Text style={styles.label}>Tag</Text>
           <TextInput
@@ -85,7 +119,7 @@ export default function ConfirmMemoryScreen() {
             placeholderTextColor={AppColors.secondaryColor}
           />
           <Text style={styles.label}>Icon</Text>
-          <IconRenderer library={parsedSummary.icon.library} name={parsedSummary.icon.name}/>
+          <IconRenderer library={parsedSummary.icon.library} name={parsedSummary.icon.name} />
           <Text style={styles.label}>Title</Text>
           <TextInput
             style={styles.input}
@@ -94,7 +128,6 @@ export default function ConfirmMemoryScreen() {
             onChangeText={setTitle}
             placeholderTextColor={AppColors.secondaryColor}
           />
-
           <Text style={styles.label}>Narrative</Text>
           <TextInput
             style={[styles.input, styles.multiline]}
@@ -109,42 +142,48 @@ export default function ConfirmMemoryScreen() {
             <TouchableOpacity style={[styles.button, styles.cancel]} onPress={handleCancel}>
               <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
-
             <TouchableOpacity style={[styles.button, styles.save]} onPress={handleSave}>
               <Text style={styles.buttonText}>Save</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-      <GenericModal visible = {modalState === 'loading'} onClose={() => {}}>
+
+      {/* Modals */}
+      <GenericModal visible={modalState === "loading"} onClose={() => {}}>
         <Column>
-          <Padding style = {styles.modalContainer}>
-            <Text style = {styles.modalTitleText}>Saving narrative narrative...</Text>
-            <ActivityIndicator size={'large'} color={AppColors.primaryColor}/>
+          <Padding style={styles.modalContainer}>
+            <Text style={styles.modalTitleText}>Saving narrative...</Text>
+            <ActivityIndicator size="large" color={AppColors.primaryColor} />
           </Padding>
         </Column>
       </GenericModal>
-      <GenericModal visible = {modalState === 'success'} onClose={() => {}}>
+      <GenericModal visible={modalState === "success"} onClose={() => {}}>
         <Column>
-          <Padding style = {styles.modalContainer}>
-            <Text style = {styles.modalTitleText}>Narrative saved successfully!</Text>
-            <Spacer height={16}/>
-            <PrimaryButton style={{flexDirection: 'row', justifyContent: 'center'}} onPress={handleCloseSuccessModal} label="Okay"/>
+          <Padding style={styles.modalContainer}>
+            <Text style={styles.modalTitleText}>Narrative saved successfully!</Text>
+            <Spacer height={16} />
+            <PrimaryButton
+              style={{ flexDirection: "row", justifyContent: "center" }}
+              onPress={handleCloseSuccessModal}
+              label="Okay"
+            />
           </Padding>
         </Column>
       </GenericModal>
-      <GenericModal visible = {modalState === 'error'} onClose={() => {}}>
+      <GenericModal visible={modalState === "error"} onClose={() => {}}>
         <Column>
-          <Padding style = {styles.modalContainer}>
-            <Text style = {styles.modalTitleText}>Failed to save narrative</Text>
-            <Spacer height={16}/>
-            <PrimaryButton onPress={handleCloseErrorModal} label="Cancel"/>
+          <Padding style={styles.modalContainer}>
+            <Text style={styles.modalTitleText}>Failed to save narrative</Text>
+            <Spacer height={16} />
+            <PrimaryButton onPress={handleCloseErrorModal} label="Cancel" />
           </Padding>
         </Column>
       </GenericModal>
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

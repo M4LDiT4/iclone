@@ -18,6 +18,7 @@ interface ChatInputWrapperProps {
   setIsUserTyping: (val: boolean) => void;
   generateNarrative: () => Promise<HighLevelChatSummary>;
   isUserTyping: boolean;
+  chatId: string,
 }
 
 function ChatInputWrapper({
@@ -26,6 +27,7 @@ function ChatInputWrapper({
   setIsUserTyping,
   isUserTyping,
   generateNarrative,
+  chatId,
 }: ChatInputWrapperProps) {
   const insets = useSafeAreaInsets(); 
   const [message, setMessage] = useState<string>("");
@@ -72,7 +74,8 @@ function ChatInputWrapper({
       router.push({
         pathname: '/chat/confirmMemory',
         params: {
-          chatSummary: JSON.stringify(narrative)
+          chatSummary: JSON.stringify(narrative),
+          chatId: chatId
         }
       })
     }catch(err){

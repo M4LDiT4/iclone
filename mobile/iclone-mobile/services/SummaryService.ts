@@ -10,7 +10,7 @@ export interface HighLevelChatSummary {
   icon: {
     library: string,
     name: string
-  }
+  },
 }
 class SummaryService {
   llmClient: DeepSeekClient;
