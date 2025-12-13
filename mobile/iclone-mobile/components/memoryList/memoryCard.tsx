@@ -20,8 +20,7 @@ function MemoryCard(props : MemoryCardProps){
         style={StyleSheet.absoluteFillObject}
       />
       <GradientContainer width={82} height={76} borderRadius={10}>
-      <View style = {styles.contentContainer}> 24
-        {/* <AntDesign size={24} color={AppColors.primaryColor} name = "message"/> */}
+      <View style = {styles.contentContainer}> 
         <IconRenderer
           library={props.chat.iconLibrary ?? ""}
           name={props.chat.iconName ?? ""}

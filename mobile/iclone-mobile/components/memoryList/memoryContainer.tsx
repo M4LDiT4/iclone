@@ -79,7 +79,7 @@ function MemoryContainer({
     }
 
     return (
-      <ScrollView style={{ width: "100%" }}>
+      <ScrollView contentContainerStyle={{ gap: 8, width: '100%'}}>
         {chatList.map((chat) => (
           <MemoryCard key={chat.id} chat={chat} />
         ))}
@@ -116,8 +116,8 @@ const styles = StyleSheet.create({
   contentContainer: {
     width: "100%",
     padding: 16,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
   },
   header: {
     flexDirection: "row",

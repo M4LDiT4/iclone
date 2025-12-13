@@ -1,4 +1,5 @@
-import { MemoryDBRepository } from "./localDB/temp";
+import { MemoryDBRepository } from "./localDB/memoryDBRepository";
+
 
 interface MemoryServiceProps {
   memoryRepository: MemoryDBRepository
