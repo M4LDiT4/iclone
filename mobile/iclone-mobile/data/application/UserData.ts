@@ -51,5 +51,6 @@ export type AppUser = {
   auth: FirebaseAuthTypes.User,
   profile: {
     onboardingDone: boolean;
+    displayName?: string | null;
   }
 }

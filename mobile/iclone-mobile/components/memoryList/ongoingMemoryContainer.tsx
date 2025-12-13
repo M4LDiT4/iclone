@@ -10,6 +10,8 @@ import { ActivityIndicator } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient";
 import GradientContainer from "../containers/gradientContainer";
 import { Spacer } from "../layout/layout";
+import { useRouter } from "expo-router";
+import { useAuth } from "@/core/contexts/authContext";
 
 interface MemoryCardProps {
   chat: ChatModel;
@@ -17,6 +19,8 @@ interface MemoryCardProps {
 
 function MemoryCard({ chat }: MemoryCardProps) {
   const dateObj = new Date(chat.updatedAt);
+  const router = useRouter();
+  const {user} = useAuth();
 
   const weekday = dateObj.toLocaleDateString(undefined, { weekday: "short" }); // Fri, Mon
   const formattedDate = dateObj.toLocaleDateString(undefined, {
@@ -29,8 +33,18 @@ function MemoryCard({ chat }: MemoryCardProps) {
     minute: "2-digit",
   }); // 06:25 PM
 
+  const gotoChatScreen = () =>{
+    const auth = 
+    router.push({
+        pathname: `/chat/[chatId]`,
+        params: {
+          chatId: chat.id,
+          username: user?.displayName
+        }
+      });
+  }
   return (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={gotoChatScreen}>
       <View style={memoryCardStyles.container}>
         <LinearGradient
           colors={["#FFFFFF", "rgba(186, 224, 243, 1)"]}
@@ -150,7 +164,6 @@ function MemoryContainer({ memoryService }: { memoryService: MemoryService }) {
   if (chatList && chatList.length === 0) {
     return null;
   }
-
   return (
     <GenericContainer borderRadius={10}>
       <View style={styles.contentContainer}>

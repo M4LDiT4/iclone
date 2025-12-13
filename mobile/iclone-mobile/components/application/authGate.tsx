@@ -41,9 +41,13 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         setUser(null);
       } else {
         const finishedOnboarding = await AuthService.hasFinishedOnboarding(userState);
+        const profile = await AuthService.getUserProfile(userState.uid);
         const appUser: AppUser = {
           auth: userState,
-          profile: { onboardingDone: finishedOnboarding },
+          profile: { 
+            onboardingDone: finishedOnboarding,
+            displayName: profile?.username
+          },
         };
         setUser(appUser);
         setError(null);
@@ -79,7 +83,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user: user ? user.auth : null }}>
+    <AuthContext.Provider value={{ user: user ? user.auth : null, displayName: user?.profile.displayName ?? null}}>
       {children}
     </AuthContext.Provider>
   );
