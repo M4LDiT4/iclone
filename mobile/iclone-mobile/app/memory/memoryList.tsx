@@ -14,6 +14,7 @@ import { useMemoryListViewModel } from "@/data/viewModels/memoryList/MemoryListV
 import { ActivityIndicator } from "react-native-paper";
 import { TagModel } from "@/data/database/models/tagModel";
 import { Spacer } from "@/components/layout/layout";
+import OngoingMemoryContainer from "@/components/memoryList/ongoingMemoryContainer";
 
 function MemoryListScreen() {
   const router = useRouter();
@@ -24,22 +25,26 @@ function MemoryListScreen() {
   };
 
   const renderHeader = () => (
-    <View style={styles.logoContainer}>
-      <Logo width={116} height={116} />
-      <BlurView style={styles.logoTextContainer}>
-        <GradientContainer opacity={0.8}>
-          <View style={styles.logoTextContentContainer}>
-            <Text style={styles.logoText}>
-              These are what you shared to me so far
-            </Text>
-          </View>
-        </GradientContainer>
-      </BlurView>
-    </View>
+    <>
+      <View style={styles.logoContainer}>
+        <Logo width={116} height={116} />
+        <BlurView style={styles.logoTextContainer}>
+          <GradientContainer opacity={0.8}>
+            <View style={styles.logoTextContentContainer}>
+              <Text style={styles.logoText}>
+                These are what you shared to me so far
+              </Text>
+            </View>
+          </GradientContainer>
+        </BlurView>
+      </View>
+      <OngoingMemoryContainer memoryService={vm.memoryService!} />
+      <Spacer height={8}/>
+    </>
   );
 
   const renderItem = ({ item}: {item: TagModel}) => (
-    <MemoryContainer tag={item} tagService={vm.tagService!} />
+    <MemoryContainer memoryService={vm.memoryService!} tag={item} tagService={vm.tagService!} />
   );
 
   if (vm.componentStatus === "initializing") {

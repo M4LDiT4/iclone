@@ -10,33 +10,19 @@ import TagIconRenderer from "../icons/tagIconRenderer";
 import { MemoryService } from "@/services/MemoryService";
 import ChatModel from "@/data/database/models/chatModel";
 import ComponentStatus from "@/core/types/componentStatusType";
-import database from "@/data/database/index.native";
 import { ActivityIndicator } from "react-native-paper";
-import { MemoryDBRepository } from "@/services/localDB/memoryDBRepository";
 
 function MemoryContainer({
   tag,
   tagService,
+  memoryService,
 }: {
   tag: TagModel;
   tagService: TagService;
+  memoryService: MemoryService,
 }) {
-  const [chatList, setChatList] = useState<ChatModel[]>([]);
-  const [memoryService, setMemoryService] = useState<MemoryService | null>(null);
+  const [chatList, setChatList] = useState<ChatModel[] | null>(null);
   const [componentStatus, setComponentStatus] = useState<ComponentStatus>("idle");
-
-  // --- Initialize MemoryService ---
-  useEffect(() => {
-    const initialize = () => {
-      setComponentStatus("initializing");
-      const memoryRepository = new MemoryDBRepository({ database });
-      const newMemoryService = new MemoryService({ memoryRepository });
-      setMemoryService(newMemoryService);
-      setComponentStatus("idle");
-    };
-
-    initialize();
-  }, []);
 
   // --- Load Memories ---
   const loadMemories = async () => {
@@ -71,21 +57,26 @@ function MemoryContainer({
     }
 
     if (componentStatus === "initializing") {
-      return <ActivityIndicator color={AppColors.primaryColor} size="large" />;
-    }
-
-    if (chatList.length === 0) {
-      return <Text style={styles.emptyText}>No memories yet.</Text>;
+      return <ActivityIndicator style = {{alignSelf: 'center'}} color={AppColors.primaryColor} size="large" />;
     }
 
     return (
-      <ScrollView contentContainerStyle={{ gap: 8, width: '100%'}}>
-        {chatList.map((chat) => (
+      <ScrollView 
+        horizontal 
+        contentContainerStyle={{ gap: 8,}}
+        showsHorizontalScrollIndicator = {false}
+      >
+        { chatList  && chatList.map((chat) => (
           <MemoryCard key={chat.id} chat={chat} />
         ))}
       </ScrollView>
     );
   };
+
+  // do not render when chatlist is empty
+  if(chatList && chatList.length === 0){
+    return null;
+  }
 
   return (
     <GenericContainer borderRadius={10}>
@@ -137,6 +128,7 @@ const styles = StyleSheet.create({
   errorContainer: {
     alignItems: "center",
     paddingVertical: 20,
+    alignSelf: 'center',
   },
   errorText: {
     color: "red",

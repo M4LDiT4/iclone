@@ -31,4 +31,12 @@ export class MemoryDBRepository {
                   .fetch();
     return chats;
   }
+
+  async getOngoingChats():Promise<ChatModel[]> {
+    const chatCollection = this.database.collections.get<ChatModel>(ChatModel.table);
+    const ongoingChats = await chatCollection.query(
+                          Q.where('status', 'ongoing')
+                        ).fetch();
+    return ongoingChats;
+  }
 }

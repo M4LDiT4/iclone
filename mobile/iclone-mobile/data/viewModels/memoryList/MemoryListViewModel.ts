@@ -2,13 +2,16 @@ import ComponentStatus from "@/core/types/componentStatusType";
 import database from "@/data/database/index.native";
 import { TagModel } from "@/data/database/models/tagModel";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
+import { MemoryDBRepository } from "@/services/localDB/memoryDBRepository";
 import TagDBRepository from "@/services/localDB/TagDBRepository";
+import { MemoryService } from "@/services/MemoryService";
 import TagService from "@/services/TagService";
 import { useEffect, useState } from "react"
 
 export const useMemoryListViewModel = (
 ) => {
   const [tagService, setTagService] = useState<TagService|null> ();
+  const [memoryService, setMemoryService] = useState<MemoryService | null>();
   const [tagList, setTagList] = useState<TagModel[]>([]);
   const [componentStatus, setComponentStatus] = useState<ComponentStatus>('idle');
 
@@ -22,6 +25,9 @@ export const useMemoryListViewModel = (
         llmModel: model,
         tagRepository
       });
+      const memoryRepository = new MemoryDBRepository({database: database});
+      const newMemoryService = new MemoryService({memoryRepository: memoryRepository});
+      setMemoryService(newMemoryService);
       
       setTagService(newTagService)
     }
@@ -51,6 +57,7 @@ export const useMemoryListViewModel = (
   return {
     tagList,
     componentStatus,
-    tagService
+    tagService,
+    memoryService,
   }
 }

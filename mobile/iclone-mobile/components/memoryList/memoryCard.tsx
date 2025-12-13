@@ -1,5 +1,5 @@
 import { memo} from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import GradientContainer from "../containers/gradientContainer";
 import AppColors from "@/core/styling/AppColors";
 import { LinearGradient } from "expo-linear-gradient";
@@ -12,31 +12,35 @@ interface MemoryCardProps {
 }
 
 function MemoryCard(props : MemoryCardProps){
-  return <View style = {styles.container}>
-      <LinearGradient
-        colors={["#FFFFFF", 'rgba(186, 224, 243, 1)']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={StyleSheet.absoluteFillObject}
-      />
-      <GradientContainer width={82} height={76} borderRadius={10}>
-      <View style = {styles.contentContainer}> 
-        <IconRenderer
-          library={props.chat.iconLibrary ?? ""}
-          name={props.chat.iconName ?? ""}
-          size={24}
+  return (
+    <TouchableOpacity>
+      <View style = {styles.container}>
+        <LinearGradient
+          colors={["#FFFFFF", 'rgba(186, 224, 243, 1)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={StyleSheet.absoluteFillObject}
         />
-        <Spacer height={4}/>
-        <Text 
-          style = {styles.contentText}
-          ellipsizeMode="tail"
-          numberOfLines={3}
-        >
-          {props.chat.title}
-        </Text>
+        <GradientContainer width={82} height={76} borderRadius={10}>
+          <View style = {styles.contentContainer}> 
+            <IconRenderer
+              library={props.chat.iconLibrary ?? ""}
+              name={props.chat.iconName ?? ""}
+              size={24}
+            />
+            <Spacer height={4}/>
+            <Text 
+              style = {styles.contentText}
+              ellipsizeMode="tail"
+              numberOfLines={3}
+            >
+              {props.chat.title}
+            </Text>
+          </View>
+        </GradientContainer>
       </View>
-    </GradientContainer>
-  </View>
+    </TouchableOpacity>
+  )
 }
 
 export default memo(MemoryCard);

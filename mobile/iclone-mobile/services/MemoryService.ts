@@ -1,3 +1,4 @@
+import ChatModel from "@/data/database/models/chatModel";
 import { MemoryDBRepository } from "./localDB/memoryDBRepository";
 
 
@@ -15,5 +16,9 @@ export class MemoryService {
   async getMemoriesByTagId(tagId: string, {page, limit}:{page?: number, limit?: number}) {
     // implement pagination here
     return this.memoryRepository.getMemoryByTag(tagId, page, limit);
+  }
+  
+  async getOngoingChats(): Promise<ChatModel[]> {
+    return this.memoryRepository.getOngoingChats();
   }
 }
