@@ -18,6 +18,7 @@ interface ChatInputWrapperProps {
   setIsUserTyping: (val: boolean) => void;
   generateNarrative: () => Promise<HighLevelChatSummary>;
   isUserTyping: boolean;
+  isAssistantTyping: boolean;
   chatId: string,
 }
 
@@ -26,6 +27,7 @@ function ChatInputWrapper({
   triggerLLMResponse,
   setIsUserTyping,
   isUserTyping,
+  isAssistantTyping,
   generateNarrative,
   chatId,
 }: ChatInputWrapperProps) {
@@ -33,8 +35,8 @@ function ChatInputWrapper({
   const [message, setMessage] = useState<string>("");
   const [showSave, setShowSave] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingResponse, setPendingResponse] = useState(false);
 
-  const lastSentMessageRef = useRef<string | null>(null);
   const typingTimeoutRef = useRef<number | null>(null);
 
   // Keyboard listeners
@@ -42,6 +44,8 @@ function ChatInputWrapper({
     const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
     const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
 
+    // listen to keyboard show and hide events
+    // necessary for the isUserTyping flag
     const showSub = Keyboard.addListener(showEvent, () => {
       setIsUserTyping(true);
     });
@@ -51,10 +55,21 @@ function ChatInputWrapper({
     });
 
     return () => {
+      // cleanup
       showSub.remove();
       hideSub.remove();
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
     };
   }, []);
+
+  // batch the user messages when the assistant is typing
+  // trigger a response only after the assistant finished typing
+  useEffect(() => {
+    if(!isAssistantTyping && pendingResponse){
+      triggerLLMResponse();
+      setPendingResponse(false);
+    }
+  }, [isAssistantTyping, pendingResponse, triggerLLMResponse]);
 
   const handleMessageChange = (newMessage: string) => {
     setMessage(newMessage);
@@ -79,7 +94,8 @@ function ChatInputWrapper({
         }
       });
     }catch(err){
-      console.error(`Failed `)
+      // maybe throw an error
+      console.error(`Failed to save message`)
     }finally{
       setIsLoading(false);
     }
@@ -88,23 +104,29 @@ function ChatInputWrapper({
   const openSaveModal = () => setShowSave(true);
   const closeSaveModal = () => setShowSave(false);
 
+
   const handleSendButtonPress = async () => {
     const trimmed = message.trim();
     if (!trimmed) return;
 
     await handleSend(trimmed);
-    lastSentMessageRef.current = trimmed;
     setMessage("");
 
+    // Clear any existing debounce
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
+    // Debounce: wait 1s after last send before triggering response
     typingTimeoutRef.current = setTimeout(() => {
-      if (lastSentMessageRef.current) {
+      if (!isAssistantTyping) {
+        // Assistant idle → trigger immediately
         triggerLLMResponse();
-        lastSentMessageRef.current = null;
+      } else {
+        // Assistant busy → mark response as pending
+        setPendingResponse(true);
       }
     }, 1000);
   };
+
 
   return (
     <View
