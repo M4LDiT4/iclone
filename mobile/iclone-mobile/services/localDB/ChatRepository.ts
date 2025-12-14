@@ -54,6 +54,7 @@ export default class ChatRepository {
       status,
       title,
       narrative,
+      summary,
       tags,
       iconName,
       iconLibrary,
@@ -61,6 +62,7 @@ export default class ChatRepository {
       status?: ChatStatus;
       title?: string;
       narrative?: string;
+      summary?: string,
       tags?: string[];
       iconName?: string,
       iconLibrary?: string
@@ -74,6 +76,7 @@ export default class ChatRepository {
         await chat.update((record) => {
           if (status !== undefined) record.status = status;
           if (title !== undefined) record.title = title;
+          if (summary !== undefined) record.summary = summary;
           if (narrative !== undefined) record.narrative = narrative;
           if (iconName) record.iconName = iconName;
           if (iconLibrary) record.iconLibrary = iconLibrary;
@@ -150,7 +153,6 @@ export default class ChatRepository {
             await this.database.batch(...joinOps);
           }
         }
-
       });
     } catch (err) {
       console.error(`Failed to update chat: ${err}`);

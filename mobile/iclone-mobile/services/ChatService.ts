@@ -234,6 +234,7 @@ class ChatService {
         status: 'saved',
         title: summary.title,
         narrative: summary.narrative,
+        summary: summary.summary,
         tags: summary.tag,
         iconName: summary.icon.name,
         iconLibrary: summary.icon.library

@@ -1,5 +1,15 @@
 import { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AppColors from "@/core/styling/AppColors";
 import { HighLevelChatSummary } from "@/services/SummaryService";
@@ -20,18 +30,23 @@ import SummaryStackDBService from "@/services/localDB/SummaryStackDatabaseServic
 import SummaryService from "@/services/SummaryService";
 import database from "@/data/database/index.native";
 import { useAuth } from "@/core/contexts/authContext";
+import { MemoryService } from "@/services/MemoryService";
+import { ChatTagRepository } from "@/services/localDB/ChatTagRepository";
 
 export default function ConfirmMemoryScreen() {
   const router = useRouter();
   const { chatService, setChatService } = useChatContext();
   const auth = useAuth();
 
-  const { chatSummary, chatId} = useLocalSearchParams<{ chatSummary: string; chatId: string }>();
-  const parsedSummary: HighLevelChatSummary = JSON.parse(chatSummary);
+  const { chatSummary, chatId } = useLocalSearchParams<{
+    chatSummary?: string;
+    chatId: string;
+  }>();
 
-  const [tag, setTag] = useState<string>(parsedSummary.tag.join(", ").replace("_", " "));
-  const [narrative, setNarrative] = useState<string>(parsedSummary.narrative);
-  const [title, setTitle] = useState<string>(parsedSummary.title);
+  const [parsedSummary, setParsedSummary] = useState<HighLevelChatSummary | null>(null);
+  const [tag, setTag] = useState<string>("");
+  const [narrative, setNarrative] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
   const [modalState, setModalState] = useState<ModalType>("none");
 
   // ──────────────────────────────────────────────
@@ -63,12 +78,49 @@ export default function ConfirmMemoryScreen() {
     }
   }, [chatId, auth?.user?.uid]);
 
+  // ──────────────────────────────────────────────
+  // Hydrate summary: from router OR query
+  // ──────────────────────────────────────────────
+  useEffect(() => {
+    if (chatSummary) {
+      try {
+        const summary = JSON.parse(chatSummary);
+        setParsedSummary(summary);
+      } catch (err) {
+        console.error("Invalid chatSummary JSON", err);
+      }
+    } else if (chatId && chatService) {
+      const chatTagRepo = new ChatTagRepository(database);
+      const memoryService = new MemoryService({
+        chatTagRepository: chatTagRepo,
+        chatRepository: chatService.chatDBService
+      });
+      (async () => {
+        try {
+          const summary = await memoryService.getSavedNarrativeAsHighLevelSummary(chatId); // implement in ChatService
+          setParsedSummary(summary);
+        } catch (err) {
+          console.error("Failed to fetch summary", err);
+        }
+      })();
+    }
+  }, [chatSummary, chatId, chatService]);
+
+  // Sync local state when parsedSummary is ready
+  useEffect(() => {
+    if (parsedSummary) {
+      setTag(parsedSummary.tag.join(", ").replace("_", " "));
+      setNarrative(parsedSummary.narrative);
+      setTitle(parsedSummary.title);
+    }
+  }, [parsedSummary]);
+
   const handleCancel = () => router.back();
 
   const handleSave = async () => {
     try {
-      if (!chatService) {
-        console.error("ChatService is not available on the confirm memory screen.");
+      if (!chatService || !parsedSummary) {
+        console.error("ChatService or summary not available.");
         return;
       }
       setModalState("loading");
@@ -76,7 +128,7 @@ export default function ConfirmMemoryScreen() {
       const updatedSummary: HighLevelChatSummary = {
         tag: tags,
         title,
-        summary: parsedSummary.summary, // corrected to use summary
+        summary: parsedSummary.summary,
         narrative,
         icon: parsedSummary.icon,
       };
@@ -98,6 +150,14 @@ export default function ConfirmMemoryScreen() {
   // ──────────────────────────────────────────────
   // UI Rendering
   // ──────────────────────────────────────────────
+  if (!parsedSummary) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color={AppColors.primaryColor} />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView edges={["left", "right", "bottom"]} style={styles.container}>
       <KeyboardAvoidingView
@@ -119,7 +179,10 @@ export default function ConfirmMemoryScreen() {
             placeholderTextColor={AppColors.secondaryColor}
           />
           <Text style={styles.label}>Icon</Text>
-          <IconRenderer library={parsedSummary.icon.library} name={parsedSummary.icon.name} />
+          <IconRenderer
+            library={parsedSummary.icon.library}
+            name={parsedSummary.icon.name}
+          />
           <Text style={styles.label}>Title</Text>
           <TextInput
             style={styles.input}
@@ -183,7 +246,6 @@ export default function ConfirmMemoryScreen() {
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {

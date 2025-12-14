@@ -23,6 +23,9 @@ export default class ChatModel extends Model {
   title!: string | null;
 
   @text('narrative')
+  summary!: string | null;
+
+  @text('narrative')
   narrative!: string | null;
 
   @text('icon_library')

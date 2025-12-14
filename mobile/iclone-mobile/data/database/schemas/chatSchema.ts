@@ -8,6 +8,7 @@ const chatSchema = tableSchema({
     {name: 'agent_id', type: 'string', isOptional: false},
     {name: 'title', type: 'string'}, 
     {name: 'narrative', type: 'string'}, 
+    {name: 'summary', type: 'string'}, 
     {name: 'icon_library', type: 'string'},
     {name: 'icon_name', type: 'string'},
     // insert user id here if possible
