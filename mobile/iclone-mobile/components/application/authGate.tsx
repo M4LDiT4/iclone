@@ -5,13 +5,14 @@ import AuthService from "@/services/AuthService";
 import {FirebaseAuthTypes } from "@react-native-firebase/auth";
 import AppColors from "@/core/styling/AppColors";
 import { AuthContext } from "@/core/contexts/authContext";
-import { AppUser } from "@/data/application/UserData";
 import { AuthServiceError } from "@/core/errors/AuthServiceError";
+import UserData from "@/data/application/UserData";
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<AppUser | null>(null);
+  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
+  const [profile, setProfile] = useState<UserData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -25,13 +26,16 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     if (isLoading) return;
 
     if (user) {
-      if (user.profile.onboardingDone) {
+      // go to home if profile and user are not null and the user has also finished the onboarding
+      if (profile && profile.onboardingDone){
         router.replace("/home");
+      // go to the onboarding screen if profile is null (e.g. the user has not finished the onboarding yet so there is no profile)
+      // or they have profile but they havent finished the oboarding yet
       } else {
         router.replace("/onboarding/setName");
       }
     } else {
-      router.replace("/signIn");
+      router.replace("/authentication/signIn");
     }
   }, [user, isLoading, router]);
 
@@ -40,12 +44,10 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       if (!userState) {
         setUser(null);
       } else {
-        const finishedOnboarding = await AuthService.hasFinishedOnboarding(userState);
-        const appUser: AppUser = {
-          auth: userState,
-          profile: { onboardingDone: finishedOnboarding },
-        };
-        setUser(appUser);
+        //wait for the profile query before 
+        const newProfile = await AuthService.getUserProfile(userState.uid);
+        setUser(userState);
+        setProfile(newProfile);
         setError(null);
       }
     } catch (err) {
@@ -79,7 +81,11 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user: user ? user.auth : null }}>
+    <AuthContext.Provider value={{ 
+      user: user, 
+      profile,
+      setProfile
+    }}>
       {children}
     </AuthContext.Provider>
   );

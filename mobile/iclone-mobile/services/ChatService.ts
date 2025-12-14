@@ -10,8 +10,7 @@ import { LLMError } from "@/core/errors/LLMError";
 
 import { eventBus } from "@/core/utils/eventBus";
 import SummaryStackDBService from "./localDB/SummaryStackDatabaseService";
-import ChatDBService from "./localDB/ChatDBService";
-import { sum } from "lodash";
+import ChatRepository from "./localDB/ChatRepository";
 
 interface ChatServiceProps {
   chatId: string,
@@ -22,7 +21,7 @@ interface ChatServiceProps {
   summaryStackDBService: SummaryStackDBService;
   localMessageDBService: LocalMessageDBService;
   llmModel: DeepSeekClient
-  chatDBService: ChatDBService;
+  chatDBService: ChatRepository;
 }
 
 class ChatService {
@@ -44,7 +43,7 @@ class ChatService {
 
   chatSummary: string | null = null;
 
-  chatDBService: ChatDBService;
+  chatDBService: ChatRepository;
 
   constructor(props: ChatServiceProps){
     this.chatId = props.chatId;
@@ -232,10 +231,13 @@ class ChatService {
     await this.chatDBService.updateChat(
       this.chatId,
       {
-        tag: summary.tag.join(", "),
         status: 'saved',
         title: summary.title,
-        narrative: summary.narrative
+        narrative: summary.narrative,
+        summary: summary.summary,
+        tags: summary.tag,
+        iconName: summary.icon.name,
+        iconLibrary: summary.icon.library
       }
     )
   }

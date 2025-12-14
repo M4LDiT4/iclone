@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AppColors from '@/core/styling/AppColors';
 import ChatTextinput from './chatTextinput';
 import ComponentStatus from '@/core/types/componentStatusType';
-import ChatDBService from '@/services/localDB/ChatDBService';
+import ChatRepository from '@/services/localDB/ChatRepository';
 import database from '@/data/database/index.native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,7 +17,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function ChatInputBar({username}:{username?:string|null}) {
   const [componentStatus, setComponentStatus] = useState<ComponentStatus>("idle");
-  const [chatDBService, setChatDBService] = useState<ChatDBService>();
+  const [chatDBService, setChatDBService] = useState<ChatRepository>();
   const [message, setMessage] = useState<string | null>("");
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const insets = useSafeAreaInsets();
@@ -25,7 +25,7 @@ export default function ChatInputBar({username}:{username?:string|null}) {
   const router = useRouter();
 
   useEffect(() => {
-    const chatDBService = new ChatDBService({ database, userId: "userId" });
+    const chatDBService = new ChatRepository({ database, userId: "userId" });
     setChatDBService(chatDBService);
 
     const showSub = Keyboard.addListener("keyboardDidShow", () => {
@@ -74,10 +74,10 @@ export default function ChatInputBar({username}:{username?:string|null}) {
     // prevent execution of write operation when
     // - currently loading
     // - message is undefined or empty string
-    if(!message || message.length === 0 || componentStatus === 'loading'){
+    if(!message || message.length === 0 || componentStatus === 'initializing'){
       return;
     }
-    updateComponentStatus('loading');
+    updateComponentStatus('initializing');
     await chatDBService?.createNewChat()
     .then((chat) => {
       updateComponentStatus('idle');

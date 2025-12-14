@@ -2,7 +2,6 @@ import { Text, StyleSheet, ScrollView, TouchableHighlight, ActivityIndicator } f
 import {Checkbox} from 'expo-checkbox';
 import { Center, Column, Expanded, Padding, Row, Spacer, Stack } from "@/components/layout/layout";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Logo from "../assets/svg/llm_logo.svg";
 import AppColors from "@/core/styling/AppColors";
 import { BlurView } from "expo-blur";
 import { hexToRgba } from "@/core/utils/colorHelpers";
@@ -22,6 +21,8 @@ import AuthService from "@/services/AuthService";
 import { AppValidators } from "@/core/utils/appValidators";
 import { AuthServiceError } from "@/core/errors/AuthServiceError";
 import { ValidationError } from "@/core/errors/ValidationError";
+
+import Logo from "../../assets/svg/llm_logo.svg";
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -81,7 +82,7 @@ export default function SignInScreen() {
   }
 
   const gotoSignUp = () => {
-    router.replace('/signUp');
+    router.replace('/authentication/signUp');
   }
 
   useEffect(() => {
@@ -177,7 +178,7 @@ export default function SignInScreen() {
 
             {/* LOGIN BUTTON */}
             <Spacer height={12} />
-            <PrimaryButton label="Login" onPress={handleSignInButtonPress}/>
+            <PrimaryButton style={{width: '100%'}} label="Login" onPress={handleSignInButtonPress}/>
             <Spacer height={12} />
             {/* CREATE ACCOUNT TEXT BUTTON */}
             <Center>
@@ -200,7 +201,7 @@ export default function SignInScreen() {
 
             <Spacer height={12} />
             {/* LOG IN WITH APPLE */}
-            <PrimaryButton style={{ backgroundColor: "#000000" }}>
+            <PrimaryButton style={{ backgroundColor: "#000000", width: '100%' }}>
               <Row>
                 <FontAwesome name="apple" size={24} color="white" />
                   <Spacer width={8} />
@@ -218,7 +219,7 @@ export default function SignInScreen() {
 
               <Spacer height={12} />
               {/* LOGIN WITH GOOGLE */}
-              <OutlineButton style={{ borderColor: hexToRgba("#000000", 0.75)}} onPress={handleSigninWithGoogle}>
+              <OutlineButton style={{ borderColor: hexToRgba("#000000", 0.75), width: '100%'}} onPress={handleSigninWithGoogle}>
                 <Row>
                   <FontAwesome
                     name="google"

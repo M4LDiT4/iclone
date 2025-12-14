@@ -3,12 +3,14 @@ import { tableSchema } from "@nozbe/watermelondb";
 const chatSchema = tableSchema({
   name: 'chats',
   columns: [
-    {name: 'user_id', type: 'string', isOptional: false},
-    {name: 'tag', type: 'string'}, 
+    {name: 'user_id', type: 'string', isOptional: false}, 
     {name: 'status', type: 'string', isOptional: false},
     {name: 'agent_id', type: 'string', isOptional: false},
     {name: 'title', type: 'string'}, 
     {name: 'narrative', type: 'string'}, 
+    {name: 'summary', type: 'string'}, 
+    {name: 'icon_library', type: 'string'},
+    {name: 'icon_name', type: 'string'},
     // insert user id here if possible
     {name: 'created_at', type: 'number'},
     {name: 'updated_at', type: 'number'}

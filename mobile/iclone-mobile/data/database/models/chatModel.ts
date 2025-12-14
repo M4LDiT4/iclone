@@ -2,7 +2,6 @@ import ChatStatus from "@/domain/types/chatStatus";
 import { Model } from "@nozbe/watermelondb";
 import { date, readonly, text } from "@nozbe/watermelondb/decorators";
 import { Associations } from "@nozbe/watermelondb/Model";
-import { NullValue } from "@nozbe/watermelondb/RawRecord";
 
 export default class ChatModel extends Model {
   static table = 'chats';
@@ -14,9 +13,6 @@ export default class ChatModel extends Model {
   @text('user_id')
   userId!: string;
 
-  @text('tag')
-  tag!: string | null;
-
   @text('status')
   status!: ChatStatus;
 
@@ -27,7 +23,16 @@ export default class ChatModel extends Model {
   title!: string | null;
 
   @text('narrative')
+  summary!: string | null;
+
+  @text('narrative')
   narrative!: string | null;
+
+  @text('icon_library')
+  iconLibrary!: string | null;
+
+  @text('icon_name')
+  iconName!: string | null;
 
   @readonly @date('created_at')
   createdAt!: Date;

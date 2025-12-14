@@ -12,11 +12,14 @@ import { useOnboardingContext } from "@/core/contexts/onboardingContext";
 import GenericModal from "@/components/modals/genericModal";
 import AuthService from "@/services/AuthService";
 import { AuthServiceError } from "@/core/errors/AuthServiceError";
+import { useAuth } from "@/core/contexts/authContext";
 
 function OnboardingFinishScreen(){
   const {message} = useLocalSearchParams<{message: string}>();
   const {name, birthdate, illness} = useOnboardingContext();
+
   const router = useRouter();
+  const auth = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>();
@@ -33,6 +36,12 @@ function OnboardingFinishScreen(){
         birthdate: birthdate!,
         illness: illness
       });
+      if(auth){
+        const profile = await AuthService.getUserProfile(auth.user?.uid!);
+        auth.setProfile(profile);  
+      }else{
+        throw new Error(`There is no auth context! Make sure that auth context is created`);
+      }   
       router.dismissAll();
       router.push("/home");
     }catch(err){
@@ -53,7 +62,7 @@ function OnboardingFinishScreen(){
     />
     <LogoWithFloatingText width={249} text={message} />
     <Spacer height={75}/>
-    <PrimaryButton onPress={handleFinishOnboarding} label="Finish onboarding"/>
+    <PrimaryButton style={{width: '100%'}} onPress={handleFinishOnboarding} label="Finish onboarding"/>
     <LinearGradient
       colors={["#F8F9FA", "#6C9BCF"]}
       style={GlobalStyles.screenGradientBottom}
@@ -63,7 +72,7 @@ function OnboardingFinishScreen(){
         <Padding style = {styles.signUpModalContainer}>
           <Text style = {styles.signUpModalTitleText}>{error}</Text>
           <Spacer height={8}/>
-          <PrimaryButton label="Okay" onPress={handleCloseErrorMessage}/>
+          <PrimaryButton style={{width: '100%'}} label="Okay" onPress={handleCloseErrorMessage}/>
         </Padding>
       </Column>
     </GenericModal>

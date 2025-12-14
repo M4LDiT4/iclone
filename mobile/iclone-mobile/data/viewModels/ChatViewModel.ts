@@ -93,7 +93,7 @@ export const useChatViewModel = (
   }, [chatService, pushSystemMessage]);
 
   /** Summary */
-  const saveNarrative = useCallback(async () => {
+  const generateNarrative = useCallback(async () => {
     if (!chatService) throw new Error("ChatService is not initialized");
     return await chatService.generateSummary();
   }, [chatService]);
@@ -114,7 +114,7 @@ export const useChatViewModel = (
     setIsUserTyping,
     pushUserMessage,
     generateResponse,
-    saveNarrative,
+    generateNarrative,
     closeErrorModal,
     error,
     flatListRef,

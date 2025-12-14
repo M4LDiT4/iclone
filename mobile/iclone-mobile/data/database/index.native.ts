@@ -1,4 +1,3 @@
-import { Platform } from 'react-native'
 import { Database } from '@nozbe/watermelondb'
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
 
@@ -10,6 +9,8 @@ import MessageModel from './models/messageModel'
 import SummaryModel from './models/summaryModel'
 import SummaryStackItemModel from './models/summaryStackItemModel'
 import SummaryMessageModel from './models/summaryMessageModel'
+import { ChatTagModel } from './models/chatTagModel'
+import { TagModel } from './models/tagModel'
 
 
 // First, create the adapter to the underlying database:
@@ -37,6 +38,8 @@ const database = new Database({
     SummaryModel,
     SummaryStackItemModel,
     SummaryMessageModel,
+    ChatTagModel,
+    TagModel,
   ],
 })
 
