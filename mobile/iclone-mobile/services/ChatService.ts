@@ -210,6 +210,7 @@ class ChatService {
   // - combine them to create a prompt
   chat(){
     const slidingWindowData = this.slidingWindow.toMessageArray();
+    console.log(`SLIDING WINDOW DATA: ${JSON.stringify(slidingWindowData, null, 2)}`)
     const context = this.buildChatPrompt({
       username: this.username,
       longTermMemory: this.chatSummary ?? "No long term memory",

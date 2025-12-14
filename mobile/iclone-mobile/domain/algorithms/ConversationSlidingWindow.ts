@@ -47,9 +47,8 @@ class ConversationSlidingWindow {
   enqueueMessage(message: MessageData){
     this.queue.enqueue(message);
     this.countMessage(message);
+    this.overFlowResolution();
   }
-
-
   dequeue() {
     this.queue.dequeue();
   }
@@ -112,6 +111,21 @@ class ConversationSlidingWindow {
       .join("\n");
   }
 
+  // remove the conversation pair (batched user messages and the corresponding response)
+  // we can have cases where there is consecutive llm/system messages on the queue
+  // this is okay, as when queuing another system message will make this full and will again
+  // dequeue the topmost item until we see another system message
+  overFlowResolution(){
+    if(this.isFull()){
+      while(!this.queue.isEmpty()){
+        const top = this.queue.peek();
+        this.dequeue()
+        if(top?.sender === 'system'){
+          break;
+        }
+      }
+    }
+  }
 
 }
 
