@@ -6,14 +6,25 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Spacer } from "../layout/layout";
 import IconRenderer from "../icons/iconRenderer";
 import ChatModel from "@/data/database/models/chatModel";
+import { useRouter } from "expo-router";
 
 interface MemoryCardProps {
   chat: ChatModel
 }
 
 function MemoryCard(props : MemoryCardProps){
+  const router = useRouter();
+
+  const gotoConfirmChatScreen = () => {
+    router.push({
+      pathname: '/chat/confirmMemory',
+      params: {
+        chatId: props.chat.id
+      }
+    });
+  }
   return (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={gotoConfirmChatScreen}>
       <View style = {styles.container}>
         <LinearGradient
           colors={["#FFFFFF", 'rgba(186, 224, 243, 1)']}

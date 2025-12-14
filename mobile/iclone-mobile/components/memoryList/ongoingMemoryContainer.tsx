@@ -20,7 +20,7 @@ interface MemoryCardProps {
 function MemoryCard({ chat }: MemoryCardProps) {
   const dateObj = new Date(chat.updatedAt);
   const router = useRouter();
-  const {user} = useAuth();
+  const auth = useAuth();
 
   const weekday = dateObj.toLocaleDateString(undefined, { weekday: "short" }); // Fri, Mon
   const formattedDate = dateObj.toLocaleDateString(undefined, {
@@ -34,12 +34,11 @@ function MemoryCard({ chat }: MemoryCardProps) {
   }); // 06:25 PM
 
   const gotoChatScreen = () =>{
-    const auth = 
     router.push({
         pathname: `/chat/[chatId]`,
         params: {
           chatId: chat.id,
-          username: user?.displayName
+          username: auth?.profile?.username
         }
       });
   }

@@ -77,7 +77,7 @@ function ChatInputWrapper({
           chatSummary: JSON.stringify(narrative),
           chatId: chatId
         }
-      })
+      });
     }catch(err){
       console.error(`Failed `)
     }finally{
