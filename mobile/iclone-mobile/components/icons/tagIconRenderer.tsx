@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from "react";
+import React, { memo, useEffect, useState, useCallback } from "react";
 import {
   AntDesign,
   Entypo,
@@ -58,29 +58,40 @@ function TagIcon({
 
   const maxRetries = 3;
 
-  useEffect(() => {
-    const resolveIcon = async () => {
-      if ((!resolvedLibrary || !resolvedName) && retryCount < maxRetries) {
-        try {
-          const suggestion = await tagService.generateAndSaveIconMetadata({
-            tagId,
-            tagName,
-            tagIconLibrary: iconLibrary ?? undefined,
-            tagIconName: iconName ?? undefined,
-          });
+  /** 🔧 Extracted resolve logic */
+  const resolveIcon = useCallback(
+    async (prevLibrary?: string | null, prevName?: string | null) => {
+      if (retryCount >= maxRetries) return;
 
-          setResolvedLibrary(suggestion.iconLibrary);
-          setResolvedName(suggestion.iconName);
-        } catch (err) {
-          console.error("Failed to resolve icon:", err);
-          setRetryCount((prev) => prev + 1);
-        }
+      try {
+        const suggestion = await tagService.generateAndSaveIconMetadata({
+          tagId,
+          tagName,
+          tagIconLibrary: prevLibrary ?? iconLibrary ?? undefined,
+          tagIconName: prevName ?? iconName ?? undefined,
+        });
+
+        setResolvedLibrary(suggestion.iconLibrary);
+        setResolvedName(suggestion.iconName);
+      } catch (err) {
+        console.error(`Failed to resolve icon (attempt ${retryCount + 1}):`, err);
+        setRetryCount((prev) => prev + 1);
       }
-    };
+    },
+    [tagId, tagName, iconLibrary, iconName, retryCount, tagService]
+  );
 
-    resolveIcon();
-    // Only depend on tagId and retryCount to avoid infinite loops
-  }, [tagId, retryCount]);
+  // Initial resolution attempt
+  useEffect(() => {
+    if ((!resolvedLibrary || !resolvedName) && retryCount < maxRetries) {
+      resolveIcon(resolvedLibrary, resolvedName);
+    }
+  }, [resolvedLibrary, resolvedName, retryCount, resolveIcon]);
+
+  /** ✅ Validation helper */
+  const isValidIcon = (IconSet: any, name: string) => {
+    return IconSet?.glyphMap && !!IconSet.glyphMap[name];
+  };
 
   try {
     if (!resolvedLibrary || !resolvedName) {
@@ -88,13 +99,22 @@ function TagIcon({
     }
 
     const IconSet = iconLibraries[resolvedLibrary];
+
     if (IconSet && typeof IconSet === "function") {
-      return <IconSet name={resolvedName} size={size} color={color} />;
+      if (isValidIcon(IconSet, resolvedName)) {
+        return <IconSet name={resolvedName} size={size} color={color} />;
+      } else {
+        // 🚑 Self-healing: invalid name detected
+        throw new Error(`Invalid icon name "${resolvedName}" for library "${resolvedLibrary}"`);
+      }
     }
 
-    throw new Error("Invalid library or icon name");
+    throw new Error("Invalid library");
   } catch (err) {
-    // Fallback icon after max retries
+    // Attempt to heal by retrying with the current invalid combo
+    resolveIcon(resolvedLibrary, resolvedName);
+
+    // Fallback icon while healing
     return <AntDesign name="question-circle" size={size} color={color} />;
   }
 }
