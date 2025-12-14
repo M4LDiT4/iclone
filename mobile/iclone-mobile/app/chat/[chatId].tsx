@@ -111,6 +111,7 @@ export default function ChatScreen() {
             setIsUserTyping={vm.setIsUserTyping}
             isUserTyping={vm.isUserTyping}
             generateNarrative={vm.generateNarrative}
+            isAssistantTyping = {vm.isAssistantTyping}
           />
         </Padding>
 
