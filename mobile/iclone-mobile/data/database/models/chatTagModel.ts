@@ -6,8 +6,8 @@ import { TagModel } from "./tagModel";
 export class ChatTagModel extends Model {
   static table = 'chat_tags';
 
-  @field('chat_id') chat_id!: string;
-  @field('tag_id') tag_id!: string;
+  @field('chat_id') chatId!: string;
+  @field('tag_id') tagId!: string;
   
   @relation('chats', 'chat_id') chat!: ChatModel;
   @relation('tags', 'tag_id') tag!: TagModel;

@@ -164,8 +164,8 @@ class AuthService {
               email: user.email ?? "",
               contactNumber: user.phoneNumber ?? "",
               onboardingDone: false, // default flag
-              createdAt: firestore.FieldValue.serverTimestamp(),
-              updatedAt: firestore.FieldValue.serverTimestamp()
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
             },
             { merge: true }
           );

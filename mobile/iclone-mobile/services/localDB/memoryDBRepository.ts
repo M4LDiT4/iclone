@@ -18,7 +18,7 @@ export class MemoryDBRepository {
     const chatTagsByTag = await chatTagCollection.query(
       Q.where('tag_id', tagId)
     );
-    const chatIds = chatTagsByTag.map((ct) => ct.chat_id);
+    const chatIds = chatTagsByTag.map((ct) => ct.chatId);
 
     const skip = (page -1) * pageSize;
     const chats = await this.database.collections.get<ChatModel>(ChatModel.table)
@@ -38,5 +38,11 @@ export class MemoryDBRepository {
                           Q.where('status', 'ongoing')
                         ).fetch();
     return ongoingChats;
+  }
+
+  async getChatById(chatId: string){
+    const chatCollection = this.database.collections.get<ChatModel>(ChatModel.table);
+    const chat = await chatCollection.find(chatId);
+    return chat;
   }
 }

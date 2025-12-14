@@ -20,13 +20,12 @@ import { useRouter } from 'expo-router';
 
 
 export default function HomeScreen() {
-  const {user, } = useAuth();
+  const auth = useAuth();
   const router = useRouter();
 
   const gotoMemoryList = () => {
     router.push("/memory/memoryList");
   }
-
 
   return (
     <SafeAreaView edges={['left', 'right']} style={styles.safeArea}>
@@ -40,7 +39,7 @@ export default function HomeScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.upperContainer}>
-            <Text style={styles.primaryText}>{`Hello, ${user?.displayName ?? user?.displayName ?? "Guest"}`}</Text>
+            <Text style={styles.primaryText}>{`Hello, ${auth?.profile?.username ?? auth?.user?.displayName ?? "Guest"}`}</Text>
             <Spacer height={8}/>
             <Text style={styles.welcomeText}>Welcome back!</Text>
             <TouchableOpacity 
@@ -89,7 +88,10 @@ export default function HomeScreen() {
           </View>
         </ScrollView>
         <ChatInputBar
-          username={user?.displayName}
+        // throw an error if auth.profile.username is not provided
+        // app expects this to be provided, as we do not want to authorize 
+        // non-registered users to access app features
+          username={auth!.profile!.username}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

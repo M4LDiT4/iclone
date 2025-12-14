@@ -1,4 +1,3 @@
-import { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { DocumentData } from "firebase/firestore";
 
 export default class UserData {
@@ -45,12 +44,4 @@ export default class UserData {
     });
   }
 
-}
-
-export type AppUser = {
-  auth: FirebaseAuthTypes.User,
-  profile: {
-    onboardingDone: boolean;
-    displayName?: string | null;
-  }
 }

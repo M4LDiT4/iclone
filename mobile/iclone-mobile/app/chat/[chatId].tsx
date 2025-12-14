@@ -11,7 +11,7 @@ import database from "@/data/database/index.native";
 import { useChatViewModel } from "@/data/viewModels/ChatViewModel";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
 import ChatService from "@/services/ChatService";
-import ChatDBService from "@/services/localDB/ChatDBService";
+import ChatRepository from "@/services/localDB/ChatRepository";
 import LocalMessageDBService from "@/services/localDB/LocalMessageDBService";
 import SummaryStackDBService from "@/services/localDB/SummaryStackDatabaseService";
 import SummaryService from "@/services/SummaryService";
@@ -30,7 +30,7 @@ export default function ChatScreen() {
   // 1. Create ChatService when navigating to screen
   // ──────────────────────────────────────────────
   useEffect(() => {
-    if (!chatId || !auth.user?.uid) return;
+    if (!chatId || !auth!.user?.uid) return;
 
     const apiKey = process.env.EXPO_PUBLIC_DEEP_SEEK_API_KEY!;
     const model = new DeepSeekClient(apiKey);
@@ -44,9 +44,9 @@ export default function ChatScreen() {
       summaryStackDBService: new SummaryStackDBService(database),
       localMessageDBService: new LocalMessageDBService(database),
       llmModel: model,
-      chatDBService: new ChatDBService({
+      chatDBService: new ChatRepository({
         database,
-        userId: auth.user.uid
+        userId: auth!.user.uid
       }),
     });
 

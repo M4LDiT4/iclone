@@ -10,7 +10,7 @@ import { LLMError } from "@/core/errors/LLMError";
 
 import { eventBus } from "@/core/utils/eventBus";
 import SummaryStackDBService from "./localDB/SummaryStackDatabaseService";
-import ChatDBService from "./localDB/ChatDBService";
+import ChatRepository from "./localDB/ChatRepository";
 
 interface ChatServiceProps {
   chatId: string,
@@ -21,7 +21,7 @@ interface ChatServiceProps {
   summaryStackDBService: SummaryStackDBService;
   localMessageDBService: LocalMessageDBService;
   llmModel: DeepSeekClient
-  chatDBService: ChatDBService;
+  chatDBService: ChatRepository;
 }
 
 class ChatService {
@@ -43,7 +43,7 @@ class ChatService {
 
   chatSummary: string | null = null;
 
-  chatDBService: ChatDBService;
+  chatDBService: ChatRepository;
 
   constructor(props: ChatServiceProps){
     this.chatId = props.chatId;

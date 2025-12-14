@@ -14,7 +14,7 @@ import IconRenderer from "@/components/icons/iconRenderer";
 // services
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
 import ChatService from "@/services/ChatService";
-import ChatDBService from "@/services/localDB/ChatDBService";
+import ChatRepository from "@/services/localDB/ChatRepository";
 import LocalMessageDBService from "@/services/localDB/LocalMessageDBService";
 import SummaryStackDBService from "@/services/localDB/SummaryStackDatabaseService";
 import SummaryService from "@/services/SummaryService";
@@ -26,7 +26,7 @@ export default function ConfirmMemoryScreen() {
   const { chatService, setChatService } = useChatContext();
   const auth = useAuth();
 
-  const { chatSummary, chatId } = useLocalSearchParams<{ chatSummary: string; chatId: string }>();
+  const { chatSummary, chatId} = useLocalSearchParams<{ chatSummary: string; chatId: string }>();
   const parsedSummary: HighLevelChatSummary = JSON.parse(chatSummary);
 
   const [tag, setTag] = useState<string>(parsedSummary.tag.join(", ").replace("_", " "));
@@ -38,7 +38,7 @@ export default function ConfirmMemoryScreen() {
   // Ensure ChatService exists and matches chatId
   // ──────────────────────────────────────────────
   useEffect(() => {
-    if (!chatId || !auth.user?.uid) return;
+    if (!chatId || !auth?.user?.uid) return;
 
     if (!chatService || chatService.chatId !== chatId) {
       const apiKey = process.env.EXPO_PUBLIC_DEEP_SEEK_API_KEY!;
@@ -53,7 +53,7 @@ export default function ConfirmMemoryScreen() {
         summaryStackDBService: new SummaryStackDBService(database),
         localMessageDBService: new LocalMessageDBService(database),
         llmModel: model,
-        chatDBService: new ChatDBService({
+        chatDBService: new ChatRepository({
           database,
           userId: auth.user.uid,
         }),
@@ -61,7 +61,7 @@ export default function ConfirmMemoryScreen() {
 
       setChatService(newService);
     }
-  }, [chatId, auth.user?.uid]);
+  }, [chatId, auth?.user?.uid]);
 
   const handleCancel = () => router.back();
 

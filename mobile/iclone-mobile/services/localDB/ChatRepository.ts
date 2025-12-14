@@ -10,7 +10,7 @@ interface ChatDBServiceProps {
   userId: string;
 }
 
-export default class ChatDBService {
+export default class ChatRepository {
   database: Database;
   userId: string;
 
@@ -116,7 +116,7 @@ export default class ChatDBService {
             .query(Q.where("chat_id", chat.id))
             .fetch();
 
-          const existingTagIds = new Set(existingChatTags.map(ct => ct.tag_id));
+          const existingTagIds = new Set(existingChatTags.map(ct => ct.tagId));
 
           // 6. Compute desired tag IDs
           const tagIdsToKeep = new Set(
@@ -127,7 +127,7 @@ export default class ChatDBService {
 
           // 7. Determine which chatTag rows to delete
           const toDelete = existingChatTags.filter(
-            ct => !tagIdsToKeep.has(ct.tag_id)
+            ct => !tagIdsToKeep.has(ct.tagId)
           );
 
           if (toDelete.length > 0) {
@@ -141,8 +141,8 @@ export default class ChatDBService {
 
           const joinOps = toAdd.map(tagId =>
             chatTagCollection.prepareCreate(ct => {
-              ct.chat_id = chat.id;
-              ct.tag_id = tagId;
+              ct.chatId = chat.id;
+              ct.tagId = tagId;
             })
           );
 
@@ -156,5 +156,38 @@ export default class ChatDBService {
       console.error(`Failed to update chat: ${err}`);
       throw new LocalDBError("Failed to update chat");
     }
+  }
+
+  async getChatByTag(tagId: string, page = 1, pageSize = 10): Promise<ChatModel[]> {
+    const chatTagCollection = this.database.collections.get<ChatTagModel>(ChatTagModel.table);
+    const chatTagsByTag = await chatTagCollection.query(
+      Q.where('tag_id', tagId)
+    );
+    const chatIds = chatTagsByTag.map((ct) => ct.chatId);
+
+    const skip = (page -1) * pageSize;
+    const chats = await this.database.collections.get<ChatModel>(ChatModel.table)
+                  .query(
+                    Q.where('id', Q.oneOf(chatIds)),
+                    Q.sortBy('updated_at', Q.desc),
+                    Q.skip(skip),
+                    Q.take(pageSize)
+                  )
+                  .fetch();
+    return chats;
+  }
+
+  async getOngoingChats():Promise<ChatModel[]> {
+    const chatCollection = this.database.collections.get<ChatModel>(ChatModel.table);
+    const ongoingChats = await chatCollection.query(
+                          Q.where('status', 'ongoing')
+                        ).fetch();
+    return ongoingChats;
+  }
+
+  async getChatById(chatId: string){
+    const chatCollection = this.database.collections.get<ChatModel>(ChatModel.table);
+    const chat = await chatCollection.find(chatId);
+    return chat;
   }
 }
