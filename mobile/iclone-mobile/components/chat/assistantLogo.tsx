@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     overflow: 'visible',
     paddingTop: 30,
+    backgroundColor: 'transparent'
   },
   mainContainerTop: {
     top: 0,       // pinned to top

@@ -8,8 +8,8 @@ export default function ChatScreenLayout() {
       <Stack.Screen
         name="[chatId]"
         options={{
-          headerShown: true,
-          header: ()=> <GenericHeader label={"converse"}/>
+          headerShown: false,
+          // header: ()=> <GenericHeader label={"converse"}/>
         }}
       />
       <Stack.Screen
