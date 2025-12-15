@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: AppColors.backgroundColor,
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: 38,
   },
   flex: {
     flex: 1,
