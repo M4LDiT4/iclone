@@ -130,12 +130,7 @@ function ChatInputWrapper({
 
   return (
     <View
-      style={[
-        styles.textinputContainer,
-        {
-          paddingBottom: insets.bottom + 8 + (isUserTyping? 30: 0),
-        },
-      ]}
+      style={styles.textinputContainer}
     >
       <TouchableOpacity onPress={openSaveModal} style = {styles.saveButton}>
         <Ionicons size={30} name="save-outline" color={AppColors.backgroundColor}/>
@@ -178,7 +173,6 @@ const styles = StyleSheet.create({
   textinputContainer: {
     paddingTop: 8,
     alignItems: "center",
-    justifyContent: "center",
     flexDirection: "row",
   },
   modalContainer : {

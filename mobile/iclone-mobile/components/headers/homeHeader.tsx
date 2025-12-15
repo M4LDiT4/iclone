@@ -8,13 +8,13 @@ import { useAuth } from '@/core/contexts/authContext';
 
 export default function HomeHeader() {
   const insets = useSafeAreaInsets();
-  const {user} = useAuth();
+  const auth = useAuth();
   return (
     <View style={{...styles.container, height: 70 +insets.top, paddingTop: insets.top}}>
       <View style = {styles.contentContainer}>
         <AvatarContainer
           size={64}
-          source={user?.photoURL}
+          source={auth?.user?.photoURL}
           fallbackIcon = {<Ionicons name="person-circle" size={40} color="#aaa" />}
         />
         <Ionicons name='notifications-outline' size={36} color={AppColors.primaryColor}/>
@@ -25,7 +25,7 @@ export default function HomeHeader() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: AppColors.primaryColor,
+    backgroundColor: 'transparent',
     alignItems: 'center',
   },
   contentContainer: {
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: AppColors.backgroundColor,
+    backgroundColor: 'transparent',
     paddingVertical: 16,
     paddingHorizontal: 20,
   }

@@ -1,12 +1,15 @@
 import PrimaryButton from "@/components/buttons/primaryButton";
 import AssistantLogo from "@/components/chat/assistantLogo";
 import ChatBubble from "@/components/chat/ChatBubble";
-import { Column, Padding, Spacer, Stack } from "@/components/layout/layout";
+import ChatHeader from "@/components/headers/chatHeader";
+import { Column, Padding, Spacer,} from "@/components/layout/layout";
 import GenericModal from "@/components/modals/genericModal";
 import LoadingScreen from "@/components/notifiers/loadingScreen";
 import ChatInputWrapper from "@/components/textinputs/chatInputWrapper";
 import { useAuth } from "@/core/contexts/authContext";
 import { useChatContext } from "@/core/contexts/chatContext";
+import AppColors from "@/core/styling/AppColors";
+import GlobalStyles from "@/core/styling/GlobalStyles";
 import database from "@/data/database/index.native";
 import { useChatViewModel } from "@/data/viewModels/ChatViewModel";
 import DeepSeekClient from "@/domain/llm/deepSeek/model";
@@ -15,20 +18,18 @@ import ChatRepository from "@/services/localDB/ChatRepository";
 import LocalMessageDBService from "@/services/localDB/LocalMessageDBService";
 import SummaryStackDBService from "@/services/localDB/SummaryStackDatabaseService";
 import SummaryService from "@/services/SummaryService";
-import {useLocalSearchParams } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import {useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
-import { FlatList, KeyboardAvoidingView, Platform, Text, StyleSheet } from "react-native";
+import { FlatList, KeyboardAvoidingView, Platform, Text, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ChatScreen() {
   const { chatService, setChatService } = useChatContext();
-
   const { chatId, userMessage, username } = useLocalSearchParams();
   const auth = useAuth();
+  const router = useRouter();
 
-  // ──────────────────────────────────────────────
-  // 1. Create ChatService when navigating to screen
-  // ──────────────────────────────────────────────
   useEffect(() => {
     if (!chatId || !auth!.user?.uid) return;
 
@@ -36,8 +37,8 @@ export default function ChatScreen() {
     const model = new DeepSeekClient(apiKey);
 
     const newService = new ChatService({
-      chatId: (chatId as string),
-      username: (username as string)  ?? "Guest",
+      chatId: chatId as string,
+      username: (username as string) ?? "Guest",
       assistantName: "Eterne",
       slidingWindowSize: 3,
       summaryService: new SummaryService(model),
@@ -46,115 +47,103 @@ export default function ChatScreen() {
       llmModel: model,
       chatDBService: new ChatRepository({
         database,
-        userId: auth!.user.uid
+        userId: auth!.user.uid,
       }),
     });
 
     setChatService(newService);
-
-    return () => {
-      // Destroy service when leaving screen
-      // Each chat service is tied to certain chat via chatId
-      setChatService(null);
-    };
+    return () => setChatService(null);
   }, [chatId]);
 
-  // ──────────────────────────────────────────────
-  // 2. ViewModel logic (pure)
-  // ──────────────────────────────────────────────
-  const vm = useChatViewModel(chatService, (userMessage as string));
-
+  const vm = useChatViewModel(chatService, userMessage as string);
   if (vm.componentStatus === "initializing") return <LoadingScreen />;
 
-  // ──────────────────────────────────────────────
-  // 3. UI Rendering
-  // ──────────────────────────────────────────────
   return (
-    <SafeAreaView edges={["left", "right"]} style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={["#6C9BCF", "#F8F9FA"]}
+        style={GlobalStyles.screenGradientTop}
+      />
+      <ChatHeader label="Converse" onBackPress={() => router.back()} />
+
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={80}
+        style={styles.flex}
+        behavior={Platform.OS === "ios" ? "padding" : 'height'}
       >
-        <Padding style={{ flex: 1, paddingHorizontal: 16 }}>
-          <Stack style={{ flex: 1 }}>
-            <FlatList
-              ref={vm.flatListRef}
-              inverted
-              style={{ flex: 1 }}
-              contentContainerStyle={{
-                paddingTop: vm.isUserTyping ? 50 : 0,
-              }}
-              data={vm.messageList}
-              keyExtractor={(_, index) => index.toString()}
-              renderItem={({ item }) => <ChatBubble {...item} />}
-              keyboardShouldPersistTaps="handled"
-            />
+        {/* MESSAGES */}
+        <View style = {{flex: 1,}}>
+          <FlatList
+          ref={vm.flatListRef}
+          inverted
+          data={vm.messageList}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => <ChatBubble {...item} />}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+        />
 
-            {/* typing bubble */}
-            <AssistantLogo
-              type={
-                vm.messageList.length > 2 || vm.isUserTyping
-                  ? "small"
-                  : "large"
-              }
-              isUserTyping={vm.isUserTyping}
-              isSystemTyping={vm.isAssistantTyping}
-            />
-          </Stack>
+        {/* TYPING INDICATOR */}
+        <AssistantLogo
+          type={
+            vm.messageList.length > 2 || vm.isUserTyping ? "small" : "large"
+          }
+          isUserTyping={vm.isUserTyping}
+          isSystemTyping={vm.isAssistantTyping}
+        />
+        </View>
+        {/* INPUT (ANCHOR) */}
+        <ChatInputWrapper
+          chatId={chatId as string}
+          handleSend={vm.pushUserMessage}
+          triggerLLMResponse={vm.generateResponse}
+          setIsUserTyping={vm.setIsUserTyping}
+          isUserTyping={vm.isUserTyping}
+          generateNarrative={vm.generateNarrative}
+          isAssistantTyping={vm.isAssistantTyping}
+        />
 
-          {/* chat input */}
-          <ChatInputWrapper
-            chatId={chatId as string}
-            handleSend={vm.pushUserMessage}
-            triggerLLMResponse={vm.generateResponse}
-            setIsUserTyping={vm.setIsUserTyping}
-            isUserTyping={vm.isUserTyping}
-            generateNarrative={vm.generateNarrative}
-            isAssistantTyping = {vm.isAssistantTyping}
-          />
-        </Padding>
-
-        {/* Error modal */}
+        {/* ERROR MODAL */}
         <GenericModal visible={vm.modalState === "error"} onClose={() => {}}>
           <Column>
-            <Padding style={styles.modalContainer}>
-              <Text style={styles.modalText}>
-                {vm.error ?? "Something went wrong"}
-              </Text>
-              <Spacer height={8} />
-              <PrimaryButton
-                label="Okay"
-                onPress={vm.closeErrorModal}
-              />
-            </Padding>
+            <Text style={styles.modalText}>
+              {vm.error ?? "Something went wrong"}
+            </Text>
+            <Spacer height={8} />
+            <PrimaryButton label="Okay" onPress={vm.closeErrorModal} />
           </Column>
         </GenericModal>
       </KeyboardAvoidingView>
+      <LinearGradient
+        colors={["#F8F9FA", "#6C9BCF"]}
+        style={GlobalStyles.screenGradientBottom}
+      />
     </SafeAreaView>
   );
 }
 
-
-
 const styles = StyleSheet.create({
   container: {
-     flex: 1,
+    flex: 1,
+    backgroundColor: AppColors.backgroundColor,
+    paddingHorizontal: 16,
+    paddingBottom: 38,
   },
-  scroll: { flex: 1 },
-  modalContainer : {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%'
+  flex: {
+    flex: 1,
   },
-  modalText : {
-    fontSize: 20,              // Larger than body text
-    fontWeight: '700',         // Bold for emphasis
-    color: '#023E65',          // Primary or brand color
-    textAlign: 'center',       // Centered in the modal
-    marginBottom: 12,          // Space below before content
-    fontFamily: 'SFProText',   // Keep consistent with your app typography
+  listContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 96,
+    paddingTop: 60 
+  },
+  modalText: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#023E65",
+    textAlign: "center",
+    marginBottom: 12,
+    fontFamily: "SFProText",
   },
 });
 

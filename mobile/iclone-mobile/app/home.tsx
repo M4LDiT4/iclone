@@ -17,6 +17,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Spacer } from '@/components/layout/layout';
 import { useAuth } from '@/core/contexts/authContext';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import GlobalStyles from '@/core/styling/GlobalStyles';
+import HomeHeader from '@/components/headers/homeHeader';
 
 
 export default function HomeScreen() {
@@ -29,10 +32,14 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView edges={['left', 'right']} style={styles.safeArea}>
+        <LinearGradient
+        colors={["#6C9BCF", "#F8F9FA"]}
+        style={GlobalStyles.screenGradientTop}
+      />
+      <HomeHeader/>
       <KeyboardAvoidingView
         style={styles.wrapper}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={80}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -94,6 +101,10 @@ export default function HomeScreen() {
           username={auth!.profile!.username}
         />
       </KeyboardAvoidingView>
+      <LinearGradient
+        colors={["#F8F9FA", "#6C9BCF"]}
+        style={GlobalStyles.screenGradientBottom}
+      />
     </SafeAreaView>
   );
 }
@@ -102,7 +113,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: AppColors.backgroundColor,
-    paddingBottom: 16
+    paddingBottom: 48
   },
   wrapper: {
     flex: 1,
