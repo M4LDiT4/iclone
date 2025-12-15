@@ -100,7 +100,7 @@ export default function ChatInputBar({username}:{username?:string|null}) {
   }
 
   return (
-    <SafeAreaView edges={['left', 'right']} style={{ ...styles.container, paddingBottom: keyboardVisible ? 36 + insets.bottom : 0 }}>
+    <SafeAreaView edges={['left', 'right']} style={{ ...styles.container,}}>
       <TouchableOpacity onPress={handlePickImage} style={styles.leftButton}>
         <Ionicons name="camera-outline" size={24} color={AppColors.primaryColor} />
       </TouchableOpacity>

@@ -1,6 +1,7 @@
 import AuthGate from "@/components/application/authGate";
 import HomeHeader from "@/components/headers/homeHeader";
 import AppColors from "@/core/styling/AppColors";
+import { LinearGradient } from "expo-linear-gradient";
 import { Stack } from "expo-router";
 import { PaperProvider} from "react-native-paper";
 
@@ -20,8 +21,7 @@ export default function RootLayout() {
             <Stack.Screen
               name = 'home'
               options={{
-                headerShown: true,
-                header: () => <HomeHeader/>
+                headerShown: false,
               }}
             />
             <Stack.Screen

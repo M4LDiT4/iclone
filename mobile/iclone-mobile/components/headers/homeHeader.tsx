@@ -25,7 +25,7 @@ export default function HomeHeader() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: AppColors.primaryColor,
+    backgroundColor: 'transparent',
     alignItems: 'center',
   },
   contentContainer: {
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: AppColors.backgroundColor,
+    backgroundColor: 'transparent',
     paddingVertical: 16,
     paddingHorizontal: 20,
   }
