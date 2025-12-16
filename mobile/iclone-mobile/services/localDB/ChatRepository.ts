@@ -4,6 +4,7 @@ import { ChatTagModel } from "@/data/database/models/chatTagModel";
 import { TagModel } from "@/data/database/models/tagModel";
 import ChatStatus from "@/domain/types/chatStatus";
 import { Database, Q } from "@nozbe/watermelondb";
+import { take } from "lodash";
 
 interface ChatDBServiceProps {
   database: Database;
@@ -191,5 +192,15 @@ export default class ChatRepository {
     const chatCollection = this.database.collections.get<ChatModel>(ChatModel.table);
     const chat = await chatCollection.find(chatId);
     return chat;
+  }
+
+  async getMemories(limit: number = 4):Promise<ChatModel[]> {
+    const chats = await this.database.collections.get<ChatModel>(ChatModel.table)
+                  .query(
+                    Q.where('status', 'saved'),
+                    Q.sortBy('updated_at', Q.desc),
+                    Q.take(limit)
+                  );
+    return chats;
   }
 }

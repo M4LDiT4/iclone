@@ -7,6 +7,7 @@ import { Spacer } from "../layout/layout";
 import IconRenderer from "../icons/iconRenderer";
 import ChatModel from "@/data/database/models/chatModel";
 import { useRouter } from "expo-router";
+import chatBasicDetailsCard from "../containers/chatBasicDetailsCard";
 
 interface MemoryCardProps {
   chat: ChatModel
@@ -23,33 +24,32 @@ function MemoryCard(props : MemoryCardProps){
       }
     });
   }
+  console.log(JSON.stringify((props.chat.title)))
   return (
-    <TouchableOpacity onPress={gotoConfirmChatScreen}>
-      <View style = {styles.container}>
-        <LinearGradient
-          colors={["#FFFFFF", 'rgba(186, 224, 243, 1)']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={StyleSheet.absoluteFillObject}
-        />
-        <GradientContainer width={82} height={76} borderRadius={10}>
-          <View style = {styles.contentContainer}> 
-            <IconRenderer
-              library={props.chat.iconLibrary ?? ""}
-              name={props.chat.iconName ?? ""}
-              size={24}
-            />
-            <Spacer height={4}/>
-            <Text 
-              style = {styles.contentText}
-              ellipsizeMode="tail"
-              numberOfLines={3}
-            >
-              {props.chat.title}
-            </Text>
-          </View>
-        </GradientContainer>
-      </View>
+    <TouchableOpacity onPress={gotoConfirmChatScreen} style = {styles.container}>
+      <LinearGradient
+        colors={["#FFFFFF", 'rgba(186, 224, 243, 1)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={StyleSheet.absoluteFillObject}
+      />
+      <GradientContainer width={82} height={76} borderRadius={10}>
+        <View style = {styles.contentContainer}> 
+          <IconRenderer
+            library={props.chat.iconLibrary ?? ""}
+            name={props.chat.iconName ?? ""}
+            size={24}
+          />
+          <Spacer height={4}/>
+          <Text 
+            style = {styles.contentText}
+            ellipsizeMode="tail"
+            numberOfLines={3}
+          >
+            {props.chat.title}
+          </Text>
+        </View>
+      </GradientContainer>
     </TouchableOpacity>
   )
 }
@@ -59,9 +59,11 @@ export default memo(MemoryCard);
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    padding: 1,
+    padding: 2,
     borderRadius: 12,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    width: 82,
+    height: 76
   },
   contentContainer: {
     padding: 8,
