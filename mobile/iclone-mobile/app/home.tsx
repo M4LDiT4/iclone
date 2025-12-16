@@ -6,10 +6,8 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  TouchableOpacity,
 } from 'react-native';
 import AppColors from '@/core/styling/AppColors';
-import Logo from '../assets/svg/llm_logo.svg';
 
 import ChatBasicDetailsCard from '@/components/containers/chatBasicDetailsCard';
 import ChatInputBar from '@/components/textinputs/chatInputBar';
@@ -23,7 +21,8 @@ import HomeHeader from '@/components/headers/homeHeader';
 import ComponentStatus from '@/core/types/componentStatusType';
 import ChatRepository from '@/services/localDB/ChatRepository';
 import database from '@/data/database/index.native';
-import { ActivityIndicator } from 'react-native-paper';
+import ChatModel from '@/data/database/models/chatModel';
+import HomeLogo from '@/components/logo/homeLogo';
 
 
 export default function HomeScreen() {
@@ -32,6 +31,7 @@ export default function HomeScreen() {
   
   const [componentStatus, setComponentStatus] = useState<ComponentStatus>('idle');
   const [chatRepository, setChatRepository] = useState<ChatRepository| null>(null);
+  const [latestMemories, setLatestMemories] = useState<ChatModel[]>([]);
 
   useEffect(() => {
     if(!auth) return;
@@ -45,6 +45,18 @@ export default function HomeScreen() {
       setComponentStatus("error");
     }
   }, [auth]);
+
+  useEffect(() => {
+    const loadMemories = async () => {
+      if(!chatRepository) return;
+      const memories = await chatRepository.getMemories(4);
+      if(memories.length > 0){
+        setLatestMemories(memories);
+      }
+    }
+    //execute this on background
+    loadMemories();
+  })
 
   const gotoMemoryList = () => {
     // prevent navigation to another screen if initializing
@@ -69,86 +81,104 @@ export default function HomeScreen() {
           // problem on the auth state or AuthContext
           username: auth!.profile!.username
         }
-      })
+      });
+      setTimeout(() => {
+        setComponentStatus("idle");
+      }, 300);
     }catch(err){
       console.error(`Failed to create a new chat: ${err}`);
-      // you can set an error state here if necessary
-    }finally{
-      setComponentStatus("idle");
+      setComponentStatus("error");
     }
   }
 
   return (
     <SafeAreaView edges={['left', 'right']} style={styles.safeArea}>
-        <LinearGradient
+      <LinearGradient
         colors={["#6C9BCF", "#F8F9FA"]}
         style={GlobalStyles.screenGradientTop}
       />
       <HomeHeader/>
-      <KeyboardAvoidingView
-        style={styles.wrapper}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.upperContainer}>
-            <Text style={styles.primaryText}>{`Hello, ${auth?.profile?.username ?? auth?.user?.displayName ?? "Guest"}`}</Text>
-            <Spacer height={8}/>
-            <Text style={styles.welcomeText}>Welcome back!</Text>
-            <TouchableOpacity 
-              onPress={gotoMemoryList} 
-              style={styles.svgContainer}
-            >
-              <Logo />
-            </TouchableOpacity>
-          </View>
 
-          <View style={styles.lowerContainer}>
-            <Text style={styles.primaryText}>Do you have stories for me?</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.storiesContainer}
-            >
-              <ChatBasicDetailsCard
-                iconName="heart-outline"
-                iconColor={AppColors.primaryColor}
-                label="Family Traditions and holidays"
-                chatWithTemplate={() => handleTemplatePress("I’d like to share a story about how my family celebrates special occasions.”")}
+      {componentStatus === "initializing" && (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.titleText}>Loading...</Text>
+        </View>
+      )}
+
+      {componentStatus === "error" && (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.titleText}>Something went wrong. Please try again.</Text>
+        </View>
+      )}
+
+      {componentStatus === "idle" && (
+        <KeyboardAvoidingView
+          style={styles.wrapper}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.upperContainer}>
+              <Text style={styles.primaryText}>
+                {`Hello, ${auth?.profile?.username ?? auth?.user?.displayName ?? "Guest"}`}
+              </Text>
+              <Spacer height={8}/>
+              <Text style={styles.welcomeText}>Welcome back!</Text>
+              <HomeLogo
+                memories={latestMemories}
+                gotoMemoryList={gotoMemoryList}
               />
-              <Spacer width={8} />
-              <ChatBasicDetailsCard
-                iconName="bulb-outline"
-                iconColor={AppColors.primaryColor}
-                label="Lessons from your career"
-                chatWithTemplate={ () => handleTemplatePress("I’d like to share an experience from my career that taught me something valuable.")}
-              />
-              <Spacer width={8} />
-              <ChatBasicDetailsCard
-                iconName="time-outline"
-                iconColor={AppColors.primaryColor}
-                label="Your childhood home and memories"
-                chatWithTemplate={ () => handleTemplatePress("I’d like to share a memory from my childhood and what it meant to me.")}
-              />
-              <Spacer width={8} />
-              <ChatBasicDetailsCard
-                iconName="chatbubble-ellipses-outline"
-                iconColor={AppColors.primaryColor}
-                label="Advice for important life moments"
-                chatWithTemplate={() => handleTemplatePress("I’d like to share some advice that could help during meaningful life transitions.")}
-              />
-            </ScrollView>
-          </View>
-        </ScrollView>
-        <ChatInputBar
-          username={auth!.profile!.username}
-          chatRepo={chatRepository!}
-          componentStatus={componentStatus}
-          setComponentStatus={setComponentStatus}
-        />
-      </KeyboardAvoidingView>
+            </View>
+
+            <View style={styles.lowerContainer}>
+              <Text style={styles.primaryText}>Do you have stories for me?</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.storiesContainer}
+              >
+                <ChatBasicDetailsCard
+                  iconName="heart-outline"
+                  iconColor={AppColors.primaryColor}
+                  label="Family Traditions and holidays"
+                  chatWithTemplate={() => handleTemplatePress("I’d like to share a story about how my family celebrates special occasions.")} 
+                />
+                <Spacer width={8} />
+                <ChatBasicDetailsCard
+                  iconName="bulb-outline"
+                  iconColor={AppColors.primaryColor}
+                  label="Lessons from your career"
+                  chatWithTemplate={() => handleTemplatePress("I’d like to share an experience from my career that taught me something valuable.")} 
+                />
+                <Spacer width={8} />
+                <ChatBasicDetailsCard
+                  iconName="time-outline"
+                  iconColor={AppColors.primaryColor}
+                  label="Your childhood home and memories"
+                  chatWithTemplate={() => handleTemplatePress("I’d like to share a memory from my childhood and what it meant to me.")} 
+                />
+                <Spacer width={8} />
+                <ChatBasicDetailsCard
+                  iconName="chatbubble-ellipses-outline"
+                  iconColor={AppColors.primaryColor}
+                  label="Advice for important life moments"
+                  chatWithTemplate={() => handleTemplatePress("I’d like to share some advice that could help during meaningful life transitions.")} 
+                />
+              </ScrollView>
+            </View>
+          </ScrollView>
+
+          <ChatInputBar
+            username={auth!.profile!.username}
+            chatRepo={chatRepository!}
+            componentStatus={componentStatus}
+            setComponentStatus={setComponentStatus}
+          />
+        </KeyboardAvoidingView>
+      )}
+
       <LinearGradient
         colors={["#F8F9FA", "#6C9BCF"]}
         style={GlobalStyles.screenGradientBottom}
@@ -219,7 +249,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "white", // optional, keeps it clean
   },
     initialScreenContainer : {
     backgroundColor: AppColors.backgroundColor,
