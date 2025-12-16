@@ -86,7 +86,7 @@ export default function ChatScreen() {
         {/* TYPING INDICATOR */}
         <AssistantLogo
           type={
-            vm.messageList.length > 2 || vm.isUserTyping ? "small" : "large"
+            "small"
           }
           isUserTyping={vm.isUserTyping}
           isSystemTyping={vm.isAssistantTyping}
