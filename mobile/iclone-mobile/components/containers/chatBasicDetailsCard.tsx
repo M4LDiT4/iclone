@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, ViewStyle, TextStyle, StyleSheet } from 'react-native';
+import { View, Text, ViewStyle, TextStyle, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import GenericContainer from './genericContainer';
+import { useRouter } from 'expo-router';
 
 type chatBasicDetailsCardProps = {
   iconName: keyof typeof Ionicons.glyphMap;
@@ -10,6 +11,7 @@ type chatBasicDetailsCardProps = {
   containerStyle?: ViewStyle;
   iconSize?: number;
   textStyle?: TextStyle;
+  chatWithTemplate: () => void
 };
 
 export default function chatBasicDetailsCard({
@@ -19,24 +21,32 @@ export default function chatBasicDetailsCard({
   containerStyle,
   iconSize = 24,
   textStyle,
+  chatWithTemplate
 }: chatBasicDetailsCardProps) {
+  const router = useRouter();
+
+  const handleTemplatedChat = () => {
+    chatWithTemplate();
+  }
   return (
-    <GenericContainer
-      width={82}
-      height={76}
-      borderRadius={10}
-    >
-      <View style={[styles.innerContainer, containerStyle]}>
-        <View style={styles.iconWrapper}>
-          <Ionicons name={iconName} size={iconSize} color={iconColor} />
+    <TouchableOpacity onPress={handleTemplatedChat}>
+      <GenericContainer
+        width={82} 
+        height={76}
+        borderRadius={10}
+      >
+        <View style={[styles.innerContainer, containerStyle]}>
+          <View style={styles.iconWrapper}>
+            <Ionicons name={iconName} size={iconSize} color={iconColor} />
+          </View>
+          <View style={styles.textWrapper}>
+            <Text style={[styles.labelText, { color: iconColor }, textStyle]}>
+              {label}
+            </Text>
+          </View>
         </View>
-        <View style={styles.textWrapper}>
-          <Text style={[styles.labelText, { color: iconColor }, textStyle]}>
-            {label}
-          </Text>
-        </View>
-      </View>
-    </GenericContainer>
+      </GenericContainer>
+    </TouchableOpacity>
   );
 }
 
