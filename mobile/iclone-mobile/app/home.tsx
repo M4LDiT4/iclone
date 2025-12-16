@@ -84,7 +84,7 @@ export default function HomeScreen() {
       });
       setTimeout(() => {
         setComponentStatus("idle");
-      }, 300);
+      }, 1000);
     }catch(err){
       console.error(`Failed to create a new chat: ${err}`);
       setComponentStatus("error");
