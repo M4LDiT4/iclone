@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Text,
   View,
@@ -20,14 +20,62 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import GlobalStyles from '@/core/styling/GlobalStyles';
 import HomeHeader from '@/components/headers/homeHeader';
+import ComponentStatus from '@/core/types/componentStatusType';
+import ChatRepository from '@/services/localDB/ChatRepository';
+import database from '@/data/database/index.native';
+import { ActivityIndicator } from 'react-native-paper';
 
 
 export default function HomeScreen() {
   const auth = useAuth();
   const router = useRouter();
+  
+  const [componentStatus, setComponentStatus] = useState<ComponentStatus>('idle');
+  const [chatRepository, setChatRepository] = useState<ChatRepository| null>(null);
+
+  useEffect(() => {
+    if(!auth) return;
+    try{
+      setComponentStatus("initializing");
+      const newChatRepo = new ChatRepository({database: database, userId: auth?.user?.uid!});
+      setChatRepository(newChatRepo);
+      setComponentStatus('idle');
+    }catch(err){
+      console.error(`Failed to initialize the home screen: ${err}`);
+      setComponentStatus("error");
+    }
+  }, [auth]);
 
   const gotoMemoryList = () => {
+    // prevent navigation to another screen if initializing
+    if(componentStatus === 'initializing') return;
     router.push("/memory/memoryList");
+  }
+
+  const handleTemplatePress = async (message: string) => {
+    // do not attempt to create chat if component is still initializing or chatRepository 
+    // is null
+    if(componentStatus === 'initializing' || !chatRepository) return;
+    try{
+      setComponentStatus('initializing');
+      const newChat = await chatRepository?.createNewChat();
+      router.push({
+        pathname: `/chat/[chatId]`,
+        params: {
+          chatId: newChat.id,
+          userMessage: message,
+          // we assert that profile exists
+          // if this throws an error, the authentication is either broken or there is a
+          // problem on the auth state or AuthContext
+          username: auth!.profile!.username
+        }
+      })
+    }catch(err){
+      console.error(`Failed to create a new chat: ${err}`);
+      // you can set an error state here if necessary
+    }finally{
+      setComponentStatus("idle");
+    }
   }
 
   return (
@@ -68,37 +116,37 @@ export default function HomeScreen() {
                 iconName="heart-outline"
                 iconColor={AppColors.primaryColor}
                 label="Family Traditions and holidays"
+                chatWithTemplate={() => handleTemplatePress("I’d like to share a story about how my family celebrates special occasions.”")}
               />
               <Spacer width={8} />
               <ChatBasicDetailsCard
                 iconName="bulb-outline"
                 iconColor={AppColors.primaryColor}
                 label="Lessons from your career"
+                chatWithTemplate={ () => handleTemplatePress("I’d like to share an experience from my career that taught me something valuable.")}
               />
               <Spacer width={8} />
               <ChatBasicDetailsCard
                 iconName="time-outline"
                 iconColor={AppColors.primaryColor}
                 label="Your childhood home and memories"
+                chatWithTemplate={ () => handleTemplatePress("I’d like to share a memory from my childhood and what it meant to me.")}
               />
               <Spacer width={8} />
               <ChatBasicDetailsCard
                 iconName="chatbubble-ellipses-outline"
                 iconColor={AppColors.primaryColor}
                 label="Advice for important life moments"
+                chatWithTemplate={() => handleTemplatePress("I’d like to share some advice that could help during meaningful life transitions.")}
               />
-              <Spacer width={8} />
-              <TouchableOpacity style={styles.viewMoreButton}>
-                <Text style={styles.viewMoreText}>View More</Text>
-              </TouchableOpacity>
             </ScrollView>
           </View>
         </ScrollView>
         <ChatInputBar
-        // throw an error if auth.profile.username is not provided
-        // app expects this to be provided, as we do not want to authorize 
-        // non-registered users to access app features
           username={auth!.profile!.username}
+          chatRepo={chatRepository!}
+          componentStatus={componentStatus}
+          setComponentStatus={setComponentStatus}
         />
       </KeyboardAvoidingView>
       <LinearGradient
@@ -173,5 +221,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "white", // optional, keeps it clean
   },
-
+    initialScreenContainer : {
+    backgroundColor: AppColors.backgroundColor,
+    flex: 1, 
+    justifyContent: "center", 
+    alignItems: "center" 
+  },
+  titleText : {
+    fontSize: 20,              // Larger than body text
+    fontWeight: '700',         // Bold for emphasis
+    color: '#023E65',          // Primary or brand color
+    textAlign: 'center',       // Centered in the modal
+    marginBottom: 12,          // Space below before content
+    fontFamily: 'SFProText',   // Keep consistent with your app typography
+  },
 });

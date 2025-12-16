@@ -1,54 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, {useState } from 'react';
 import {
   TouchableOpacity,
   StyleSheet,
-  Keyboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AppColors from '@/core/styling/AppColors';
 import ChatTextinput from './chatTextinput';
-import ComponentStatus from '@/core/types/componentStatusType';
-import ChatRepository from '@/services/localDB/ChatRepository';
-import database from '@/data/database/index.native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView} from 'react-native-safe-area-context';
+import ChatRepository from '@/services/localDB/ChatRepository';
+import ComponentStatus from '@/core/types/componentStatusType';
 
+interface ChatInputBarProps {
+  username: string,
+  chatRepo: ChatRepository,
+  componentStatus: ComponentStatus,
+  setComponentStatus: (status: ComponentStatus) => void
+}
 
-
-export default function ChatInputBar({username}:{username?:string|null}) {
-  const [componentStatus, setComponentStatus] = useState<ComponentStatus>("idle");
-  const [chatDBService, setChatDBService] = useState<ChatRepository>();
+export default function ChatInputBar(props: ChatInputBarProps) {
   const [message, setMessage] = useState<string | null>("");
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const insets = useSafeAreaInsets();
 
   const router = useRouter();
 
-  useEffect(() => {
-    const chatDBService = new ChatRepository({ database, userId: "userId" });
-    setChatDBService(chatDBService);
-
-    const showSub = Keyboard.addListener("keyboardDidShow", () => {
-      setKeyboardVisible(true);
-    });
-
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-      setKeyboardVisible(false);
-    });
-
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
-
-
   const handleMessageChange = (newMessage: string) => {
     setMessage(newMessage);
-  }
-
-  const updateComponentStatus = (newStatus: ComponentStatus) => {
-    setComponentStatus(newStatus);
   }
   
   function navigateToChatScreen (chatId: string) {
@@ -57,7 +33,7 @@ export default function ChatInputBar({username}:{username?:string|null}) {
         params: {
           chatId: chatId,
           userMessage: message,
-          username: username
+          username: props.username
         }
       });
     }
@@ -67,26 +43,22 @@ export default function ChatInputBar({username}:{username?:string|null}) {
   }
 
   const handleSend = async () => {
-    if(!chatDBService){
-      updateComponentStatus('error');
-      return;
-    }
     // prevent execution of write operation when
     // - currently loading
     // - message is undefined or empty string
-    if(!message || message.length === 0 || componentStatus === 'initializing'){
+    if(!message || message.length === 0 || props.componentStatus === 'initializing'){
       return;
     }
-    updateComponentStatus('initializing');
-    await chatDBService?.createNewChat()
+    props.setComponentStatus('initializing');
+    await props.chatRepo.createNewChat()
     .then((chat) => {
-      updateComponentStatus('idle');
+      props.setComponentStatus('idle');
       setTimeout(() => {
         navigateToChatScreen(chat.id);
       }, 0);
     }).catch((err) => {
       console.error(`Failed to create new chat:  ${err}`);
-      updateComponentStatus('error');
+      props.setComponentStatus('error');
     });
     resetMessage();
   }
@@ -112,7 +84,7 @@ export default function ChatInputBar({username}:{username?:string|null}) {
         value={message ?? ""}
         onChangeText={handleMessageChange}
         onSend={handleSend}
-        componentStatus={componentStatus}
+        componentStatus={props.componentStatus}
       />
     </SafeAreaView>
   );
