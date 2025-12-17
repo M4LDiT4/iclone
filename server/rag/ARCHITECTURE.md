@@ -331,8 +331,7 @@ The multi-tenant design supports:
 * Authentication and access control
 * Streaming responses
 * Hybrid search (keyword + vector)
-* Multi-tenant knowledge bases
-
+* Redis cache for faster request latency
 ---
 
 ## 12. Summary
