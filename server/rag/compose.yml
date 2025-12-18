@@ -1,0 +1,7 @@
+services:
+  iclone-rag:
+    build: .
+    ports:
+      - 8000:8000
+    volumes: #Defines how files are shared and persisted between your host machine and one or more containers
+      - .:/app  #This syncs between your current directory and the container's app directory
