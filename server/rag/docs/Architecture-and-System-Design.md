@@ -185,9 +185,9 @@ Multi-memory querying is considered a future extension.
 | Data           | Storage                           |
 | -------------- | --------------------------------- |
 | Users          | Firebase Authentication           |
-| Memories       | Relational DB (Supabase/Postgres) |
-| Memberships    | Relational DB                     |
-| Documents      | Relational DB                     |
+| Memories       | Database (Firebase)
+| Memberships    | Database (Firebase)                     |
+| Documents      | Database (Firebase)                     |
 | DocumentChunks | Vector DB (Pinecone)              |
 
 ---
