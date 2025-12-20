@@ -10,4 +10,4 @@ COPY . .
 
 # --reload tag reloads the server after saving changes
 #t this is only in development mode
-CMD uvicorn main:app --host=0.0.0.0 --reload
+CMD uvicorn src.main:app --host=0.0.0.0 --reload

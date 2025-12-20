@@ -1,0 +1,32 @@
+[
+    {
+        "label": "FastAPI",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": {
+            "name": "",
+            "kind": 2,
+            "peekOfCode": "def  index():\n  return {\"message\": \"Hello World\"}"
+        },
+        "kind": 2,
+        "importPath": "rag.main",
+        "description": "rag.main",
+        "peekOfCode": "def  index():\n  return {\"message\": \"Hello World\"}",
+        "detail": "rag.main",
+        "documentation": {}
+    },
+    {
+        "label": "app",
+        "kind": 5,
+        "importPath": "rag.main",
+        "description": "rag.main",
+        "peekOfCode": "app = FastAPI()\n@app.get('/')\ndef  index():\n  return {\"message\": \"Hello World\"}",
+        "detail": "rag.main",
+        "documentation": {}
+    }
+]
