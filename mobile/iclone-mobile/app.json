@@ -37,10 +37,18 @@
       [
         "@morrowdigital/watermelondb-expo-plugin"
       ],
-      ["@react-native-firebase/app"],
-      ["@react-native-firebase/auth"],
-      ["@react-native-firebase/crashlytics"],
-      ["@react-native-google-signin/google-signin"],
+      [
+        "@react-native-firebase/app"
+      ],
+      [
+        "@react-native-firebase/auth"
+      ],
+      [
+        "@react-native-firebase/crashlytics"
+      ],
+      [
+        "@react-native-google-signin/google-signin"
+      ],
       [
         "expo-build-properties",
         {
@@ -121,7 +129,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "486241ea-d014-4cef-b03c-139cf449a6ec"
+        "projectId": "9b61ab0c-7afa-44cf-9bcf-db605e56cea2"
       }
     }
   }
